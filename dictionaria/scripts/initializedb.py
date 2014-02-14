@@ -1,12 +1,22 @@
 from __future__ import unicode_literals
-import sys
+import os
+import re
+from datetime import date
 
-from clld.scripts.util import initializedb, Data
+from sqlalchemy import create_engine
+from sqlalchemy.orm import joinedload_all
+from path import path
+from clld.util import slug, LGR_ABBRS
+from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
 
 import dictionaria
-from dictionaria import models
+from dictionaria.models import Meaning, Word, SemanticField, Dictionary
+
+
+DB = 'postgresql://robert@/wold'
+LOADER_PATTERN = re.compile('(?P<id>[a-z]+)\.py$')
 
 
 def main(args):
@@ -14,21 +24,112 @@ def main(args):
 
     dataset = common.Dataset(
         id=dictionaria.__name__,
-        publisher_name ="Max Planck Institute for Evolutionary Anthropology",
-        publisher_place="Leipzig",
-        publisher_url="http://www.eva.mpg.de",
-        license="http://creativecommons.org/licenses/by/3.0/",
+        name="Dictionaria",
+        description="The Dictionary Journal",
+        #published=date(2009, 8, 15),
+        license='http://creativecommons.org/licenses/by-nc-nd/2.0/de/deed.en',
+        contact='dictionaria@eva.mpg.de',
+        jsondata={
+            'license_icon': 'http://i.creativecommons.org/l/by-nc-nd/2.0/de/88x31.png',
+            'license_name':
+                'Creative Commons Attribution-NonCommercial-NoDerivs 2.0 Germany License',
+        },
         domain='dictionaria.clld.org')
+
+    common.Editor(
+        dataset=dataset,
+        contributor=common.Contributor(id='hartmanniren', name='Iren Hartmann'))
     DBSession.add(dataset)
 
+    for id_, name in LGR_ABBRS.items():
+        DBSession.add(common.GlossAbbreviation(id=id_, name=name))
 
-def prime_cache(args):
+    ps = data.add(common.UnitParameter, 'pos', id='pos', name='part of speech')
+    DBSession.flush()
+
+    for name in [
+        'noun',
+        'affix',
+        'verb',
+        'transitive verb',
+        'active verb',
+        'inactive verb',
+        'auxiliary verb',
+        'adjective',
+        'adverb',
+        'function word',
+        'pronoun',
+        'numeral',
+        'determiner',
+        'conjunction',
+        'intransitive verb',
+        'particle',
+        'adposition',
+        'quantifier',
+        'other',
+    ]:
+        p = data.add(common.UnitDomainElement, name, id='pos-%s' % slug(name), name=name)
+        p.unitparameter_pk = ps.pk
+
+    wold_db = create_engine(DB)
+    for row in wold_db.execute("select * from semantic_field"):
+        if row['id'] not in data['SemanticField']:
+            kw = dict((key, row[key]) for key in ['name', 'description'])
+            data.add(SemanticField, row['id'], id=str(row['id']), **kw)
+
+    for row in wold_db.execute("select * from meaning"):
+        if row['id'] not in data['Meaning']:
+            kw = dict((key, row[key] or None) for key in [
+                'description', 'ids_code', 'semantic_category'])
+            data.add(
+                Meaning, row['label'].lower(),
+                id=row['id'].replace('.', '-'),
+                name=row['label'],
+                semantic_field=data['SemanticField'][row['semantic_field_id']],
+                **kw)
+            DBSession.flush()
+
+    for id_, name, lat, lon, contribs in [
+        #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
+        ('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
+        ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')]),
+    ]:
+        language = data.add(
+            common.Language, id_, id=id_, name=name, latitude=lat, longitude=lon)
+        dictionary = data.add(
+            Dictionary, id_,
+            id=id_,
+            name=name + ' Dictionary',
+            language=language,
+            published=date(2014, 2, 12))
+        for i, _data in enumerate(contribs):
+            cid, cname = _data
+            contrib = data.add(common.Contributor, cid, id=cid, name=cname)
+            DBSession.add(common.ContributionContributor(
+                ord=1,
+                primary=True,
+                contributor=contrib,
+                contribution=dictionary))
+
+            mod = __import__('dictionaria.loader.' + id_, fromlist=['load'])
+            mod.load(id_, data, args.data_file('files'))
+
+
+def prime_cache(cfg):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
-    it will have to be run periodically whenever data has been updated.
+    it will have to be run periodiucally whenever data has been updated.
     """
+    for meaning in DBSession.query(Meaning).options(
+        joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
+    ):
+        meaning.representation = sum([len(vs.values) for vs in meaning.valuesets])
+
+    for word in DBSession.query(Word).options(
+        joinedload_all(common.Unit.unitvalues, common.UnitValue.unitparameter)
+    ):
+        word.pos = ', '.join([val.unitdomainelement.name for val in word.unitvalues if val.unitparameter.id == 'pos'])
 
 
 if __name__ == '__main__':
     initializedb(create=main, prime_cache=prime_cache)
-    sys.exit(0)

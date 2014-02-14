@@ -9,8 +9,6 @@ README = open(os.path.join(here, 'README.md')).read()
 requires = [
     'clld',
     'clldmpg',
-    'pyramid',
-    'SQLAlchemy',
     'transaction',
     'pyramid_tm',
     'zope.sqlalchemy',
