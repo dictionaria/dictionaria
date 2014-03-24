@@ -81,6 +81,11 @@ MARKER_MAP = {
 
 
 class YakkhaEntry(Entry):
+    def igt(self, field):
+        res = self.get(field)
+        if res:
+            return '\t'.join(res.split())
+
     def get_meanings(self):
         for m in self.get('ge', '').split(';'):
             m = m.strip().replace('.', ' ').replace('_', ' ')
@@ -88,13 +93,19 @@ class YakkhaEntry(Entry):
                 yield m
 
     def get_example(self):
+        """
+        \exylat nam ayana.
+        \exymph nam a-ya=na
+        \exygl sun descend[3SG]-PST=NMLZ
+        \exyeng The sun set.
+        """
         if self.get('exylat'):
-            return self.get('exylat'), self.get('exyeng'), self.get('exydev')
+            return self.get('exylat'), self.get('exyeng'), self.get('exydev'), self.igt('exymph'), self.igt('exygl')
 
 
 def load(id_, data, files_dir):
     d = Dictionary(
-        path(__file__).dirname().joinpath('Yakkha_WB2013_for-archive.db'),
+        path(__file__).dirname().joinpath('Yakkha_WB2013_for-archive_A-glossed.db'),
         validate=False,
         entry_impl=YakkhaEntry,
         entry_sep='\\lex ')
@@ -160,7 +171,9 @@ def load(id_, data, files_dir):
                 name=ex[0],
                 language=lang,
                 original_script=ex[2],
-                description=ex[1])
+                description=ex[1],
+                analyzed=ex[3],
+                gloss=ex[4])
             DBSession.add(s)
             DBSession.add(models.WordSentence(word=w, sentence=s))
 
