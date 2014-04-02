@@ -14,6 +14,8 @@
      +-  mr     Morphemic form (underlying representation, if different from lexical)
      +-  xv     Example phrase or sentence
      |   +-  xe Translation of above  xv
+     |   +-  xvm Morphemes of IGT
+     |   +-  xeg Gloss of IGT
      +-  bw     Indicating that it is a borrowed word, but by using the label Comp I
      |          don’t make any specific claims as to the route of borrowing, instead just
      |          mentioning the language that has a similar form and citing the source form
@@ -97,6 +99,7 @@ ritual 1
 v.tr:cjt:ninc 1
 pron:det 1
 """
+import re
 from collections import OrderedDict
 from path import path
 from clld.db.models import common
@@ -219,7 +222,7 @@ class PalulaEntry(Entry):
         Each value for markers lx or se is regarded as a word.
         """
         word = None
-        xv = None
+        xv, xvm, xeg = None, None, None
         for k, v in self:
             if k == 'lx' or k == 'se':
                 if word:
@@ -245,12 +248,22 @@ class PalulaEntry(Entry):
                 word.ps = POS_MAP[v]
             if k in ['cf', 'mn']:
                 word.rel.append((k, v))
+            if k == 'xvm':
+                xvm = v
+            if k == 'xeg':
+                xeg = v
             if k == 'xv':
                 xv = v
             if k == 'xe' and xv:
-                word.examples.append((xv, v))
+                word.examples.append((xv, v, xvm, xeg))
+                xv, xvm, xeg = None, None, None
         if word:
             yield word
+
+
+def igt(s):
+    if s:
+        return re.sub('\s+', '\t', s)
 
 
 def load(id_, data, files_dir):
@@ -303,6 +316,8 @@ def load(id_, data, files_dir):
                     id='%s-%s-%s-%s' % (id_, i + 1, j + 1, k + 1),
                     name=ex[0],
                     language=lang,
+                    analyzed=igt(ex[2]),
+                    gloss=igt(ex[3]),
                     description=ex[1])
                 DBSession.add(s)
                 DBSession.add(models.WordSentence(word=w, sentence=s))
