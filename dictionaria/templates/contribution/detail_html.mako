@@ -2,7 +2,8 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "contributions" %>
 
-<h2>${ctx.name} Dictionary</h2>
+
+<h2>${ctx.name} ${h.cite_button(request, ctx)}</h2>
 
 <div class="tabbable">
     <ul class="nav nav-tabs">

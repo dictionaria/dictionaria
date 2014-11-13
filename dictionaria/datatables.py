@@ -1,6 +1,5 @@
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import cast
-from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.types import Integer, Float
 from sqlalchemy.orm import joinedload_all, joinedload
 
@@ -8,6 +7,7 @@ from clld.web import datatables
 from clld.web.datatables.base import (
     DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number,
 )
+from clld.web.datatables.contributor import Contributors
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -15,7 +15,7 @@ from clld.db.util import icontains, get_distinct_values
 from clld.web.util.helpers import link, linked_contributors
 from clld.web.util.htmllib import HTML
 
-from dictionaria.models import Word, Counterpart, Meaning, Dictionary, SemanticField
+from dictionaria.models import Word, Counterpart, Meaning, Dictionary, SemanticDomain
 
 
 class MeaningsCol(Col):
@@ -56,7 +56,7 @@ class WordCol(LinkCol):
         return Word.name, Word.number
 
     def search(self, qs):
-        return Word.name.contains(qs)
+        return icontains(Word.name, qs)
 
 
 class CustomCol(Col):
@@ -159,18 +159,18 @@ class Words(datatables.Units):
 
 class MeaningDescriptionCol(LinkCol):
     def get_attrs(self, item):
-        return dict(label=item.description)
+        return dict(label=item.name)
 
 
-class SemanticFieldCol(LinkCol):
+class SemanticDomainCol(LinkCol):
     def get_obj(self, item):
-        return item.semantic_field
+        return item.semantic_domain
 
     def search(self, qs):
-        return icontains(SemanticField.name, qs)
+        return icontains(SemanticDomain.name, qs)
 
     def order(self):
-        return cast(SemanticField.id, Integer)
+        return cast(SemanticDomain.id, Integer)
 
 
 class RepresentationCol(Col):
@@ -186,14 +186,14 @@ class RepresentationCol(Col):
 
 class Meanings(datatables.Parameters):
     def base_query(self, query):
-        return query.join(SemanticField).options(joinedload(Meaning.semantic_field))
+        return query.join(SemanticDomain).options(joinedload(Meaning.semantic_domain))
 
     def col_defs(self):
         return [
             #IdsCodeCol2(self, 'code'),
-            LinkCol(self, 'name'),
-            MeaningDescriptionCol(self, 'description'),
-            SemanticFieldCol(self, 'semantic_field'),
+            #LinkCol(self, 'name'),
+            MeaningDescriptionCol(self, 'description', sTitle='Comparison meaning'),
+            SemanticDomainCol(self, 'semantic_domain', choices=get_distinct_values(SemanticDomain.name)),
             RepresentationCol(self, 'representation', sClass='right')]
 
 # Values --------------------------------------------------------------------------------
@@ -254,9 +254,18 @@ class Unitvalues(unitvalue.Unitvalues):
             LinkCol(self, 'dictionary', get_object=lambda i: i.unit.dictionary, model_col=Dictionary.name),
         ]
 
+
+class DictionaryContributors(Contributors):
+    def base_query(self, query):
+        return DBSession.query(common.Contributor) \
+            .join(common.ContributionContributor) \
+            .join(common.Contribution)
+
+
 def includeme(config):
     config.register_datatable('units', Words)
     config.register_datatable('values', Values)
     config.register_datatable('unitvalues', Unitvalues)
     config.register_datatable('parameters', Meanings)
     config.register_datatable('contributions', Dictionaries)
+    config.register_datatable('contributors', DictionaryContributors)

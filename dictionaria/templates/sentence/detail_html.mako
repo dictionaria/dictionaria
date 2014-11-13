@@ -12,7 +12,13 @@
 </%block>
 
 <%def name="sidebar()">
-<div class="well well-small">
+    <%util:well title="Dictionary">
+        ${h.link(request, ctx.word_assocs[0].word.dictionary)} by ${h.linked_contributors(request, ctx.word_assocs[0].word.dictionary)}
+        ${h.button('cite', onclick=h.JSModal.show(ctx.word_assocs[0].word.dictionary.name, request.resource_url(ctx.word_assocs[0].word.dictionary, ext='md.html')))}
+    </%util:well>
+</%def>
+
+<h2>${_('Sentence')} ${ctx.id}</h2>
 <dl>
     <dt>Language:</dt>
     <dd>${h.link(request, ctx.language)}</dd>
@@ -20,15 +26,11 @@
     <dd>
         <ul>
             % for wa in ctx.word_assocs:
-            <li>${h.link(request, wa.word)} ${wa.description or ''}</li>
+                <li>${h.link(request, wa.word)} ${wa.description or ''}</li>
             % endfor
         </ul>
     </dd>
 </dl>
-</div>
-</%def>
-
-<h2>${_('Sentence')} ${ctx.id}</h2>
 
 ${h.rendered_sentence(ctx)|n}
 

@@ -7,9 +7,9 @@
 
 <%util:table items="${ctx.meanings}" args="item">\
     <%def name="head()">
-        <th>ID</th><th>Name</th><th>Description</th>
+        <th>ID</th><th>${_('Parameter')}</th><th>Representation</th>
     </%def>
     <td>${h.link(request, item, label=item.id)}</td>
     <td>${h.link(request, item)}</td>
-    <td>${item.description or ''}</td>
+    <td>${item.representation}</td>
 </%util:table>

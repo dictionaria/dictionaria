@@ -4,24 +4,20 @@ from sqlalchemy import (
     String,
     Unicode,
     Integer,
-    Boolean,
     ForeignKey,
-    UniqueConstraint,
     Date,
 )
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 
-from dictionaria.interfaces import ISemanticField
+from dictionaria.interfaces import ISemanticDomain
 
 
-@implementer(ISemanticField)
-class SemanticField(Base, common.IdNameDescriptionMixin):
+@implementer(ISemanticDomain)
+class SemanticDomain(Base, common.IdNameDescriptionMixin):
     pass
 
 
@@ -42,8 +38,8 @@ class Dictionary(common.Contribution, CustomModelMixin):
 class Meaning(common.Parameter, CustomModelMixin):
     pk = Column(Integer, ForeignKey('parameter.pk'), primary_key=True)
 
-    semantic_field_pk = Column(Integer, ForeignKey('semanticfield.pk'))
-    semantic_field = relationship(SemanticField, backref='meanings')
+    semantic_domain_pk = Column(Integer, ForeignKey('semanticdomain.pk'))
+    semantic_domain = relationship(SemanticDomain, backref='meanings')
 
     semantic_category = Column(Unicode)
 

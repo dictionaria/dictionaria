@@ -12,7 +12,7 @@ from clld.db.meta import DBSession
 from clld.db.models import common
 
 import dictionaria
-from dictionaria.models import Meaning, Word, SemanticField, Dictionary
+from dictionaria.models import Meaning, Word, SemanticDomain, Dictionary
 
 
 DB = 'postgresql://robert@/wold'
@@ -73,19 +73,20 @@ def main(args):
 
     wold_db = create_engine(DB)
     for row in wold_db.execute("select * from semantic_field"):
-        if row['id'] not in data['SemanticField']:
+        if row['id'] not in data['SemanticDomain']:
             kw = dict((key, row[key]) for key in ['name', 'description'])
-            data.add(SemanticField, row['id'], id=str(row['id']), **kw)
+            data.add(SemanticDomain, row['id'], id=str(row['id']), **kw)
 
     for row in wold_db.execute("select * from meaning"):
         if row['id'] not in data['Meaning']:
             kw = dict((key, row[key] or None) for key in [
-                'description', 'ids_code', 'semantic_category'])
+                'ids_code', 'semantic_category'])
             data.add(
                 Meaning, row['label'].lower(),
                 id=row['id'].replace('.', '-'),
                 name=row['label'],
-                semantic_field=data['SemanticField'][row['semantic_field_id']],
+                description=re.sub('^t(o|he)\s+', '', row['label']),
+                semantic_domain=data['SemanticDomain'][row['semantic_field_id']],
                 **kw)
             DBSession.flush()
 

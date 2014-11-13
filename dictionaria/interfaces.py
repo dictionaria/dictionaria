@@ -1,6 +1,6 @@
 from zope.interface import Interface
 
 
-class ISemanticField(Interface):
+class ISemanticDomain(Interface):
     """marker
     """
