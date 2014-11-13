@@ -26,7 +26,7 @@ class MeaningsCol(Col):
         )
 
     def order(self):
-        return common.Parameter.id
+        return Meaning.description
 
     def search(self, qs):
         return icontains(common.Parameter.name, qs)
