@@ -103,14 +103,14 @@ class Words(datatables.Units):
                 WordCol(self, 'word', model_col=common.Unit.name),
                 Col(self, 'description', model_col=common.Unit.description),
                 Col(self, 'phonetic', model_col=Word.phonetic),
-                MeaningsCol(self, 'meaning'),
+                MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
                 poscol,
                 #CustomCol(self, 'custom'),
             ]
         return [
             WordCol(self, 'word'),
             Col(self, 'description'),
-            MeaningsCol(self, 'meaning', bSortable=False),
+            MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison meaning'),
             poscol,
             DictionaryCol(self, 'dictionary'),
         ]
