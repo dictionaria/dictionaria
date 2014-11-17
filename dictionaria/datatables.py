@@ -203,16 +203,26 @@ class ValueCol(LinkCol):
     def get_obj(self, item):
         return item.word
 
+    def search(self, qs):
+        return icontains(Word.name, qs)
+
 
 class Values(datatables.Values):
-    def col_defs(self):
-        from clld.web.datatables.value import RefsCol
+    def base_query(self, query):
+        query = datatables.Values.base_query(self, query)
+        return query.join(Counterpart.word)
 
+    def col_defs(self):
+        if self.parameter:
+            return [
+                LinkCol(self, 'language', model_col=common.Language.name, get_object=lambda v: v.valueset.language),
+                ValueCol(self, 'word', model_col=Word.name, get_object=lambda v: v.word),
+                Col(self, 'description', model_col=Word.description, get_object=lambda v: v.word),
+                LinkToMapCol(self, 'm', get_object=lambda v: v.valueset.language),
+            ]
         return [
-            LinkCol(self, 'language', model_col=common.Language.name, get_object=lambda v: v.valueset.language),
-            LinkCol(self, 'word', model_col=Word.name, get_object=lambda v: v.word),
+            ValueCol(self, 'word', model_col=Word.name, get_object=lambda v: v.word),
             Col(self, 'description', model_col=Word.description, get_object=lambda v: v.word),
-            LinkToMapCol(self, 'm', get_object=lambda v: v.valueset.language),
         ]
 
 # Dictionaries
