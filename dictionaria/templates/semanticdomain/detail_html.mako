@@ -3,7 +3,7 @@
 <%! active_menu_item = "parameters" %>
 
 
-<h2>${_('Semantic field')} ${ctx.name}</h2>
+<h2>Semantic domain ${ctx.name}</h2>
 
 <%util:table items="${ctx.meanings}" args="item">\
     <%def name="head()">
