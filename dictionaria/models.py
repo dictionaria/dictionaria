@@ -25,7 +25,7 @@ class SemanticDomain(Base, common.IdNameDescriptionMixin):
 # specialized common mapper classes
 #-----------------------------------------------------------------------------
 @implementer(interfaces.IContribution)
-class Dictionary(common.Contribution, CustomModelMixin):
+class Dictionary(CustomModelMixin, common.Contribution):
     """Contributions in WOW are dictionaries which are always related to one language.
     """
     pk = Column(Integer, ForeignKey('contribution.pk'), primary_key=True)
@@ -35,7 +35,7 @@ class Dictionary(common.Contribution, CustomModelMixin):
 
 
 @implementer(interfaces.IParameter)
-class Meaning(common.Parameter, CustomModelMixin):
+class Meaning(CustomModelMixin, common.Parameter):
     pk = Column(Integer, ForeignKey('parameter.pk'), primary_key=True)
 
     semantic_domain_pk = Column(Integer, ForeignKey('semanticdomain.pk'))
@@ -48,7 +48,7 @@ class Meaning(common.Parameter, CustomModelMixin):
 
 
 @implementer(interfaces.IUnit)
-class Word(common.Unit, CustomModelMixin):
+class Word(CustomModelMixin, common.Unit):
     """Words are units of a particular language, but are still considered part of a
     dictionary, i.e. part of a contribution.
     """
