@@ -1,17 +1,8 @@
-import os
-
 from setuptools import setup, find_packages
 
-
 requires = [
-    'clld>=0.22',
+    'clld>=0.28',
     'clldmpg',
-    'transaction',
-    'pyramid_tm',
-    'zope.sqlalchemy',
-    'gunicorn',
-    'psycopg2',
-    'waitress',
     ]
 
 tests_require = [
