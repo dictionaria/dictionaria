@@ -36,9 +36,8 @@ def main(args):
         },
         domain='dictionaria.clld.org')
 
-    common.Editor(
-        dataset=dataset,
-        contributor=common.Contributor(id='hartmanniren', name='Iren Hartmann'))
+    ed = data.add(common.Contributor, 'hartmanniren', id='hartmanniren', name='Iren Hartmann')
+    common.Editor(dataset=dataset, contributor=ed)
     DBSession.add(dataset)
 
     for id_, name in LGR_ABBRS.items():
@@ -91,7 +90,7 @@ def main(args):
             DBSession.flush()
 
     for id_, name, lat, lon, contribs in [
-        #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
+        ('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
         ('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
         ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')]),
     ]:
@@ -105,7 +104,9 @@ def main(args):
             published=date(2014, 2, 12))
         for i, _data in enumerate(contribs):
             cid, cname = _data
-            contrib = data.add(common.Contributor, cid, id=cid, name=cname)
+            contrib = data['Contributor'].get(cid)
+            if not contrib:
+                contrib = data.add(common.Contributor, cid, id=cid, name=cname)
             DBSession.add(common.ContributionContributor(
                 ord=1,
                 primary=True,

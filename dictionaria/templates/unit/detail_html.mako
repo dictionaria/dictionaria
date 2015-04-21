@@ -8,9 +8,9 @@
         ${h.link(request, ctx.dictionary)} by ${h.linked_contributors(request, ctx.dictionary)}
         ${h.button('cite', onclick=h.JSModal.show(ctx.dictionary.name, request.resource_url(ctx.dictionary, ext='md.html')))}
     </%util:well>
-    % for file in ctx.files:
-        % if file.file.mime_type.startswith('image'):
-        <img src="${file.file.data_uri()}" class="img-polaroid">
+    % for file in ctx._files:
+        % if file.mime_type.startswith('image'):
+        <img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
         % endif
     % endfor
 </%def>
@@ -19,10 +19,10 @@
 <h2>Word ${ctx.name}</h2>
 
 <p>
-    % for file in ctx.files:
-        % if file.file.mime_type.startswith('audio'):
+    % for file in ctx._files:
+        % if file.mime_type.startswith('audio'):
         <audio controls="controls">
-            <source src="${request.resource_url(file.file)}"/>
+            <source src="${request.file_url(file)}"/>
         </audio>
         % endif
     % endfor

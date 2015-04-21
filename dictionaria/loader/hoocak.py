@@ -76,7 +76,12 @@ def load(id_, data, files_dir):
 
         for marker in ['pc', 'sf']:
             for l, spec in enumerate(row.getall(marker)):
-                p, mimetype = spec
+                try:
+                    p, mimetype = spec
+                except:
+                    p = spec
+                    mimetype = 'image/jpeg' if marker == 'pc' else 'audio/mpeg'
+                p = path(__file__).dirname().joinpath(*p.split('\\'))
                 with open(p, 'rb') as fp:
                     f = common.Unit_files(
                         name=p.basename(),
