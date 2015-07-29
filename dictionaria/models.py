@@ -21,9 +21,6 @@ class SemanticDomain(Base, common.IdNameDescriptionMixin):
     pass
 
 
-#-----------------------------------------------------------------------------
-# specialized common mapper classes
-#-----------------------------------------------------------------------------
 @implementer(interfaces.IContribution)
 class Dictionary(CustomModelMixin, common.Contribution):
     """Contributions in WOW are dictionaries which are always related to one language.
@@ -93,7 +90,7 @@ class WordSentence(Base):
 
 
 @implementer(interfaces.IValue)
-class Counterpart(common.Value, CustomModelMixin):
+class Counterpart(CustomModelMixin, common.Value):
     """Counterparts relate a word to a meaning, i.e. they are the values for meaning
     parameters.
     """

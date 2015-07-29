@@ -1,11 +1,9 @@
 from __future__ import unicode_literals
-import os
 import re
 from datetime import date
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import joinedload_all
-from path import path
 from clld.util import slug, LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
@@ -27,14 +25,12 @@ def main(args):
         name="Dictionaria",
         description="The Dictionary Journal",
         #published=date(2009, 8, 15),
-        license='http://creativecommons.org/licenses/by-nc-nd/2.0/de/deed.en',
         contact='dictionaria@eva.mpg.de',
+        domain='dictionaria.clld.org',
+        license="http://creativecommons.org/licenses/by/4.0/",
         jsondata={
-            'license_icon': 'http://i.creativecommons.org/l/by-nc-nd/2.0/de/88x31.png',
-            'license_name':
-                'Creative Commons Attribution-NonCommercial-NoDerivs 2.0 Germany License',
-        },
-        domain='dictionaria.clld.org')
+            'license_icon': 'cc-by.png',
+            'license_name': 'Creative Commons Attribution 4.0 International License'})
 
     ed = data.add(common.Contributor, 'hartmanniren', id='hartmanniren', name='Iren Hartmann')
     common.Editor(dataset=dataset, contributor=ed)

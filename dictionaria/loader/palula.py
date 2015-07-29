@@ -99,6 +99,7 @@ ritual 1
 v.tr:cjt:ninc 1
 pron:det 1
 """
+from __future__ import unicode_literals
 import re
 from collections import OrderedDict
 from path import path

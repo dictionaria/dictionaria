@@ -40,6 +40,7 @@ conn 6
 onom 5
 quant 1
 """
+from __future__ import unicode_literals
 import re
 from collections import defaultdict
 
