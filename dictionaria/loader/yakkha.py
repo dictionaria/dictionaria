@@ -104,9 +104,9 @@ class YakkhaEntry(Entry):
             return self.get('exylat'), self.get('exyeng'), self.get('exydev'), self.igt('exymph'), self.igt('exygl')
 
 
-def load(id_, data, files_dir):
+def load(id_, data, files_dir, data_dir):
     d = Dictionary(
-        path(__file__).dirname().joinpath('Yakkha_WB2013_for-archive_A-glossed.db'),
+        data_dir.joinpath('Yakkha_WB2013_for-archive_A-glossed.db'),
         validate=False,
         entry_impl=YakkhaEntry,
         entry_sep='\\lex ')

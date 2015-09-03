@@ -267,9 +267,9 @@ def igt(s):
         return re.sub('\s+', '\t', s)
 
 
-def load(id_, data, files_dir):
+def load(id_, data, files_dir, data_dir):
     d = Dictionary(
-        path(__file__).dirname().joinpath('PalulaVocabulary.db'),
+        data_dir.joinpath('PalulaVocabulary.db'),
         entry_impl=PalulaEntry,
         entry_sep='\\lx ')
     print len(d.entries)

@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 import re
 from datetime import date
 
+from path import path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import joinedload_all
 from clld.util import slug, LGR_ABBRS
-from clld.scripts.util import Data, initializedb
+from clld.scripts.util import Data, initializedb, add_language_codes
 from clld.db.meta import DBSession
 from clld.db.models import common
 
@@ -18,6 +19,7 @@ LOADER_PATTERN = re.compile('(?P<id>[a-z]+)\.py$')
 
 
 def main(args):
+    datadir = path('/home/robert/venvs/dictionaria/dictionaria-intern/submissions')
     data = Data()
 
     dataset = common.Dataset(
@@ -47,6 +49,7 @@ def main(args):
         'affix',
         'verb',
         'transitive verb',
+        'intransitive verb',
         'active verb',
         'inactive verb',
         'auxiliary verb',
@@ -57,7 +60,6 @@ def main(args):
         'numeral',
         'determiner',
         'conjunction',
-        'intransitive verb',
         'particle',
         'adposition',
         'quantifier',
@@ -86,12 +88,15 @@ def main(args):
             DBSession.flush()
 
     for id_, name, lat, lon, contribs in [
-        ('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
-        ('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
-        ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')]),
+        #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
+        #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
+        #('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')]),
+        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')]),
     ]:
         language = data.add(
             common.Language, id_, id=id_, name=name, latitude=lat, longitude=lon)
+        if id_ == 'daakaka':
+            add_language_codes(data, language, 'bpa', glottocode='daka1243', )
         dictionary = data.add(
             Dictionary, id_,
             id=id_,
@@ -110,7 +115,7 @@ def main(args):
                 contribution=dictionary))
 
             mod = __import__('dictionaria.loader.' + id_, fromlist=['load'])
-            mod.load(id_, data, args.data_file('files'))
+            mod.load(id_, data, args.data_file('files'), datadir)
 
 
 def prime_cache(cfg):

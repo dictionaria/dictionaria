@@ -11,7 +11,7 @@ from path import path
 from clld.util import UnicodeMixin
 
 
-MARKER_PATTERN = re.compile('\\\\(?P<marker>[a-z]+)(\s+|$)')
+MARKER_PATTERN = re.compile('\\\\(?P<marker>[a-z1-3][a-z]*)(\s+|$)')
 
 
 def marker_split(block):
@@ -131,3 +131,17 @@ class Dictionary(object):
             for v in e.getall(marker):
                 res[v] += 1
         return res
+
+    def stats(self):
+        print('distinct markers:')
+        for m in sorted(self.markers()):
+            print(m)
+        print()
+        print('distinct ps values:')
+        for m in sorted(set(self.values('ps'))):
+            print(m)
+        print()
+        print('distinct sd values:')
+        for m in sorted(set(self.values('sd'))):
+            print(m)
+        print()

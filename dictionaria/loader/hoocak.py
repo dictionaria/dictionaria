@@ -26,9 +26,8 @@ POS_MAP = {
 }
 
 
-def load(id_, data, files_dir):
-    #d = Dictionary(path(__file__).dirname().joinpath('Hocaklex_utf8_oA_ld100.lex'))
-    d = Dictionary(path(__file__).dirname().joinpath('Hoocak_lex_ld100.lex'))
+def load(id_, data, files_dir, data_dir):
+    d = Dictionary(data_dir.joinpath('Hoocak_lex_ld100.lex'))
     d.entries = filter(lambda r: r.get('lx'), d.entries)
 
     lang = data['Language'][id_]
@@ -81,7 +80,7 @@ def load(id_, data, files_dir):
                 except:
                     p = spec
                     mimetype = 'image/jpeg' if marker == 'pc' else 'audio/mpeg'
-                p = path(__file__).dirname().joinpath(*p.split('\\'))
+                p = data_dir.joinpath(*p.split('\\'))
                 with open(p, 'rb') as fp:
                     f = common.Unit_files(
                         name=p.basename(),
