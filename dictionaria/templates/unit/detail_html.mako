@@ -28,7 +28,6 @@
     % endfor
 </p>
 
-% if ctx.data:
 <table class="table table-nonfluid">
     % if ctx.description:
     <tr>
@@ -61,7 +60,6 @@
     </tr>
 % endfor
 </table>
-% endif
 
 % if ctx.sentence_assocs:
 <h4>Examples</h4>

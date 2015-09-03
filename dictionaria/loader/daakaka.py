@@ -15,6 +15,8 @@ from dictionaria.lib.sfm import Dictionary, Entry
 MARKER_MAP = dict(
     ue=('usage', lambda d: d['ue']),
     et=('et', lambda d: d['et']),
+    es=('es', lambda d: d['es']),
+    ee=('ee', lambda d: d['ee']),
 )
 
 POS_MAP = {
@@ -124,7 +126,7 @@ class DaakakaEntry(Entry):
             for key in ['hm', 'ph', 'de', 'ge']:
                 if k == key and v:
                     setattr(word, k, v)
-            for key in 'ue et es'.split():
+            for key in 'ue et es ee'.split():
                 if k == key and v:
                     word.data[k] = v
             if k == 'ps':
@@ -186,8 +188,7 @@ def load(id_, data, files_dir, datadir):
 
             DBSession.flush()
 
-            for index, pair in enumerate(word.data.items()):
-                key, value = pair
+            for index, (key, value) in enumerate(word.data.items()):
                 if key in MARKER_MAP:
                     label, converter = MARKER_MAP[key]
                     DBSession.add(common.Unit_data(
