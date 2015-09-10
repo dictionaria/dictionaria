@@ -41,7 +41,12 @@
             <td>
                 <ul class="unstyled">
                 % for c in ctx.counterparts:
-                    <li>${h.link(request, c.valueset.parameter)}</li>
+                    <li>
+                        ${h.link(request, c.valueset.parameter)}
+                        % if c.valueset.parameter.semantic_domain:
+                            (Semantic domain ${h.link(request, c.valueset.parameter.semantic_domain)})
+                        % endif
+                    </li>
                 % endfor
                 </ul>
             </td>
@@ -50,7 +55,12 @@
     % for value in ctx.unitvalues:
     <tr>
         <td>${h.link(request, value.unitparameter)}</td>
-        <td>${value}</td>
+        <td>
+            ${value}
+            % if value.name:
+                (${value.name})
+            % endif
+        </td>
     </tr>
     % endfor
 % for _d in ctx.data:

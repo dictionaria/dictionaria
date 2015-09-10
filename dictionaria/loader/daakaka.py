@@ -130,7 +130,7 @@ class DaakakaEntry(Entry):
                 if k == key and v:
                     word.data[k] = v
             if k == 'ps':
-                pos = word.ps = POS_MAP.get(v, 'other')
+                pos = word.ps = v
             if k == 'cf':
                 word.rel.append((k, v))
             if k == 'xv':
@@ -207,17 +207,19 @@ def load(id_, data, files_dir, datadir):
                 DBSession.add(models.WordSentence(word=w, sentence=s))
 
             meaning_prefix = ''
-            if word.ps == 'verb' or (word.ps and ' verb' in word.ps):
+            pos = POS_MAP.get(word.ps, 'other')
+            if pos == 'verb' or (pos and ' verb' in pos):
                 meaning_prefix = 'to '
-            elif word.ps == 'noun':
+            elif pos == 'noun':
                 meaning_prefix = 'the '
 
-            if word.ps:
+            if pos:
                 DBSession.add(common.UnitValue(
                     id='pos-%s-%s-%s' % (id_, i + 1, j + 1),
+                    name=word.ps,
                     unit=w,
                     unitparameter=data['UnitParameter']['pos'],
-                    unitdomainelement=data['UnitDomainElement'][word.ps],
+                    unitdomainelement=data['UnitDomainElement'][pos],
                     contribution=vocab,
                 ))
 
