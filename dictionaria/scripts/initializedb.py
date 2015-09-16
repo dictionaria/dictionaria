@@ -87,11 +87,11 @@ def main(args):
                 **kw)
             DBSession.flush()
 
-    for id_, name, lat, lon, contribs in [
+    for id_, name, lat, lon, contribs, props in [
         #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
         #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
-        ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')]),
-        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')]),
+        ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')], {}),
+        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')], {'published': date(2015, 9, 30)}),
     ]:
         language = data.add(
             common.Language, id_, id=id_, name=name, latitude=lat, longitude=lon)
@@ -102,7 +102,7 @@ def main(args):
             id=id_,
             name=name + ' Dictionary',
             language=language,
-            published=date(2014, 2, 12))
+            published=props.get('published', date(2014, 2, 12)))
         for i, _data in enumerate(contribs):
             cid, cname = _data
             contrib = data['Contributor'].get(cid)
