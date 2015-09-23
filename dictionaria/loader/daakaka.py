@@ -1,299 +1,20 @@
 # coding: utf8
 from __future__ import unicode_literals
-from collections import OrderedDict
 
-from path import path
-from clld.db.meta import DBSession
-from clld.db.models import common
-from clld.util import slug
-
-import dictionaria
-from dictionaria import models
-from dictionaria.lib.sfm import Dictionary, Entry
+from dictionaria.lib.dictionaria_sfm import Entry
+from dictionaria.scripts.util import default_value_converter
 
 
 MARKER_MAP = dict(
-    ue=('usage', lambda d: d['ue']),
-    sd=('semantic domain', lambda d: d['sd']),
-    et=('et', lambda d: d['et']),
-    es=('es', lambda d: d['es']),
-    ee=('ee', lambda d: d['ee']),
+    ue=('usage', default_value_converter),
+    et=('et', default_value_converter),
+    es=('es', default_value_converter),
+    ee=('ee', default_value_converter),
 )
-
-POS_MAP = {
-    'adj': 'adjective',
-    'adj1': 'adjective',
-    'adj2': 'adjective',
-    'adv': 'adverb',
-    'al': 'other',
-    'art': 'determiner',
-    'aux': 'auxiliary verb',
-    'class': 'other',
-    'comp': 'other',
-    'conj': 'conjunction',
-    'contpart': 'other',
-    'cop': 'other',
-    'dem': 'determiner',
-    'det': 'determiner',
-    'disc': 'other',
-    'intj': 'other',
-    'intr': 'intransitive verb',
-    'intrr': 'intransitive verb',
-    'mod': 'other',
-    'modal.tag': 'other',
-    'n': 'noun',
-    'n.pre': 'noun',
-    'n.pref': 'noun',
-    'n.rel': 'noun',
-    'n.rel.b': 'noun',
-    'n.suf': 'noun',
-    'name': 'noun',
-    'nom': 'other',
-    'num': 'numeral',
-    'number': 'other',
-    'p.rel.b': 'other',
-    'place': 'other',
-    'poss.pron': 'pronoun',
-    'pref': 'other',
-    'prep': 'adposition',
-    'prepp': 'adposition',
-    'pron': 'pronoun',
-    'pron.poss': 'pronoun',
-    'q': 'quantifier',
-    'qu': 'quantifier',
-    'radj1': 'other',
-    'redup': 'other',
-    'redup-v': 'other',
-    'ref.pron': 'other',
-    'res': 'other',
-    's.pron': 'pronoun',
-    'tam': 'function word',
-    'towo': 'other',
-    'trans': 'transitive verb',
-    'v': 'verb',
-    'v,tr': 'transitive verb',
-    'v.': 'verb',
-    'v.imp': 'verb',
-    'v.itr': 'verb',
-    'v.itr.': 'verb',
-    'v.pre': 'verb',
-    'v.suf': 'verb',
-    'v.tr': 'verb',
-    'v.tr.b': 'verb',
-    'w': 'other',
-    '()': 'other',
-}
-
-
-class Meaning(object):
-    def __init__(self):
-        self.de = None
-        self.ge = None
-        self.sd = []
-        self.examples = []
-
-
-class DaakakaWord(object):
-    def __init__(self, form):
-        self.form = form
-        for marker in 'hm ph ps lx'.split():
-            setattr(self, marker, None)
-        self.data = OrderedDict()
-        self.rel = []
-        self.meanings = []
-
-    @property
-    def id(self):
-        return self.form + (self.hm or '')
-
-
-class DaakakaEntry(Entry):
-    """
-    Implements specifics of the daakaka toolbox format.
-
-    test:
-    \lx ...
-    """
-    def checked_word(self, word, meaning):
-        if meaning:
-            if meaning.de or meaning.ge:
-                word.meanings.append(meaning)
-            else:
-                print('meaning without description for %s' % word.form)
-        return word
-
-    def get_words(self):
-        word = None
-        pos = None
-        xv = None
-        meaning = None
-        alt_sn = False
-
-        for k, v in self:
-            if k == 'lx' or k == 'se':
-                if word:
-                    yield self.checked_word(word, meaning)
-                word = DaakakaWord(v)
-                if pos:
-                    word.ps = pos
-                meaning = Meaning()
-
-            if k == 'sn' and v:
-                if alt_sn:
-                    self.checked_word(word, meaning)
-                    meaning = Meaning()
-                alt_sn = True
-
-            if not word:
-                continue
-
-            if k in ['de', 'ge']:
-                setattr(meaning, k, v)
-
-            if k == 'sd':
-                meaning.sd.append(v)
-
-            for key in ['hm', 'ph']:
-                if k == key and v:
-                    setattr(word, k, v)
-            for key in 'ue et es ee sd'.split():
-                if k == key and v:
-                    word.data[k] = v
-            if k == 'ps':
-                pos = word.ps = v
-            if k == 'cf':
-                for vv in v.split(','):
-                    if vv.strip():
-                        word.rel.append((k, vv.strip()))
-            if k == 'xv':
-                xv = v
-            if k == 'xe' and xv:
-                try:
-                    assert meaning
-                    meaning.examples.append((xv, v))
-                    xv = None
-                except AssertionError:
-                    print('no meanings for (sense or subentry of) word %s' % word.form)
-        if word:
-            yield self.checked_word(word, meaning)
-
-
-def load(id_, data, files_dir, datadir, comparison_meanings, **kw):
-    d = Dictionary(
-        datadir.joinpath('KvP_Daakaka.txt'),
-        entry_impl=DaakakaEntry,
-        entry_sep='\\lx ')
-    d.entries = filter(lambda r: r.get('lx'), d.entries)
-
-    #d.stats()
-    #return
-
-    lang = data['Language'][id_]
-    vocab = data['Dictionary'][id_]
-
-    rel = []
-
-    for i, entry in enumerate(d.entries):
-        words = list(entry.get_words())
-        headword = None
-
-        for j, word in enumerate(words):
-            if not word.meanings:
-                print('no meanings for word %s' % word.form)
-                continue
-
-            if not headword:
-                headword = word.id
-            else:
-                rel.append((word.id, 'sub', headword))
-
-            for tw in word.rel:
-                rel.append((word.id, tw[0], tw[1]))
-
-            w = data.add(
-                models.Word,
-                word.id,
-                id='%s-%s-%s' % (id_, i + 1, j + 1),
-                name=word.form,
-                number=int(word.hm) if word.hm else 0,
-                phonetic=word.ph,
-                pos=word.ps,
-                #description=word.de or word.ge,
-                dictionary=vocab,
-                language=lang)
-
-            for k, meaning in enumerate(word.meanings):
-                if not (meaning.ge or meaning.de):
-                    print('meaning without description for word %s' % w.name)
-                    continue
-
-                m = models.Meaning(
-                    id='%s-%s' % (w.id, k + 1),
-                    name=meaning.de or meaning.ge,
-                    description=meaning.de,
-                    gloss=meaning.ge,
-                    word=w,
-                    semantic_domain=meaning.sd)
-
-                for l, (ex, trans) in enumerate(meaning.examples):
-                    # FIXME: we should collect examples across a dictionary and identify!
-                    s = common.Sentence(
-                        id='%s-%s-%s' % (w.id, k + 1, l + 1),
-                        name=ex,
-                        language=lang,
-                        description=trans)
-                    models.MeaningSentence(meaning=m, sentence=s)
-
-                key = (meaning.ge or meaning.de).replace('.', ' ').lower()
-                if key in comparison_meanings:
-                    meaning = comparison_meanings[key]
-                    vsid = '%s-%s' % (key, id_),
-                    if vsid in data['ValueSet']:
-                        vs = data['ValueSet'][vsid]
-                    else:
-                        vs = data.add(
-                            common.ValueSet, vsid,
-                            id='%s-%s' % (id_, m.id),
-                            language=lang,
-                            contribution=vocab,
-                            parameter=meaning)
-
-                    DBSession.add(models.Counterpart(
-                        id='%s-%s' % (w.id, k + 1),
-                        name=w.name,
-                        valueset=vs,
-                        word=w))
-
-            DBSession.flush()
-
-            for index, (key, value) in enumerate(word.data.items()):
-                if key in MARKER_MAP:
-                    label, converter = MARKER_MAP[key]
-                    DBSession.add(common.Unit_data(
-                        object_pk=w.pk,
-                        key=label,
-                        value=converter(word.data),
-                        ord=index))
-
-    # FIXME: vgroup words by description and add synonym relationships!
-
-    for s, d, t in rel:
-        if s in data['Word'] and t in data['Word']:
-            DBSession.add(models.SeeAlso(
-                source_pk=data['Word'][s].pk,
-                target_pk=data['Word'][t].pk,
-                description=d))
-        else:
-            if s not in data['Word']:
-                #pass
-                print '---m---', s
-            else:
-                #pass
-                print '---m---', t
 
 
 if __name__ == '__main__':
-    e = DaakakaEntry.from_string(r"""
+    e = Entry.from_string(r"""
 \lx ap
 \ps n
 \sd fauna
@@ -312,7 +33,7 @@ if __name__ == '__main__':
     assert word.meanings[0].de and word.meanings[0].ge
     assert len(word.meanings[0].sd) == 2
 
-    e = DaakakaEntry.from_string(r"""
+    e = Entry.from_string(r"""
 \lx a
 \ps conj
 \sn 1
@@ -331,7 +52,7 @@ if __name__ == '__main__':
     assert len(word.meanings) == 2
     assert word.meanings[0].ge == 'but' and word.meanings[1].ge == 'and'
 
-    e = DaakakaEntry.from_string(r"""
+    e = Entry.from_string(r"""
 \lx aa
 \ps n
 \sd plants
@@ -357,7 +78,7 @@ if __name__ == '__main__':
     assert len(words) == 3
     assert words[1].ps == words[0].ps
 
-    e = DaakakaEntry.from_string(r"""
+    e = Entry.from_string(r"""
 \lx bweang
 \ps n
 \sn 1
@@ -383,11 +104,11 @@ if __name__ == '__main__':
     assert len(words) == 1
     word = words[0]
     m1, m2 = word.meanings
-    assert m1.examples and m1.sd == ['plants']
-    assert not m2.examples
+    assert m1.x and m1.sd == ['plants']
+    assert not m2.x
     assert m2.sd == ['kastom']
 
-    e = DaakakaEntry.from_string(r"""
+    e = Entry.from_string(r"""
 \lx bwee
 \ps n.rel
 \pd 2

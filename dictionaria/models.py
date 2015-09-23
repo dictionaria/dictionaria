@@ -12,6 +12,12 @@ from sqlalchemy.orm import relationship
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
+from clld_glottologfamily_plugin.models import HasFamilyMixin
+
+
+@implementer(interfaces.ILanguage)
+class Variety(CustomModelMixin, common.Language, HasFamilyMixin):
+    pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
 
 
 @implementer(interfaces.IContribution)

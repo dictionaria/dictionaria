@@ -74,11 +74,13 @@
     % for m in ctx.meanings:
         <li>
             ${m.name}
-            % if m.name != m.gloss:
+            % if m.gloss and m.name != m.gloss:
             [${m.gloss}]
             % endif
+            % if m.semantic_domain:
+                (${m.semantic_domain})
+            % endif
             % if m.sentence_assocs:
-                <h5>Examples</h5>
                 ${util.sentences(m)}
             % endif
         </li>

@@ -8,14 +8,43 @@ from clld.web.datatables.base import (
     DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number,
 )
 from clld.web.datatables.contributor import Contributors
+from clld.web.datatables.language import Languages
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.db.util import icontains, get_distinct_values
 from clld.web.util.helpers import link, linked_contributors
 from clld.web.util.htmllib import HTML
+from clld_glottologfamily_plugin.models import Family
+from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
 
-from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning
+from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning, Variety
+from dictionaria.util import concepticon_link
+
+
+class LanguageIdCol(LinkCol):
+    def get_attrs(self, item):
+        return dict(label=item.id)
+
+
+class Varieties(Languages):
+    def base_query(self, query):
+        return query.outerjoin(Family)
+
+    def col_defs(self):
+        return [
+            LanguageIdCol(self, 'id'),
+            LinkCol(self, 'name'),
+            LinkToMapCol(self, 'm'),
+            Col(self,
+                'latitude',
+                sDescription='<small>The geographic latitude</small>'),
+            Col(self,
+                'longitude',
+                sDescription='<small>The geographic longitude</small>'),
+            MacroareaCol(self, 'macroarea', Variety),
+            FamilyCol(self, 'family', Variety),
+        ]
 
 
 class MeaningsCol(Col):
@@ -26,7 +55,7 @@ class MeaningsCol(Col):
         )
 
     def order(self):
-        return ComparisonMeaning.description
+        return common.Parameter.name
 
     def search(self, qs):
         return icontains(common.Parameter.name, qs)
@@ -168,12 +197,21 @@ class RepresentationCol(Col):
         return filter_number(ComparisonMeaning.representation)
 
 
+class ConcepticonLinkCol(Col):
+    __kw__ = {'bSearchable': False, 'bSortable': False}
+
+    def format(self, item):
+        return concepticon_link(self.dt.req, item)
+
+
 class Meanings(datatables.Parameters):
     def col_defs(self):
         return [
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
-            MeaningDescriptionCol(self, 'description', sTitle='Comparison meaning'),
+            MeaningDescriptionCol(self, 'name', sTitle='Comparison meaning'),
+            Col(self, 'description'),
+            ConcepticonLinkCol(self, 'concepticon', sTitle=''),
             RepresentationCol(self, 'representation', sClass='right')]
 
 # Values --------------------------------------------------------------------------------
@@ -256,6 +294,7 @@ def includeme(config):
     config.register_datatable('units', Words)
     config.register_datatable('values', Values)
     config.register_datatable('unitvalues', Unitvalues)
+    config.register_datatable('languages', Varieties)
     config.register_datatable('parameters', Meanings)
     config.register_datatable('contributions', Dictionaries)
     config.register_datatable('contributors', DictionaryContributors)

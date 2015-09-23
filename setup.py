@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 requires = [
     'clld>=1.5.0',
     'clldmpg',
-    ]
+    'clld-glottologfamily-plugin',
+]
 
 tests_require = [
     'WebTest >= 1.3.1',  # py3 compat

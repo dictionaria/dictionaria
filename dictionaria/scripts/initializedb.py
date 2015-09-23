@@ -3,15 +3,18 @@ import re
 from datetime import date
 
 from path import path
+from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
-from clld.util import slug, LGR_ABBRS
-from clld.scripts.util import Data, initializedb, add_language_codes
+from clld.util import slug, LGR_ABBRS, jsonload
+from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clldclient.concepticon import Concepticon
+from clld_glottologfamily_plugin.util import load_families
 
 import dictionaria
-from dictionaria.models import ComparisonMeaning, Dictionary, Word
+from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
+from dictionaria.scripts.util import load_sfm
 
 
 DB = 'postgresql://robert@/wold'
@@ -34,7 +37,8 @@ def main(args):
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
 
-    ed = data.add(common.Contributor, 'hartmanniren', id='hartmanniren', name='Iren Hartmann')
+    ed = data.add(
+        common.Contributor, 'hartmanniren', id='hartmanniren', name='Iren Hartmann')
     common.Editor(dataset=dataset, contributor=ed)
     DBSession.add(dataset)
 
@@ -42,6 +46,8 @@ def main(args):
         DBSession.add(common.GlossAbbreviation(id=id_, name=name))
 
     comparison_meanings = {}
+    comparison_meanings_alt_labels = {}
+
     concepticon = Concepticon()
     for concept_set in concepticon.resources('parameter').members:
         concept_set = concepticon.resource(concept_set)
@@ -53,41 +59,67 @@ def main(args):
         DBSession.add(cm)
         comparison_meanings[cm.name] = cm
         for label in concept_set.alt_labels:
-            comparison_meanings.setdefault(label.lower(), cm)
+            comparison_meanings_alt_labels.setdefault(label.lower(), cm)
 
-    for id_, name, lat, lon, contribs, props in [
+    for submission in datadir.dirs():
+        sfm = submission.files('*.txt')
+        md = submission.files('*.json')
+        if sfm and md:
+            assert len(sfm) == 1 and len(md) == 1
+            id_ = submission.namebase
+            md = jsonload(md[0])
+            lmd = md['language']
+
+            language = data['Variety'].get(lmd['glottocode'])
+            if not language:
+                language = data.add(
+                    Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
+
+            dictionary = data.add(
+                Dictionary,
+                id_,
+                id=id_,
+                name=lmd['name'] + ' Dictionary',
+                language=language,
+                published=date(*map(int, md['published'].split('-'))))
+
+            for i, cname in enumerate(md['authors']):
+                name = HumanName(cname)
+                cid = slug('%s%s' % (name.last, name.first))
+                contrib = data['Contributor'].get(cid)
+                if not contrib:
+                    contrib = data.add(common.Contributor, cid, id=cid, name=cname)
+                DBSession.add(common.ContributionContributor(
+                    ord=i + 1,
+                    primary=True,
+                    contributor=contrib,
+                    contribution=dictionary))
+
+            try:
+                mod = __import__('dictionaria.loader.' + id_, fromlist=['MARKER_MAP'])
+                marker_map = mod.MARKER_MAP
+            except ImportError:
+                marker_map = {}
+
+            load_sfm(
+                id_,
+                dictionary,
+                language,
+                sfm[0],
+                comparison_meanings,
+                comparison_meanings_alt_labels,
+                marker_map,
+                **md)
+
         #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
         #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
         #('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')], {}),
-        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')],
-         {'published': date(2015, 9, 30), 'iso': 'bpa', 'glottocode': 'daka1243'}),
-        ('teop', 'Teop', -5.67, 154.97, [('moselulrike', 'Ulrike Mosel')],
-         {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
-    ]:
-        language = data.add(
-            common.Language, id_, id=id_, name=name, latitude=lat, longitude=lon)
-        if 'iso' in props:
-            add_language_codes(
-                data, language, props['iso'], glottocode=props.get('glottocode'))
-        dictionary = data.add(
-            Dictionary, id_,
-            id=id_,
-            name=name + ' Dictionary',
-            language=language,
-            published=props.get('published', date(2014, 2, 12)))
-        for i, _data in enumerate(contribs):
-            cid, cname = _data
-            contrib = data['Contributor'].get(cid)
-            if not contrib:
-                contrib = data.add(common.Contributor, cid, id=cid, name=cname)
-            DBSession.add(common.ContributionContributor(
-                ord=1,
-                primary=True,
-                contributor=contrib,
-                contribution=dictionary))
+        #('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')],
+        # {'published': date(2015, 9, 30), 'iso': 'bpa', 'glottocode': 'daka1243'}),
+        #('teop', 'Teop', -5.67, 154.97, [('moselulrike', 'Ulrike Mosel')],
+        # {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
 
-            mod = __import__('dictionaria.loader.' + id_, fromlist=['load'])
-            mod.load(id_, data, args.data_file('files'), datadir, comparison_meanings, **props)
+    load_families(data, data['Variety'].values())
 
 
 def prime_cache(cfg):
