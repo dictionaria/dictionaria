@@ -21,6 +21,14 @@ class Meaning(object):
         self.x = []
 
 
+class Example(object):
+    def __init__(self, xv):
+        self.xv = xv
+        self.xvm = None
+        self.xeg = None
+        self.xe = None
+
+
 class Word(object):
     """
     A word is the atomic language unit in dictionaria.
@@ -62,9 +70,7 @@ class Entry(sfm.Entry):
         # as part-of-speech for all words.
         pos = None
 
-        # we have to store example text \xv until we encounter the english translation \xe
-        xv = None
-
+        example = None
         meaning = None
 
         # flag signaling whether we are dealing with the first meaning of a word or
@@ -94,16 +100,26 @@ class Entry(sfm.Entry):
             elif k == 'sd':
                 meaning.sd.append(v)
             elif k == 'xv':
-                xv = v
+                if example:
+                    example.xv += ' %s' % v
+                else:
+                    example = Example(v)
+            elif k in ['xvm', 'xeg']:
+                if getattr(example, k):
+                    v = getattr(example, k) + ' ' + v
+                setattr(example, k, v)
             elif k == 'xe':
-                if xv:
+                if example:
+                    example.xe = v
                     try:
                         assert meaning
-                        meaning.x.append((xv, v))
-                        xv = None
+                        meaning.x.append(example)
                     except AssertionError:
                         print(
                             'no meanings for (sense or subentry of) word %s' % word.form)
+                    example = None
+                else:
+                    print('xe without xv for word %s' % word.form)
             # word-specific markers:
             elif k in ['hm', 'ph']:
                 setattr(word, k, v)

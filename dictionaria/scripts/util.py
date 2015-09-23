@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
+import re
 
 from clld.scripts.util import Data
 from clld.db.models import common
@@ -13,9 +14,14 @@ def default_value_converter(value, _):
     return value
 
 
+def igt(s):
+    if s:
+        return re.sub('\s+', '\t', s)
+
+
 def load_sfm(id_,
-             vocab,
-             lang,
+             did,
+             lid,
              filename,
              comparison_meanings,
              comparison_meanings_alt_labels,
@@ -24,6 +30,9 @@ def load_sfm(id_,
     d = Dictionary(filename, encoding=md.get('encoding', 'utf8'))
     data = Data()
     rel = []
+
+    vocab = models.Dictionary.get(did)
+    lang = models.Variety.get(lid)
 
     for i, entry in enumerate(d.entries):
         words = list(entry.get_words())
@@ -52,6 +61,7 @@ def load_sfm(id_,
                 pos=word.ps,
                 dictionary=vocab,
                 language=lang)
+            DBSession.flush()
 
             concepts = []
 
@@ -68,16 +78,18 @@ def load_sfm(id_,
                     word=w,
                     semantic_domain=', '.join(meaning.sd))
 
-                for l, (ex, trans) in enumerate(meaning.x):
-                    s = data['Sentence'].get((ex, trans))
+                for l, ex in enumerate(meaning.x):
+                    s = data['Sentence'].get((ex.xv, ex.xe))
                     if not s:
                         s = data.add(
                             common.Sentence,
-                            (ex, trans),
+                            (ex.xv, ex.xe),
                             id='%s-%s-%s' % (w.id, k + 1, l + 1),
-                            name=ex,
+                            name=ex.xv,
                             language=lang,
-                            description=trans)
+                            analyzed=igt(ex.xvm),
+                            gloss=igt(ex.xeg),
+                            description=ex.xe)
                     models.MeaningSentence(meaning=m, sentence=s)
 
                 key = (meaning.ge or meaning.de).replace('.', ' ').lower()
@@ -98,15 +110,13 @@ def load_sfm(id_,
                             id='%s-%s' % (id_, m.id),
                             language=lang,
                             contribution=vocab,
-                            parameter=concept)
+                            parameter_pk=concept)
 
                     DBSession.add(models.Counterpart(
                         id='%s-%s' % (w.id, k + 1),
                         name=w.name,
                         valueset=vs,
                         word=w))
-
-            DBSession.flush()
 
             for index, (key, values) in enumerate(word.data.items()):
                 if key in marker_map:

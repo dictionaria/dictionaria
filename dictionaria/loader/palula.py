@@ -108,6 +108,8 @@ from clld.db.meta import DBSession
 
 from dictionaria.lib.sfm import Dictionary, Entry
 from dictionaria import models
+from dictionaria.scripts.util import default_value_converter
+
 
 POS_MAP = {
     'n': 'noun',
@@ -179,22 +181,22 @@ POS_MAP = {
 }
 
 
-def et(d):
-    res = d['et']
+def et(v, d):
+    res = d['et'][0]
     if d.get('eg'):
-        res += " '%s'" % d['eg']
+        res += " '%s'" % d['eg'][0]
     if d.get('es'):
-        res += " (%s)" % d['es']
+        res += " (%s)" % d['es'][0]
     return res
 
 
 MARKER_MAP = dict(
-    va=('variant form', lambda d: d['va'] + (' (%s)' % d['ve'] if d.get('ve') else '')),
-    gv=('vernacular form', lambda d: d['gv']),
-    mr=('morphemic form', lambda d: d['mr']),
-    bw=('borrowed', lambda d: d['bw']),
-    oe=('restrictions', lambda d: d['oe']),
-    ue=('usage', lambda d: d['ue']),
+    va=('variant form', lambda v, d: d['va'][0] + (' (%s)' % d['ve'][0] if d.get('ve') else '')),
+    gv=('vernacular form', default_value_converter),
+    mr=('morphemic form', default_value_converter),
+    bw=('borrowed', default_value_converter),
+    oe=('restrictions', default_value_converter),
+    ue=('usage', default_value_converter),
     et=('old Indo-Aryan proto-form', et),
 )
 

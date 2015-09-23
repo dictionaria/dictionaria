@@ -28,6 +28,7 @@ class Dictionary(CustomModelMixin, common.Contribution):
     language_pk = Column(Integer, ForeignKey('language.pk'))
     language = relationship('Language', backref='dictionaries')
     published = Column(Date)
+    count_words = Column(Integer)
 
 
 @implementer(interfaces.IParameter)

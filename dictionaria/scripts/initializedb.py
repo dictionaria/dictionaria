@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import re
 from datetime import date
 
+import transaction
 from path import path
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
@@ -49,7 +50,7 @@ def main(args):
     comparison_meanings_alt_labels = {}
 
     concepticon = Concepticon()
-    for concept_set in concepticon.resources('parameter').members:
+    for i, concept_set in enumerate(concepticon.resources('parameter').members):
         concept_set = concepticon.resource(concept_set)
         cm = ComparisonMeaning(
             id=concept_set.id,
@@ -60,6 +61,13 @@ def main(args):
         comparison_meanings[cm.name] = cm
         for label in concept_set.alt_labels:
             comparison_meanings_alt_labels.setdefault(label.lower(), cm)
+
+    DBSession.flush()
+    comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
+    comparison_meanings_alt_labels = {
+        k: v.pk for k, v in comparison_meanings_alt_labels.items()}
+
+    submissions = []
 
     for submission in datadir.dirs():
         sfm = submission.files('*.txt')
@@ -95,21 +103,29 @@ def main(args):
                     contributor=contrib,
                     contribution=dictionary))
 
-            try:
-                mod = __import__('dictionaria.loader.' + id_, fromlist=['MARKER_MAP'])
-                marker_map = mod.MARKER_MAP
-            except ImportError:
-                marker_map = {}
+            submissions.append((id_, dictionary.id, language.id, sfm[0], md))
+    transaction.commit()
 
-            load_sfm(
-                id_,
-                dictionary,
-                language,
-                sfm[0],
-                comparison_meanings,
-                comparison_meanings_alt_labels,
-                marker_map,
-                **md)
+    for id_, did, lid, sfm, md in submissions:
+        try:
+            mod = __import__('dictionaria.loader.' + id_, fromlist=['MARKER_MAP'])
+            marker_map = mod.MARKER_MAP
+        except ImportError:
+            marker_map = {}
+
+        transaction.begin()
+        print('loading %s ...' % id_)
+        load_sfm(
+            id_,
+            did,
+            lid,
+            sfm,
+            comparison_meanings,
+            comparison_meanings_alt_labels,
+            marker_map,
+            **md)
+        transaction.commit()
+        print('... done')
 
         #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
         #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
@@ -119,7 +135,8 @@ def main(args):
         #('teop', 'Teop', -5.67, 154.97, [('moselulrike', 'Ulrike Mosel')],
         # {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
 
-    load_families(data, data['Variety'].values())
+    transaction.begin()
+    load_families(Data(), DBSession.query(Variety))
 
 
 def prime_cache(cfg):
@@ -136,6 +153,9 @@ def prime_cache(cfg):
 
     for word in DBSession.query(Word).options(joinedload(Word.meanings)):
         word.description = ' / '.join(m.name for m in word.meanings)
+
+    for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
+        d.count_words = len(d.words)
 
 
 if __name__ == '__main__':

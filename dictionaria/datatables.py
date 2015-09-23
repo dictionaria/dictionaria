@@ -262,6 +262,7 @@ class Dictionaries(datatables.Contributions):
         return [
             LinkCol(self, 'dictionary'),
             ContributorsCol(self, name='author'),
+            Col(self, 'entries', sClass='right', model_col=Dictionary.count_words),
             YearCol(self, 'year', bSearchable=False, model_col=Dictionary.published),
             CitationCol(self, 'cite'),
         ]
