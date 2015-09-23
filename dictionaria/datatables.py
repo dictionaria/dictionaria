@@ -15,7 +15,7 @@ from clld.db.util import icontains, get_distinct_values
 from clld.web.util.helpers import link, linked_contributors
 from clld.web.util.htmllib import HTML
 
-from dictionaria.models import Word, Counterpart, Meaning, Dictionary, SemanticDomain
+from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning
 
 
 class MeaningsCol(Col):
@@ -26,7 +26,7 @@ class MeaningsCol(Col):
         )
 
     def order(self):
-        return Meaning.description
+        return ComparisonMeaning.description
 
     def search(self, qs):
         return icontains(common.Parameter.name, qs)
@@ -93,10 +93,6 @@ class Words(datatables.Units):
 
     def col_defs(self):
         poscol = Col(self, 'part_of_speech', model_col=Word.pos)
-        poscol.choices = [
-            r[0] for r in DBSession.query(common.UnitDomainElement.name)\
-            .join(common.UnitParameter)\
-            .filter(common.UnitParameter.id == 'pos')]
 
         if self.contribution:
             return [
@@ -161,38 +157,23 @@ class MeaningDescriptionCol(LinkCol):
         return dict(label=item.name)
 
 
-class SemanticDomainCol(LinkCol):
-    def get_obj(self, item):
-        return item.semantic_domain
-
-    def search(self, qs):
-        return icontains(SemanticDomain.name, qs)
-
-    def order(self):
-        return cast(SemanticDomain.id, Integer)
-
-
 class RepresentationCol(Col):
     def format(self, item):
         return item.representation
 
     def order(self):
-        return Meaning.representation
+        return ComparisonMeaning.representation
 
     def search(self, qs):
-        return filter_number(Meaning.representation)
+        return filter_number(ComparisonMeaning.representation)
 
 
 class Meanings(datatables.Parameters):
-    def base_query(self, query):
-        return query.join(SemanticDomain).options(joinedload(Meaning.semantic_domain))
-
     def col_defs(self):
         return [
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
             MeaningDescriptionCol(self, 'description', sTitle='Comparison meaning'),
-            SemanticDomainCol(self, 'semantic_domain', choices=get_distinct_values(SemanticDomain.name)),
             RepresentationCol(self, 'representation', sClass='right')]
 
 # Values --------------------------------------------------------------------------------

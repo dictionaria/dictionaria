@@ -4,7 +4,6 @@ from clld.interfaces import ILinkAttrs, IUnitValue
 
 # we must make sure custom models are known at database initialization!
 from dictionaria import models
-from dictionaria.interfaces import ISemanticDomain
 
 
 _ = lambda s: s
@@ -24,5 +23,4 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.registry.registerUtility(link_attrs, ILinkAttrs)
     config.include('clldmpg')
-    config.register_resource('semanticdomain', models.SemanticDomain, ISemanticDomain)
     return config.make_wsgi_app()

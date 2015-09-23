@@ -13,13 +13,6 @@ from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 
-from dictionaria.interfaces import ISemanticDomain
-
-
-@implementer(ISemanticDomain)
-class SemanticDomain(Base, common.IdNameDescriptionMixin):
-    pass
-
 
 @implementer(interfaces.IContribution)
 class Dictionary(CustomModelMixin, common.Contribution):
@@ -32,15 +25,9 @@ class Dictionary(CustomModelMixin, common.Contribution):
 
 
 @implementer(interfaces.IParameter)
-class Meaning(CustomModelMixin, common.Parameter):
+class ComparisonMeaning(CustomModelMixin, common.Parameter):
     pk = Column(Integer, ForeignKey('parameter.pk'), primary_key=True)
-
-    semantic_domain_pk = Column(Integer, ForeignKey('semanticdomain.pk'))
-    semantic_domain = relationship(SemanticDomain, backref='meanings')
-
-    semantic_category = Column(Unicode)
-
-    ids_code = Column(String)
+    concepticon_url = Column(Unicode)
     representation = Column(Integer)
 
 
@@ -79,14 +66,21 @@ class SeeAlso(Base):
     target = relationship(Word, foreign_keys=[target_pk], backref='source_assocs')
 
 
-class WordSentence(Base):
+class Meaning(Base, common.IdNameDescriptionMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
+    word = relationship(Word, backref='meanings')
+    gloss = Column(Unicode)
+    semantic_domain = Column(Unicode)
+
+
+class MeaningSentence(Base):
+    meaning_pk = Column(Integer, ForeignKey('meaning.pk'))
     sentence_pk = Column(Integer, ForeignKey('sentence.pk'))
     description = Column(Unicode())
 
-    word = relationship(Word, backref='sentence_assocs')
+    meaning = relationship(Meaning, backref='sentence_assocs')
     sentence = relationship(
-        common.Sentence, backref='word_assocs', order_by=common.Sentence.id)
+        common.Sentence, backref='meaning_assocs', order_by=common.Sentence.id)
 
 
 @implementer(interfaces.IValue)

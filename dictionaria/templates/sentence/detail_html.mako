@@ -13,8 +13,9 @@
 
 <%def name="sidebar()">
     <%util:well title="Dictionary">
-        ${h.link(request, ctx.word_assocs[0].word.dictionary)} by ${h.linked_contributors(request, ctx.word_assocs[0].word.dictionary)}
-        ${h.button('cite', onclick=h.JSModal.show(ctx.word_assocs[0].word.dictionary.name, request.resource_url(ctx.word_assocs[0].word.dictionary, ext='md.html')))}
+        <% dictionary = ctx.meaning_assocs[0].meaning.word.dictionary %>
+        ${h.link(request, dictionary)} by ${h.linked_contributors(request, dictionary)}
+        ${h.button('cite', onclick=h.JSModal.show(dictionary.name, request.resource_url(dictionary, ext='md.html')))}
     </%util:well>
 </%def>
 
@@ -22,11 +23,11 @@
 <dl>
     <dt>Language:</dt>
     <dd>${h.link(request, ctx.language)}</dd>
-    <dt>Words:</dt>
+    <dt>Meanings:</dt>
     <dd>
         <ul>
-            % for wa in ctx.word_assocs:
-                <li>${h.link(request, wa.word)} ${wa.description or ''}</li>
+            % for wa in ctx.meaning_assocs:
+                <li>${h.link(request, wa.meaning.word, label=wa.meaning.name)}</li>
             % endfor
         </ul>
     </dd>

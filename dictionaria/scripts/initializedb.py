@@ -3,15 +3,15 @@ import re
 from datetime import date
 
 from path import path
-from sqlalchemy import create_engine
-from sqlalchemy.orm import joinedload_all
+from sqlalchemy.orm import joinedload_all, joinedload
 from clld.util import slug, LGR_ABBRS
 from clld.scripts.util import Data, initializedb, add_language_codes
 from clld.db.meta import DBSession
 from clld.db.models import common
+from clldclient.concepticon import Concepticon
 
 import dictionaria
-from dictionaria.models import Meaning, Word, SemanticDomain, Dictionary
+from dictionaria.models import ComparisonMeaning, Dictionary, Word
 
 
 DB = 'postgresql://robert@/wold'
@@ -26,7 +26,7 @@ def main(args):
         id=dictionaria.__name__,
         name="Dictionaria",
         description="The Dictionary Journal",
-        #published=date(2009, 8, 15),
+        published=date(2015, 10, 1),
         contact='dictionaria@eva.mpg.de',
         domain='dictionaria.clld.org',
         license="http://creativecommons.org/licenses/by/4.0/",
@@ -41,62 +41,34 @@ def main(args):
     for id_, name in LGR_ABBRS.items():
         DBSession.add(common.GlossAbbreviation(id=id_, name=name))
 
-    ps = data.add(common.UnitParameter, 'pos', id='pos', name='part of speech')
-    DBSession.flush()
-
-    for name in [
-        'noun',
-        'affix',
-        'verb',
-        'transitive verb',
-        'intransitive verb',
-        'active verb',
-        'inactive verb',
-        'auxiliary verb',
-        'adjective',
-        'adverb',
-        'function word',
-        'pronoun',
-        'numeral',
-        'determiner',
-        'conjunction',
-        'particle',
-        'adposition',
-        'quantifier',
-        'other',
-    ]:
-        p = data.add(common.UnitDomainElement, name, id='pos-%s' % slug(name), name=name)
-        p.unitparameter_pk = ps.pk
-
-    wold_db = create_engine(DB)
-    for row in wold_db.execute("select * from semantic_field"):
-        if row['id'] not in data['SemanticDomain']:
-            kw = dict((key, row[key]) for key in ['name', 'description'])
-            data.add(SemanticDomain, row['id'], id=str(row['id']), **kw)
-
-    for row in wold_db.execute("select * from meaning"):
-        if row['id'] not in data['Meaning']:
-            kw = dict((key, row[key] or None) for key in [
-                'ids_code', 'semantic_category'])
-            data.add(
-                Meaning, row['label'].lower(),
-                id=row['id'].replace('.', '-'),
-                name=row['label'],
-                description=re.sub('^t(o|he)\s+', '', row['label']),
-                semantic_domain=data['SemanticDomain'][row['semantic_field_id']],
-                **kw)
-            DBSession.flush()
+    comparison_meanings = {}
+    concepticon = Concepticon()
+    for concept_set in concepticon.resources('parameter').members:
+        concept_set = concepticon.resource(concept_set)
+        cm = ComparisonMeaning(
+            id=concept_set.id,
+            name=concept_set.name.lower(),
+            description=concept_set.description,
+            concepticon_url='%s' % concept_set.uriref)
+        DBSession.add(cm)
+        comparison_meanings[cm.name] = cm
+        for label in concept_set.alt_labels:
+            comparison_meanings.setdefault(label.lower(), cm)
 
     for id_, name, lat, lon, contribs, props in [
         #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
         #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
-        ('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')], {}),
-        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')], {'published': date(2015, 9, 30)}),
+        #('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')], {}),
+        ('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')],
+         {'published': date(2015, 9, 30), 'iso': 'bpa', 'glottocode': 'daka1243'}),
+        ('teop', 'Teop', -5.67, 154.97, [('moselulrike', 'Ulrike Mosel')],
+         {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
     ]:
         language = data.add(
             common.Language, id_, id=id_, name=name, latitude=lat, longitude=lon)
-        if id_ == 'daakaka':
-            add_language_codes(data, language, 'bpa', glottocode='daka1243', )
+        if 'iso' in props:
+            add_language_codes(
+                data, language, props['iso'], glottocode=props.get('glottocode'))
         dictionary = data.add(
             Dictionary, id_,
             id=id_,
@@ -115,7 +87,7 @@ def main(args):
                 contribution=dictionary))
 
             mod = __import__('dictionaria.loader.' + id_, fromlist=['load'])
-            mod.load(id_, data, args.data_file('files'), datadir)
+            mod.load(id_, data, args.data_file('files'), datadir, comparison_meanings, **props)
 
 
 def prime_cache(cfg):
@@ -123,15 +95,15 @@ def prime_cache(cfg):
     This procedure should be separate from the db initialization, because
     it will have to be run periodiucally whenever data has been updated.
     """
-    for meaning in DBSession.query(Meaning).options(
+    for meaning in DBSession.query(ComparisonMeaning).options(
         joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
     ):
         meaning.representation = sum([len(vs.values) for vs in meaning.valuesets])
+        if meaning.representation == 0:
+            meaning.active = False
 
-    for word in DBSession.query(Word).options(
-        joinedload_all(common.Unit.unitvalues, common.UnitValue.unitparameter)
-    ):
-        word.pos = ', '.join([val.unitdomainelement.name for val in word.unitvalues if val.unitparameter.id == 'pos'])
+    for word in DBSession.query(Word).options(joinedload(Word.meanings)):
+        word.description = ' / '.join(m.name for m in word.meanings)
 
 
 if __name__ == '__main__':

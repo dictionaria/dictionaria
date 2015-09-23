@@ -39,6 +39,15 @@ def marker_split(block):
 class Entry(list, UnicodeMixin):
     """We store entries in SFM files as lists of (marker, value) pairs.
     """
+    @classmethod
+    def from_string(cls, block):
+        entry = cls()
+        for marker, value in marker_split(block.strip()):
+            value = value.strip()
+            if value:
+                entry.append((marker, value))
+        return entry
+
     def markers(self):
         return set(k for k, v in self)
 

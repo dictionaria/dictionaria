@@ -13,11 +13,10 @@ from dictionaria.lib.sfm import Dictionary, Entry
 
 
 MARKER_MAP = dict(
-    ue=('usage', lambda d: d['ue']),
     sd=('semantic domain', lambda d: d['sd']),
-    et=('et', lambda d: d['et']),
-    es=('es', lambda d: d['es']),
-    ee=('ee', lambda d: d['ee']),
+    mr=('morphology', lambda d: d['mr']),
+    re=('translation equivalent', lambda d: d['re']),
+    sc=('scientific', lambda d: d['sc']),
 )
 
 POS_MAP = {
@@ -93,7 +92,7 @@ class Meaning(object):
         self.examples = []
 
 
-class DaakakaWord(object):
+class TeopWord(object):
     def __init__(self, form):
         self.form = form
         for marker in 'hm ph ps lx'.split():
@@ -107,9 +106,9 @@ class DaakakaWord(object):
         return self.form + (self.hm or '')
 
 
-class DaakakaEntry(Entry):
+class TeopEntry(Entry):
     """
-    Implements specifics of the daakaka toolbox format.
+    Implements specifics of the teop toolbox format.
 
     test:
     \lx ...
@@ -133,7 +132,7 @@ class DaakakaEntry(Entry):
             if k == 'lx' or k == 'se':
                 if word:
                     yield self.checked_word(word, meaning)
-                word = DaakakaWord(v)
+                word = TeopWord(v)
                 if pos:
                     word.ps = pos
                 meaning = Meaning()
@@ -156,7 +155,7 @@ class DaakakaEntry(Entry):
             for key in ['hm', 'ph']:
                 if k == key and v:
                     setattr(word, k, v)
-            for key in 'ue et es ee sd'.split():
+            for key in 'sc mr re'.split():
                 if k == key and v:
                     word.data[k] = v
             if k == 'ps':
@@ -180,8 +179,9 @@ class DaakakaEntry(Entry):
 
 def load(id_, data, files_dir, datadir, comparison_meanings, **kw):
     d = Dictionary(
-        datadir.joinpath('KvP_Daakaka.txt'),
-        entry_impl=DaakakaEntry,
+        datadir.joinpath('Teop.txt'),
+        entry_impl=TeopEntry,
+        encoding=kw.get('encoding', 'utf8'),
         entry_sep='\\lx ')
     d.entries = filter(lambda r: r.get('lx'), d.entries)
 
@@ -293,7 +293,7 @@ def load(id_, data, files_dir, datadir, comparison_meanings, **kw):
 
 
 if __name__ == '__main__':
-    e = DaakakaEntry.from_string(r"""
+    e = TeopEntry.from_string(r"""
 \lx ap
 \ps n
 \sd fauna
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     assert word.meanings[0].de and word.meanings[0].ge
     assert len(word.meanings[0].sd) == 2
 
-    e = DaakakaEntry.from_string(r"""
+    e = TeopEntry.from_string(r"""
 \lx a
 \ps conj
 \sn 1
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     assert len(word.meanings) == 2
     assert word.meanings[0].ge == 'but' and word.meanings[1].ge == 'and'
 
-    e = DaakakaEntry.from_string(r"""
+    e = TeopEntry.from_string(r"""
 \lx aa
 \ps n
 \sd plants
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     assert len(words) == 3
     assert words[1].ps == words[0].ps
 
-    e = DaakakaEntry.from_string(r"""
+    e = TeopEntry.from_string(r"""
 \lx bweang
 \ps n
 \sn 1
@@ -387,7 +387,7 @@ if __name__ == '__main__':
     assert not m2.examples
     assert m2.sd == ['kastom']
 
-    e = DaakakaEntry.from_string(r"""
+    e = TeopEntry.from_string(r"""
 \lx bwee
 \ps n.rel
 \pd 2

@@ -15,7 +15,6 @@
     % endfor
 </%def>
 
-
 <h2>Word ${ctx.name}</h2>
 
 <p>
@@ -29,10 +28,12 @@
 </p>
 
 <table class="table table-nonfluid">
-    % if ctx.description:
+    % if ctx.pos:
     <tr>
-        <td>meaning</td>
-        <td>${ctx.description}</td>
+        <td>Part of speech</td>
+    <td>
+        ${ctx.pos}
+    </td>
     </tr>
     % endif
     % if ctx.counterparts:
@@ -43,9 +44,6 @@
                 % for c in ctx.counterparts:
                     <li>
                         ${h.link(request, c.valueset.parameter)}
-                        % if c.valueset.parameter.semantic_domain:
-                            (Semantic domain ${h.link(request, c.valueset.parameter.semantic_domain)})
-                        % endif
                     </li>
                 % endfor
                 </ul>
@@ -71,10 +69,21 @@
 % endfor
 </table>
 
-% if ctx.sentence_assocs:
-<h4>Examples</h4>
-${util.sentences(ctx)}
-% endif
+<h4>Meanings</h4>
+<ul>
+    % for m in ctx.meanings:
+        <li>
+            ${m.name}
+            % if m.name != m.gloss:
+            [${m.gloss}]
+            % endif
+            % if m.sentence_assocs:
+                <h5>Examples</h5>
+                ${util.sentences(m)}
+            % endif
+        </li>
+    % endfor
+</ul>
 
 % if ctx.linked_from or ctx.links_to:
 <h4>Related</h4>
