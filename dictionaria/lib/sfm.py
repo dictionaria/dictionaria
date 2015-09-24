@@ -125,6 +125,7 @@ class Dictionary(object):
             for k, v in entry:
                 if FIELD_SPLITTER_PATTERN.search(v):
                     self._implicit_mult_markers.add(k)
+            # now validation and potentially preprocessing takes place
             self.entries.append(self.validated(entry))
 
     def markers(self):
@@ -168,7 +169,7 @@ class Dictionary(object):
         return iter(self.entries)
 
     def stats(self):
-        print('%s entries\n' % len(self))
+        print('')
         print('marker\tper entry\twith semikolon\ttotal')
         for m in sorted(self._mult_markers):
             print('%s\t%s\t%s\t%s' % (
@@ -176,7 +177,8 @@ class Dictionary(object):
                 self._mult_markers[m],
                 m in self._implicit_mult_markers,
                 self._markers[m]))
-        print()
+        print('')
+        print('%s entries' % len(self))
         #print('distinct ps values:')
         #for m in sorted(set(self.values('ps'))):
         #    print(m)

@@ -132,10 +132,12 @@ class Entry(sfm.Entry):
                     print('xe without xv for word %s' % word.form)
             # word-specific markers:
             elif k in ['hm', 'ph']:
-                setattr(word, k, v)
+                if getattr(word, k) is None:
+                    # only record first occurrence of the marker!
+                    setattr(word, k, v)
             elif k == 'ps':
                 pos = word.ps = v
-            elif k == 'cf':
+            elif k in ['cf', 'mn']:
                 for vv in v.split(','):
                     if vv.strip():
                         word.rel.append((k, vv.strip()))
@@ -162,13 +164,12 @@ class Dictionary(sfm.Dictionary):
         return entry.preprocessed()
 
     def stats(self):
-        sfm.Dictionary.stats(self)
-        print()
         words = 0
         meanings = 0
         for entry in self:
             for word in entry.get_words():
                 words += 1
                 meanings += len(word.meanings)
+        sfm.Dictionary.stats(self)
         print('%s words' % words)
         print('%s meanings' % meanings)
