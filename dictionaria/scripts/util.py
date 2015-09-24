@@ -104,6 +104,9 @@ def load_sfm(did,
                     print('meaning without description for word %s' % w.name)
                     continue
 
+                if meaning.ge:
+                    meaning.ge = meaning.ge.replace('.', ' ')
+
                 m = models.Meaning(
                     id='%s-%s' % (w.id, k + 1),
                     name=meaning.de or meaning.ge,
