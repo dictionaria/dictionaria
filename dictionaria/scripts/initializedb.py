@@ -15,7 +15,7 @@ from clld_glottologfamily_plugin.util import load_families
 
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
-from dictionaria.scripts.util import load_sfm
+from dictionaria.scripts.util import load_sfm, datadir, Submission
 
 
 DB = 'postgresql://robert@/wold'
@@ -23,7 +23,6 @@ LOADER_PATTERN = re.compile('(?P<id>[a-z]+)\.py$')
 
 
 def main(args):
-    datadir = path('/home/robert/venvs/dictionaria/dictionaria-intern/submissions')
     data = Data()
 
     dataset = common.Dataset(
@@ -70,60 +69,60 @@ def main(args):
     submissions = []
 
     for submission in datadir.dirs():
-        sfm = submission.files('*.txt')
-        md = submission.files('*.json')
-        if sfm and md:
-            assert len(sfm) == 1 and len(md) == 1
-            id_ = submission.namebase
-            md = jsonload(md[0])
-            lmd = md['language']
+        submission = Submission(submission)
 
-            language = data['Variety'].get(lmd['glottocode'])
-            if not language:
-                language = data.add(
-                    Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
+        if not (submission.active and submission.db):
+            continue
 
-            dictionary = data.add(
-                Dictionary,
-                id_,
-                id=id_,
-                name=lmd['name'] + ' Dictionary',
-                language=language,
-                published=date(*map(int, md['published'].split('-'))))
+        md = submission.md
+        id_ = submission.id
+        lmd = md['language']
 
-            for i, cname in enumerate(md['authors']):
-                name = HumanName(cname)
-                cid = slug('%s%s' % (name.last, name.first))
-                contrib = data['Contributor'].get(cid)
-                if not contrib:
-                    contrib = data.add(common.Contributor, cid, id=cid, name=cname)
-                DBSession.add(common.ContributionContributor(
-                    ord=i + 1,
-                    primary=True,
-                    contributor=contrib,
-                    contribution=dictionary))
+        language = data['Variety'].get(lmd['glottocode'])
+        if not language:
+            language = data.add(
+                Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
 
-            submissions.append((id_, dictionary.id, language.id, sfm[0], md))
+        dictionary = data.add(
+            Dictionary,
+            id_,
+            id=id_,
+            name=lmd['name'] + ' Dictionary',
+            language=language,
+            published=date(*map(int, md['published'].split('-'))))
+
+        for i, cname in enumerate(md['authors']):
+            name = HumanName(cname)
+            cid = slug('%s%s' % (name.last, name.first))
+            contrib = data['Contributor'].get(cid)
+            if not contrib:
+                contrib = data.add(common.Contributor, cid, id=cid, name=cname)
+            DBSession.add(common.ContributionContributor(
+                ord=i + 1,
+                primary=True,
+                contributor=contrib,
+                contribution=dictionary))
+
+        submissions.append((dictionary.id, language.id, submission))
     transaction.commit()
 
-    for id_, did, lid, sfm, md in submissions:
+    for did, lid, submission in submissions:
         try:
-            mod = __import__('dictionaria.loader.' + id_, fromlist=['MARKER_MAP'])
+            mod = __import__(
+                'dictionaria.loader.' + submission.id, fromlist=['MARKER_MAP'])
             marker_map = mod.MARKER_MAP
         except ImportError:
             marker_map = {}
 
         transaction.begin()
-        print('loading %s ...' % id_)
+        print('loading %s ...' % submission.id)
         load_sfm(
-            id_,
             did,
             lid,
-            sfm,
+            submission,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map,
-            **md)
+            marker_map)
         transaction.commit()
         print('... done')
 

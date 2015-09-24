@@ -53,6 +53,16 @@ class Entry(sfm.Entry):
     """
     A dictionary entry.
     """
+    def preprocessed(self):
+        for i, (k, v) in enumerate(self[:]):
+            if k == 'ge' and sfm.FIELD_SPLITTER_PATTERN.search(v):
+                ges = sfm.FIELD_SPLITTER_PATTERN.split(v)
+                self[i] = ('zzz', 'zzz')
+                for ge in ges:
+                    self.append(('sn', 'auto'))
+                    self.append(('ge', ge))
+        return self
+
     def checked_word(self, word, meaning):
         if meaning:
             if meaning.de or meaning.ge:
@@ -138,6 +148,27 @@ class Entry(sfm.Entry):
 class Dictionary(sfm.Dictionary):
     def __init__(self, filename, **kw):
         kw.setdefault('entry_impl', Entry)
-        kw.setdefault('entry_sep', '\\lx ')
+        lexeme_marker = 'lx'
+        reverse_marker_map = {v: k for k, v in kw['marker_map'].items()}
+        if lexeme_marker in reverse_marker_map:
+            lexeme_marker = reverse_marker_map[lexeme_marker]
+            kw.setdefault('entry_prefix', '\\lx ')
+        kw.setdefault('entry_sep', '\\%s ' % lexeme_marker)
         sfm.Dictionary.__init__(self, filename, **kw)
         self.entries = filter(lambda r: r.get('lx'), self.entries)
+
+    def validated(self, entry):
+        entry = sfm.Dictionary.validated(self, entry)
+        return entry.preprocessed()
+
+    def stats(self):
+        sfm.Dictionary.stats(self)
+        print()
+        words = 0
+        meanings = 0
+        for entry in self:
+            for word in entry.get_words():
+                words += 1
+                meanings += len(word.meanings)
+        print('%s words' % words)
+        print('%s meanings' % meanings)

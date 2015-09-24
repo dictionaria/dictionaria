@@ -33,6 +33,8 @@ setup(
     tests_require=tests_require,
     test_suite="dictionaria",
     entry_points="""\
-[paste.app_factory]
-main = dictionaria:main
+        [paste.app_factory]
+        main = dictionaria:main
+        [console_scripts]
+        dictionaria = dictionaria.scripts.cli:main
 """)

@@ -2,12 +2,49 @@
 from __future__ import unicode_literals
 import re
 
+from path import path
+from clld.util import jsonload
 from clld.scripts.util import Data
 from clld.db.models import common
 from clld.db.meta import DBSession
 
 from dictionaria import models
 from dictionaria.lib.dictionaria_sfm import Dictionary
+
+
+datadir = path('/home/robert/venvs/dictionaria/dictionaria-intern/submissions')
+
+
+class Submission(object):
+    def __init__(self, id_):
+        if isinstance(id_, path):
+            self.dir = id_
+            self.id = id_.namebase
+        else:
+            self.id = id_
+            self.dir = datadir.joinpath(id_)
+        sfm = self.dir.files('*.txt')
+        md = self.dir.files('*.json')
+        self.active = True if md else False
+        self.type = 'sfm' if sfm else None
+        self.db = None
+
+        if self.active:
+            assert len(md) == 1
+            self.md = jsonload(md[0])
+
+        if self.type == 'sfm':
+            assert len(sfm) == 1
+            self.db = sfm[0]
+
+    @property
+    def dict(self):
+        if self.db:
+            if self.type == 'sfm':
+                return Dictionary(
+                    self.db,
+                    marker_map=self.md.get('marker_map', {}),
+                    encoding=self.md.get('encoding', 'utf8'))
 
 
 def default_value_converter(value, _):
@@ -19,22 +56,19 @@ def igt(s):
         return re.sub('\s+', '\t', s)
 
 
-def load_sfm(id_,
-             did,
+def load_sfm(did,
              lid,
-             filename,
+             submission,
              comparison_meanings,
              comparison_meanings_alt_labels,
-             marker_map,
-             **md):
-    d = Dictionary(filename, encoding=md.get('encoding', 'utf8'))
+             marker_map):
     data = Data()
     rel = []
 
     vocab = models.Dictionary.get(did)
     lang = models.Variety.get(lid)
 
-    for i, entry in enumerate(d.entries):
+    for i, entry in enumerate(submission.dict):
         words = list(entry.get_words())
         headword = None
 
@@ -54,7 +88,7 @@ def load_sfm(id_,
             w = data.add(
                 models.Word,
                 word.id,
-                id='%s-%s-%s' % (id_, i + 1, j + 1),
+                id='%s-%s-%s' % (submission.id, i + 1, j + 1),
                 name=word.form,
                 number=int(word.hm) if word.hm else 0,
                 phonetic=word.ph,
@@ -101,13 +135,13 @@ def load_sfm(id_,
 
                 if concept and concept not in concepts:
                     concepts.append(concept)
-                    vsid = '%s-%s' % (key, id_),
+                    vsid = '%s-%s' % (key, submission.id),
                     if vsid in data['ValueSet']:
                         vs = data['ValueSet'][vsid]
                     else:
                         vs = data.add(
                             common.ValueSet, vsid,
-                            id='%s-%s' % (id_, m.id),
+                            id='%s-%s' % (submission.id, m.id),
                             language=lang,
                             contribution=vocab,
                             parameter_pk=concept)
@@ -120,7 +154,10 @@ def load_sfm(id_,
 
             for index, (key, values) in enumerate(word.data.items()):
                 if key in marker_map:
-                    label, converter = marker_map[key]
+                    label = marker_map[key]
+                    converter = default_value_converter
+                    if isinstance(label, (list, tuple)):
+                        label, converter = label
                     for value in values:
                         DBSession.add(common.Unit_data(
                             object_pk=w.pk,
