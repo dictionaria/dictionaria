@@ -151,7 +151,7 @@ def prime_cache(cfg):
             meaning.active = False
 
     for word in DBSession.query(Word).options(joinedload(Word.meanings)):
-        word.description = ' / '.join(m.name for m in word.meanings)
+        word.description = ' / '.join(m.name for m in word.meanings if m.language == 'en')
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
         d.count_words = len(d.words)

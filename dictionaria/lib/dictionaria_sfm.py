@@ -43,6 +43,7 @@ class Word(object):
         self.data = defaultdict(list)  # to store additional marker, value pairs
         self.rel = []
         self.meanings = []
+        self.non_english_meanings = defaultdict(list)
 
     @property
     def id(self):
@@ -141,6 +142,8 @@ class Entry(sfm.Entry):
                 for vv in v.split(','):
                     if vv.strip():
                         word.rel.append((k, vv.strip()))
+            elif k == 'gxx':
+                word.non_english_meanings[k].extend(sfm.FIELD_SPLITTER_PATTERN.split(v))
             else:
                 word.data[k].append(v)
         if word:

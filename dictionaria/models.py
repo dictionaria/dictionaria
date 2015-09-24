@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from zope.interface import implementer
 from sqlalchemy import (
     Column,
@@ -77,6 +79,7 @@ class Meaning(Base, common.IdNameDescriptionMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
     word = relationship(Word, backref='meanings')
     gloss = Column(Unicode)
+    language = Column(Unicode, default='en')
     semantic_domain = Column(Unicode)
 
 

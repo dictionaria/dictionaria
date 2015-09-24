@@ -152,6 +152,17 @@ def load_sfm(did,
                         valueset=vs,
                         word=w))
 
+            for _lang, meanings in word.non_english_meanings.items():
+                assert _lang in submission.md['metalanguages']
+                for meaning in meanings:
+                    k += 1
+                    models.Meaning(
+                        id='%s-%s' % (w.id, k + 1),
+                        name=meaning,
+                        gloss=meaning,
+                        language=submission.md['metalanguages'][_lang],
+                        word=w)
+
             for index, (key, values) in enumerate(word.data.items()):
                 if key in marker_map:
                     label = marker_map[key]

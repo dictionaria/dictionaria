@@ -74,14 +74,18 @@
     % for m in ctx.meanings:
         <li>
             ${m.name}
-            % if m.gloss and m.name != m.gloss:
-            [${m.gloss}]
-            % endif
-            % if m.semantic_domain:
-                (${m.semantic_domain})
-            % endif
-            % if m.sentence_assocs:
-                ${util.sentences(m)}
+            % if m.language == 'en':
+                % if m.gloss and m.name != m.gloss:
+                [${m.gloss}]
+                % endif
+                % if m.semantic_domain:
+                    (${m.semantic_domain})
+                % endif
+                % if m.sentence_assocs:
+                    ${util.sentences(m)}
+                % endif
+            % else:
+                [${m.language}]
             % endif
         </li>
     % endfor
