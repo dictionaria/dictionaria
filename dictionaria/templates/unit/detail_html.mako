@@ -73,7 +73,7 @@
 <ul>
     % for m in ctx.meanings:
         <li>
-            % if m.language == 'en':
+            % if m.language != 'en':
                 ${m.language}:
             % endif
             ${m.name}
