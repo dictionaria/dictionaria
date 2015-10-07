@@ -72,24 +72,27 @@ class Entry(list, UnicodeMixin):
         return '\n'.join('\\' + l for l in lines)
 
 
+def read(filename, encoding):
+    # we cannot use codecs.open, because it does not understand mode U.
+    with open(filename, 'rU') as fp:
+        return fp.read().decode(encoding)
+
+
 def parse(filename, encoding, entry_impl, entry_sep, entry_prefix, marker_map):
     """We assume entries in the file are separated by a blank line.
     """
-    # we cannot use codecs.open, because it does not understand mode U.
-    with open(filename, 'rU') as fp:
-        # thus we have to decode the content ourselves:
-        for block in fp.read().decode(encoding).split(entry_sep):
-            if block.strip():
-                block = entry_prefix + block
-            else:
-                continue
-            rec = entry_impl()
-            for marker, value in marker_split(block.strip()):
-                value = value.strip()
-                if value:
-                    rec.append((marker_map.get(marker, marker), value))
-            if rec:
-                yield rec
+    for block in read(filename, encoding).split(entry_sep):
+        if block.strip():
+            block = entry_prefix + block
+        else:
+            continue
+        rec = entry_impl()
+        for marker, value in marker_split(block.strip()):
+            value = value.strip()
+            if value:
+                rec.append((marker_map.get(marker, marker), value))
+        if rec:
+            yield rec
 
 
 class Dictionary(object):

@@ -4,6 +4,7 @@ Parsing functionality for the SFM variant understood for Dictionaria submissions
 """
 from __future__ import unicode_literals
 from collections import defaultdict
+from hashlib import md5
 
 from dictionaria.lib import sfm
 
@@ -27,6 +28,31 @@ class Example(object):
         self.xvm = None
         self.xeg = None
         self.xe = None
+
+    def merge(self, other):
+        assert self.id == other.id
+        for a, b in [(self, other), (other, self)]:
+            for prop in ['xvm', 'xeg']:
+                if getattr(a, prop) is None and getattr(b, prop) is not None:
+                    setattr(a, prop, getattr(b, prop))
+
+    def __setattr__(self, key, value):
+        object.__setattr__(self, key, (value.strip() or None) if value else None)
+
+    @property
+    def id(self):
+        return self.__hash__()
+
+    def __hash__(self):
+        return md5(self.xv.encode('utf8') + self.xe.encode('utf')).hexdigest()
+
+    def __eq__(self, other):
+        return self.id == other.id and self.xvm == other.xvm and self.xeg == other.xeg
+
+    @property
+    def text(self):
+        return "\\ref {0}\n\\tx {1}\n\\mb {2}\n\\gl {3}\n\\ft {4}\n\n".format(
+            self.id, self.xv, self.xvm or '', self.xeg or '', self.xe)
 
 
 class Word(object):

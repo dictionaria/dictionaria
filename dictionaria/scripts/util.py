@@ -1,6 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals
 import re
+import os
 
 from path import path
 from clld.util import jsonload
