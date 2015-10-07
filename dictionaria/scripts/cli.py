@@ -13,29 +13,36 @@ from dictionaria.scripts.util import Submission
 def yield_examples(submission):
     example = None
     lx = None
+    marker_map = submission.md.get('marker_map', {})
+    example_props = 'xv xvm xeg xe'.split()
 
     for marker, content in marker_split(
             read(submission.db, submission.md.get('encoding', 'utf8'))):
-        if marker == 'lx':
+        mmarker = marker_map.get(marker, marker)
+
+        if marker == 'lx' or mmarker == 'lx':
             lx = content
 
-        if marker in 'xv xvm xeg xe'.split() and not content:
-            continue
+        if (marker in example_props or mmarker in example_props):
+            if not content:
+                continue
 
-        if marker == 'xv':
-            if example:
-                print('incomplete example in lx: %s' % lx)
-            example = Example(content)
-        elif marker in ['xvm', 'xeg']:
-            assert example
-            setattr(example, marker, content)
-        elif marker == 'xe':
-            if example:
-                example.xe = content
-                yield example
-                example = None
-            else:
-                print('incomplete example in lx: %s' % lx)
+            marker = mmarker
+
+            if marker == 'xv':
+                if example:
+                    print('incomplete example in lx: %s' % lx)
+                example = Example(content)
+            elif marker in ['xvm', 'xeg']:
+                assert example
+                setattr(example, marker, content)
+            else:  # elif marker == 'xe':
+                if example:
+                    example.xe = content
+                    yield example
+                    example = None
+                else:
+                    print('incomplete example in lx: %s' % lx)
         else:
             yield marker, content
 
