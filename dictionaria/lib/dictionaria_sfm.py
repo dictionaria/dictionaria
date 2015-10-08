@@ -27,12 +27,14 @@ class Example(object):
         self.xv = xv
         self.xvm = None
         self.xeg = None
+        self.xo = None
         self.xe = None
+        self.rf = None
 
     def merge(self, other):
         assert self.id == other.id
         for a, b in [(self, other), (other, self)]:
-            for prop in ['xvm', 'xeg']:
+            for prop in ['xvm', 'xeg', 'rf']:
                 if getattr(a, prop) is None and getattr(b, prop) is not None:
                     setattr(a, prop, getattr(b, prop))
 
@@ -47,12 +49,14 @@ class Example(object):
         return md5(self.xv.encode('utf8') + self.xe.encode('utf')).hexdigest()
 
     def __eq__(self, other):
-        return self.id == other.id and self.xvm == other.xvm and self.xeg == other.xeg
+        return all(getattr(self, a) == getattr(other, a) for a in 'id xvm xeg rf'.split())
 
     @property
     def text(self):
-        return "\\ref {0}\n\\tx {1}\n\\mb {2}\n\\gl {3}\n\\ft {4}\n\n".format(
-            self.id, self.xv, self.xvm or '', self.xeg or '', self.xe)
+        rf = '\\rf {0}\n'.format(self.rf) if self.rf else ''
+        xo = '\\ot {0}\n'.format(self.xo) if self.xo else ''
+        return "\\ref {0}\n{5}\\tx {1}\n\\mb {2}\n\\gl {3}\n\\ft {4}\n{6}\n".format(
+            self.id, self.xv, self.xvm or '', self.xeg or '', self.xe, rf, xo)
 
 
 class Word(object):
