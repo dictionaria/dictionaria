@@ -4,6 +4,7 @@ requires = [
     'clld>=1.5.0',
     'clldmpg',
     'clld-glottologfamily-plugin',
+    'clldutils>=0.3',
 ]
 
 tests_require = [

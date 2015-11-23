@@ -3,10 +3,10 @@ import re
 from datetime import date
 
 import transaction
-from path import path
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
-from clld.util import slug, LGR_ABBRS, jsonload
+from clldutils.misc import slug
+from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -48,6 +48,8 @@ def main(args):
     comparison_meanings = {}
     comparison_meanings_alt_labels = {}
 
+    print('loading concepts ...')
+
     concepticon = Concepticon()
     for i, concept_set in enumerate(concepticon.resources('parameter').members):
         concept_set = concepticon.resource(concept_set)
@@ -62,13 +64,19 @@ def main(args):
             comparison_meanings_alt_labels.setdefault(label.lower(), cm)
 
     DBSession.flush()
+
+    print('... done')
+
     comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
     comparison_meanings_alt_labels = {
         k: v.pk for k, v in comparison_meanings_alt_labels.items()}
 
     submissions = []
 
-    for submission in datadir.dirs():
+    for submission in datadir.iterdir():
+        if not submission.is_dir():
+            continue
+
         submission = Submission(submission)
 
         if not (submission.active and submission.db):

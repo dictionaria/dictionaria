@@ -1,51 +1,78 @@
 # coding: utf8
 from __future__ import unicode_literals
 import re
-import os
 
-from path import path
-from clld.util import jsonload
+from clldutils.path import Path
+from clldutils.jsonlib import load
 from clld.scripts.util import Data
 from clld.db.models import common
 from clld.db.meta import DBSession
 
 from dictionaria import models
-from dictionaria.lib.dictionaria_sfm import Dictionary
+from dictionaria.lib.sfm import Dictionary, Examples, ElanExamples
 
 
-datadir = path('/home/robert/venvs/dictionaria/dictionaria-intern/submissions')
+datadir = Path('/home/robert/venvs/dictionaria/dictionaria-intern/submissions')
+
+
+class Corpus(object):
+    #
+    # FIXME: refactor using clldutils.sfm.SFM:
+    # sfm = SFM()
+    # for f in d.glob(...)
+    #     sfm.read(f)
+    #
+    def __init__(self, d):
+        self.files = [ElanExamples(f) for f in d.glob('*.eaf.tb')]
+
+    def get(self, item):
+        for f in self.files:
+            res = f.get(item)
+            if res:
+                return res
+
+    def keys(self):
+        res = []
+        for f in self.files:
+            res.extend(list(f._map.keys()))
+        return sorted(res)
 
 
 class Submission(object):
     def __init__(self, id_):
-        if isinstance(id_, path):
+        if isinstance(id_, Path):
             self.dir = id_
-            self.id = id_.namebase
+            self.id = id_.name
         else:
             self.id = id_
             self.dir = datadir.joinpath(id_)
-        sfm = self.dir.files('*.txt')
-        md = self.dir.files('*.json')
+
+        md = list(self.dir.glob('*.json'))
         self.active = True if md else False
-        self.type = 'sfm' if sfm else None
         self.db = None
+        self.raw = None
 
         if self.active:
-            assert len(md) == 1
-            self.md = jsonload(md[0])
+            self.db = self.dir.joinpath('processed', 'db.txt')
 
-        if self.type == 'sfm':
-            assert len(sfm) == 1
-            self.db = sfm[0]
+            if self.db.exists():
+                self.type = 'sfm'
+                self.raw = list(self.dir.glob('*.txt'))[0]
+            else:
+                self.db = None
+
+            assert len(md) == 1
+            self.md = load(md[0])
 
     @property
     def dict(self):
         if self.db:
             if self.type == 'sfm':
+                # make sure to ignore custom encoding of the original file, because the
+                # pre-processed file is already UTF-8.
                 return Dictionary(
                     self.db,
-                    marker_map=self.md.get('marker_map', {}),
-                    encoding=self.md.get('encoding', 'utf8'))
+                    marker_map=self.md.get('marker_map', {}))
 
 
 def default_value_converter(value, _):
@@ -68,6 +95,21 @@ def load_sfm(did,
 
     vocab = models.Dictionary.get(did)
     lang = models.Variety.get(lid)
+    examples = Examples(submission.dir.joinpath('processed', 'examples.txt'))
+    seen = {}
+    for ex in examples:
+        ex = Examples.as_example(ex)
+        assert ex.id not in seen
+        data.add(
+            common.Sentence,
+            ex.id,
+            id=ex.id,
+            name=ex.xv,
+            language=lang,
+            analyzed=igt(ex.xvm),
+            gloss=igt(ex.xeg),
+            description=ex.xe)
+        seen[ex.id] = True
 
     for i, entry in enumerate(submission.dict):
         words = list(entry.get_words())
@@ -116,18 +158,10 @@ def load_sfm(did,
                     word=w,
                     semantic_domain=', '.join(meaning.sd))
 
-                for l, ex in enumerate(meaning.x):
-                    s = data['Sentence'].get((ex.xv, ex.xe))
-                    if not s:
-                        s = data.add(
-                            common.Sentence,
-                            (ex.xv, ex.xe),
-                            id='%s-%s-%s' % (w.id, k + 1, l + 1),
-                            name=ex.xv,
-                            language=lang,
-                            analyzed=igt(ex.xvm),
-                            gloss=igt(ex.xeg),
-                            description=ex.xe)
+                assert not meaning.x
+                for xref in meaning.xref:
+                    s = data['Sentence'].get(xref)
+                    assert s
                     models.MeaningSentence(meaning=m, sentence=s)
 
                 key = (meaning.ge or meaning.de).replace('.', ' ').lower()
