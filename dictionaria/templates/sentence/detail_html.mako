@@ -27,7 +27,10 @@
     <dd>
         <ul>
             % for wa in ctx.meaning_assocs:
-                <li>${h.link(request, wa.meaning.word, label=wa.meaning.name)}</li>
+                <li>
+                    ${h.link(request, wa.meaning.word, label=wa.meaning.name)}
+                    [${wa.meaning.word.name}]
+                </li>
             % endfor
         </ul>
     </dd>
