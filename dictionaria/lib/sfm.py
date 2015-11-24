@@ -2,13 +2,145 @@
 """
 Parsing functionality for the SFM variant understood for Dictionaria submissions.
 """
-from __future__ import unicode_literals
-from collections import defaultdict, Counter
-from hashlib import md5
+from __future__ import unicode_literals, print_function
+from collections import defaultdict, Counter, OrderedDict
+import re
 
 from clldutils.misc import slug
 from clldutils.path import Path
 from clldutils import sfm
+
+from dictionaria.lib.ingest import Corpus, Example
+
+
+class Rearrange(object):
+    #
+    # Teop preprocess: \rf comes *after* the example, when the value is in square
+    # brackets! So when \rf [xxx] is encountered immediately after \xe, it must be moved
+    # before the corresponding \xv!
+    #
+    in_brackets = re.compile('\[+\s*(?P<text>[^\]]+)\s*\]+$')
+
+    def __call__(self, entry):
+        reorder_map = []
+        last_rf = 0
+
+        for index, (marker, content) in enumerate(entry):
+            if marker == 'rf':
+                content = content.strip()
+                match = self.in_brackets.match(content)
+                if match:
+                    if entry[index - 1][0] == 'xe':
+                        # search for the preceding xv marker, but make sure we do not go
+                        # back before the last rf marker.
+                        for i in range(index - 2, last_rf, -1):
+                            if entry[i][0] == 'xv':
+                                reorder_map.append((i, match.group('text'), index))
+                                break
+                    else:
+                        entry[index] = ('rf', match.group('text'))
+                last_rf = index
+
+        for insert, content, delete in reorder_map:
+            del entry[delete]
+            entry.insert(insert, ('rf', content))
+
+
+class ExampleExtractor(object):
+    def __init__(self, corpus, log):
+        self.example_props = {
+            'rf': 'rf',
+            'xv': 'tx',
+            'xvm': 'mb',
+            'xeg': 'gl',
+            'xo': 'ot',
+            'xe': 'ft',
+        }
+        self.examples = OrderedDict()
+        self.corpus = corpus
+        self.log = log
+
+    def __call__(self, entry):
+        example = None
+        lx = None
+        rf = None
+        items = []
+
+        for marker, content in entry:
+            if marker == 'lx':
+                lx = content
+
+            if marker in self.example_props:
+                if marker == 'rf':
+                    rf = content
+                elif marker == 'xv':
+                    # new example starts
+                    if example:
+                        # but last one is unfinished
+                        self.log.write(
+                            '# incomplete example in lx: %s - missing xe:\n%s\n\n'
+                            % (lx, example))
+                    example = Example([('tx', content)])
+                elif marker == 'xe':
+                    # example ends
+                    if example:
+                        if rf:
+                            example.insert(0, ('rf', rf))
+                        example.append(('ft', content))
+                        items.append(('xref', self.xref(example)))
+                        rf = None
+                        example = None
+                    else:
+                        self.log.write(
+                            '# incomplete example in lx: %s - missing xv\n' % lx)
+                else:
+                    if not example:
+                        self.log.write('incomplete example in lx: %s - missing xv\n' % lx)
+                    else:
+                        example.append((self.example_props[marker], content))
+            else:
+                items.append((marker, content))
+        return entry.__class__(items)
+
+    def merge(self, ex1, ex2):
+        for prop in 'rf tx mb gl ft'.split():
+            p1 = ex1.get(prop)
+            p2 = ex2.get(prop)
+            if p1:
+                if p2:
+                    try:
+                        assert slug(p1) == slug(p2)
+                    except AssertionError:
+                        self.log.write(
+                            '# cannot merge \\%s:\n%s\n# and\n%s\n\n' % (prop, ex1, ex2))
+                        raise
+            else:
+                if p2:
+                    ex1.set(prop, p2)
+
+    def xref(self, example):
+        if example.corpus_ref:
+            from_corpus = self.corpus.get(example.corpus_ref)
+            if from_corpus:
+                try:
+                    self.merge(example, from_corpus)
+                except AssertionError:
+                    pass
+        if example.id in self.examples:
+            try:
+                self.merge(self.examples[example.id], example)
+            except AssertionError:
+                orig = example.id
+                count = 0
+                while example.id in self.examples:
+                    count += 1
+                    example.set('ref', '%s---%s' % (orig, count))
+        self.examples[example.id] = example
+        return example.id
+
+    def write_examples(self, fname):
+        examples = sfm.SFM(self.examples.values())
+        examples.write(fname)
 
 
 class Meaning(object):
@@ -23,51 +155,6 @@ class Meaning(object):
         self.sd = []
         self.x = []
         self.xref = []
-
-
-class Example(object):
-    def __init__(self, xv):
-        self.xv = xv
-        self.xvm = None
-        self.xeg = None
-        self.xo = None
-        self.xe = None
-        self.rf = None
-
-    def merge(self, other, force_sameid=True):
-        try:
-            assert self.id == other.id
-        except AssertionError:
-            print self.xv.encode('utf8')
-            print other.xv.encode('utf8')
-            print self.xe.encode('utf8')
-            print other.xe.encode('utf8')
-            if force_sameid:
-                raise
-        for a, b in [(self, other), (other, self)]:
-            for prop in ['xvm', 'xeg', 'rf']:
-                if getattr(a, prop) is None and getattr(b, prop) is not None:
-                    setattr(a, prop, getattr(b, prop))
-
-    def __setattr__(self, key, value):
-        object.__setattr__(self, key, (value.strip() or None) if value else None)
-
-    @property
-    def id(self):
-        return self.__hash__()
-
-    def __hash__(self):
-        return md5(slug(self.xv).encode('utf8') + slug(self.xe).encode('utf')).hexdigest()
-
-    def __eq__(self, other):
-        return all(getattr(self, a) == getattr(other, a) for a in 'id xvm xeg rf'.split())
-
-    @property
-    def text(self):
-        rf = '\\rf {0}\n'.format(self.rf) if self.rf else ''
-        xo = '\\ot {0}\n'.format(self.xo) if self.xo else ''
-        return "\\ref {0}\n{5}\\tx {1}\n\\mb {2}\n\\gl {3}\n\\ft {4}\n{6}\n".format(
-            self.id, self.xv, self.xvm or '', self.xeg or '', self.xe, rf, xo)
 
 
 class Word(object):
@@ -218,6 +305,7 @@ class Stats(object):
 class Dictionary(object):
     def __init__(self, filename, **kw):
         kw.setdefault('entry_impl', Entry)
+        kw['marker_map'] = kw.get('marker_map') or {}
         lexeme_marker = 'lx'
         reverse_marker_map = {v: k for k, v in kw['marker_map'].items()}
         if lexeme_marker in reverse_marker_map:
@@ -227,77 +315,26 @@ class Dictionary(object):
         self.sfm = sfm.SFM.from_file(filename, **kw)
         self.dir = Path(filename).parent
 
-    def validated(self, entry):
-        entry = sfm.Dictionary.validated(self, entry)
-        return entry.preprocessed()
+    #def validated(self, entry):
+    #    entry = sfm.Dictionary.validated(self, entry)
+    #    return entry.preprocessed()
 
     def stats(self):
         stats = Stats()
         self.sfm.visit(stats)
-        print stats.count
-        print stats._mult_markers
-        print stats._implicit_mult_markers
+        print(stats.count)
+        print(stats._mult_markers)
+        print(stats._implicit_mult_markers)
 
+    def process(self, outfile):
+        """extract examples, etc."""
+        assert self.dir.name != 'processed'
 
-class Examples(sfm.SFM):
-    """
-    \ref d48204ced7d012dd071d0ec402e58d20
-    \tx A beiko.
-    \mb
-    \gl
-    \ft The child.
-    """
-    def __init__(self, filename, **kw):
-        sfm.Dictionary.__init__(self, filename, **kw)
-        self._map = {entry.get('ref'): entry for entry in self.entries}
+        self.sfm.visit(Rearrange())
 
-    @staticmethod
-    def normalize(morphemes_or_gloss):
-        if morphemes_or_gloss:
-            return '\t'.join(
-                [p for p in morphemes_or_gloss.split() if not p.startswith('#')])
+        with self.dir.joinpath('examples.log').open('w', encoding='utf8') as log:
+            extractor = ExampleExtractor(Corpus(self.dir), log)
+            self.sfm.visit(extractor)
 
-    def get(self, item):
-        try:
-            return Examples.as_example(self._map[item])
-        except KeyError:
-            return None
-
-    @staticmethod
-    def as_example(r):
-        ex = Example(r.get('tx'))
-        ex.xe = r.get('ft')
-        ex.xvm = Examples.normalize(r.get('mb'))
-        ex.xeg = Examples.normalize(r.get('gl'))
-        return ex
-
-
-class ElanExamples(Examples):
-    """
-    \\utterance_id Iar_02RG.001
-    \\ELANBegin 0.000
-    \\ELANEnd 1.843
-    \\ELANParticipant
-    \\utterance Bara.
-    \\gramm_units # Bara
-    \\rp_gloss # alright
-    \\GRAID #
-    \\utterance_tokens Bara.
-    \\ft Alright.
-    """
-    def __init__(self, filename, **kw):
-        kw['marker_map'] = {
-            'utterance_id': 'ref',
-            'utterance': 'tx',
-            'gramm_units': 'mb',
-            'rp_gloss': 'gl',
-        }
-        kw['entry_sep'] = '\\utterance_id'
-        Examples.__init__(self, filename, **kw)
-        for k in list(self._map.keys()):
-            # abc.069 may be looked up as abc.69!
-            try:
-                prefix, number = k.split('.', 1)
-                self._map['%s.%s' % (prefix, int(number))] = self._map[k]
-            except:
-                pass
+        self.sfm.write(outfile)
+        extractor.write_examples(outfile.parent.joinpath('examples.sfm'))

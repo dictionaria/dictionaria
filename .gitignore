@@ -1,3 +1,5 @@
+data
+
 development.ini
 *.py[cod]
 *.komodoproject
@@ -7,6 +9,7 @@ development.ini
 *.so
 
 # Packages
+.eggs
 *.egg
 *.egg-info
 dist
