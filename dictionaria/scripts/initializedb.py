@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import re
 from datetime import date
 
 import transaction
@@ -15,11 +14,7 @@ from clld_glottologfamily_plugin.util import load_families
 
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
-from dictionaria.scripts.util import load_sfm, datadir, Submission
-
-
-DB = 'postgresql://robert@/wold'
-LOADER_PATTERN = re.compile('(?P<id>[a-z]+)\.py$')
+from dictionaria.lib.submission import REPOS, Submission
 
 
 def main(args):
@@ -73,13 +68,13 @@ def main(args):
 
     submissions = []
 
-    for submission in datadir.iterdir():
+    for submission in REPOS.joinpath('submissions').glob('*'):
         if not submission.is_dir():
             continue
 
-        submission = Submission(submission)
-
-        if not (submission.active and submission.db):
+        try:
+            submission = Submission(submission)
+        except ValueError:
             continue
 
         md = submission.md
@@ -124,10 +119,9 @@ def main(args):
 
         transaction.begin()
         print('loading %s ...' % submission.id)
-        load_sfm(
+        submission.load(
             did,
             lid,
-            submission,
             comparison_meanings,
             comparison_meanings_alt_labels,
             marker_map)

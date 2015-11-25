@@ -52,3 +52,7 @@ class Submission(object):
 
     def stats(self, processed=True):
         pass
+
+    def load(self, *args):
+        d = self.dictionary(processed=True)
+        d.load(self, *args)
