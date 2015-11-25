@@ -6,14 +6,18 @@ from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug
 
 
+#
+# FIXME: follow recommendations of EOPAS toolbox import http://www.eopas.org/help
+#
+#
 class Example(Entry):
     """
     \ref
     \rf
     \tx
-    \mb
-    \gl
-    \ft
+    \mb -> mr
+    \gl -> mg
+    \ft -> fg
     """
     markers = ['ref', 'rf', 'tx', 'mb', 'gl', 'ft']
 
