@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from datetime import date
+import re
 
 import transaction
 from nameparser import HumanName
@@ -47,6 +48,11 @@ def main(args):
 
     concepticon = Concepticon()
     for i, concept_set in enumerate(concepticon.resources('parameter').members):
+
+
+        break
+
+
         concept_set = concepticon.resource(concept_set)
         cm = ComparisonMeaning(
             id=concept_set.id,
@@ -68,7 +74,8 @@ def main(args):
 
     submissions = []
 
-    for submission in REPOS.joinpath('submissions').glob('*'):
+    for submission in REPOS.joinpath(
+            'submissions-internal' if args.internal else 'submissions').glob('*'):
         if not submission.is_dir():
             continue
 
@@ -137,7 +144,9 @@ def main(args):
         # {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
 
     transaction.begin()
-    load_families(Data(), DBSession.query(Variety))
+    load_families(
+        Data(),
+        [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)])
 
 
 def prime_cache(cfg):
@@ -160,4 +169,6 @@ def prime_cache(cfg):
 
 
 if __name__ == '__main__':
-    initializedb(create=main, prime_cache=prime_cache)
+    initializedb(
+        (("--internal",), dict(action='store_true')),
+        create=main, prime_cache=prime_cache)

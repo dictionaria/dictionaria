@@ -11,12 +11,15 @@ def main():
     add_args = [
         (("command",), dict(help="stats|process")),
         (("dict",), dict(help="dictionary ID")),
+        (("--internal",), dict(action='store_true')),
+        (("--raw",), dict(action='store_true')),
     ]
 
     args = parsed_args(*add_args)
+    submission = Submission(args.dict, internal=args.internal)
+
     if args.command == 'stats':
-        submission = Submission(args.dict)
-        submission.dict.stats()
+        submission.stats(processed=not args.raw)
 
         if 0:  # args.dict == 'yakkha':
             same, d1, d2 = 0, 0, 0
@@ -37,5 +40,4 @@ def main():
                 if len(e.getall('ps')) > len(e.getall('se')) + len(e.getall('lx')):
                     print(e.get('lx'))
     elif args.command == 'process':
-        submission = Submission(args.dict)
         submission.process()

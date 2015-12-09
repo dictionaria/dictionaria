@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from hashlib import md5
 
+from clld.db.models import common
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug
 
@@ -15,11 +16,11 @@ class Example(Entry):
     \ref
     \rf
     \tx
-    \mb -> mr
-    \gl -> mg
-    \ft -> fg
+    \mr
+    \mg
+    \fg
     """
-    markers = ['ref', 'rf', 'tx', 'mb', 'gl', 'ft']
+    markers = ['ref', 'lemma', 'rf', 'tx', 'mr', 'mg', 'fg']
 
     @staticmethod
     def normalize(morphemes_or_gloss):
@@ -39,10 +40,16 @@ class Example(Entry):
         assert key in self.markers
         for i, (k, v) in enumerate(self):
             if k == key:
+                if key == 'lemma':
+                    value = ' ; '.join([v, value])
                 self[i] = (key, value)
                 break
         else:
             self.append((key, value))
+
+    @property
+    def lemmas(self):
+        return [l.strip() for l in self.get('lemma', '').split(';') if l.strip()]
 
     @property
     def corpus_ref(self):
@@ -54,21 +61,21 @@ class Example(Entry):
 
     @property
     def translation(self):
-        return self.get('ft')
+        return self.get('fg')
 
     @property
     def morphemes(self):
-        return self.normalize(self.get('mb'))
+        return self.normalize(self.get('mr'))
 
     @property
     def gloss(self):
-        return self.normalize(self.get('gl'))
+        return self.normalize(self.get('mg'))
 
     def __unicode__(self):
         lines = []
         for key in self.markers:
             value = self.get(key) or ''
-            if key in ['mb', 'gl']:
+            if key in ['mr', 'mg']:
                 value = self.normalize(value) or ''
             lines.append('%s %s' % (key, value))
         return '\n'.join('\\' + l for l in lines)
@@ -91,6 +98,19 @@ class Examples(SFM):
 
     def get(self, item):
         return self._map.get(item)
+
+
+def load_examples(submission, data, lang):
+    for ex in Examples.from_file(submission.dir.joinpath('processed', 'examples.sfm')):
+        data.add(
+            common.Sentence,
+            ex.id,
+            id='%s-%s' % (submission.id, ex.id),
+            name=ex.text,
+            language=lang,
+            analyzed=ex.morphemes,
+            gloss=ex.gloss,
+            description=ex.translation)
 
 
 class Corpus(object):

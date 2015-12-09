@@ -14,7 +14,7 @@ from clldutils.misc import slug
 from clldutils.path import Path
 from clldutils import sfm
 
-from dictionaria.lib.ingest import Corpus, Example, Examples
+from dictionaria.lib.ingest import Corpus, Example, Examples, load_examples
 from dictionaria import models
 
 
@@ -56,10 +56,10 @@ class ExampleExtractor(object):
         self.example_props = {
             'rf': 'rf',
             'xv': 'tx',
-            'xvm': 'mb',
-            'xeg': 'gl',
-            'xo': 'ot',
-            'xe': 'ft',
+            'xvm': 'mr',
+            'xeg': 'mg',
+            'xo': 'og',
+            'xe': 'fg',
         }
         self.examples = OrderedDict()
         self.corpus = corpus
@@ -76,6 +76,10 @@ class ExampleExtractor(object):
                 lx = content
 
             if marker in self.example_props:
+                #
+                # FIXME: keep example data in place
+                #
+                items.append((marker, content))
                 if marker == 'rf':
                     rf = content
                 elif marker == 'xv':
@@ -91,7 +95,8 @@ class ExampleExtractor(object):
                     if example:
                         if rf:
                             example.insert(0, ('rf', rf))
-                        example.append(('ft', content))
+                        example.append(('fg', content))
+                        example.set('lemma', lx)
                         items.append(('xref', self.xref(example)))
                         rf = None
                         example = None
@@ -108,7 +113,7 @@ class ExampleExtractor(object):
         return entry.__class__(items)
 
     def merge(self, ex1, ex2):
-        for prop in 'rf tx mb gl ft'.split():
+        for prop in 'rf tx mr mg fg'.split():
             p1 = ex1.get(prop)
             p2 = ex2.get(prop)
             if p1:
@@ -122,6 +127,10 @@ class ExampleExtractor(object):
             else:
                 if p2:
                     ex1.set(prop, p2)
+        if ex1.lemmas:
+            ex2.set('lemma', ex1.get('lemma'))
+        if ex2.lemmas:
+            ex1.set('lemma', ex2.get('lemma'))
 
     def xref(self, example):
         if example.corpus_ref:
@@ -243,27 +252,6 @@ class Entry(sfm.Entry):
                 setattr(meaning, k, v)
             elif k == 'sd':
                 meaning.sd.append(v)
-            elif k == 'xv':
-                if example:
-                    example.xv += ' %s' % v
-                else:
-                    example = Example(v)
-            elif k in ['xvm', 'xeg']:
-                if getattr(example, k):
-                    v = getattr(example, k) + ' ' + v
-                setattr(example, k, v)
-            elif k == 'xe':
-                if example:
-                    example.xe = v
-                    try:
-                        assert meaning
-                        meaning.x.append(example)
-                    except AssertionError:
-                        print(
-                            'no meanings for (sense or subentry of) word %s' % word.form)
-                    example = None
-                else:
-                    print('xe without xv for word %s' % word.form)
             elif k == 'xref':
                 meaning.xref.append(v)
             # word-specific markers:
@@ -361,16 +349,7 @@ class Dictionary(object):
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
-        for ex in Examples.from_file(self.dir.joinpath('examples.sfm')):
-            data.add(
-                common.Sentence,
-                ex.id,
-                id=ex.id,
-                name=ex.text,
-                language=lang,
-                analyzed=ex.morphemes,
-                gloss=ex.gloss,
-                description=ex.translation)
+        load_examples(self.dir, data, lang)
 
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
