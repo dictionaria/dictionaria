@@ -93,6 +93,8 @@ def main(args):
             language = data.add(
                 Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
 
+        if '-' not in md['published']:
+            md['published'] = md['published'] + '-01-01'
         dictionary = data.add(
             Dictionary,
             id_,

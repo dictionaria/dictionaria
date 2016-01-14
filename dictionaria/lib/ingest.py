@@ -1,29 +1,33 @@
 # coding: utf8
 from __future__ import unicode_literals
 from hashlib import md5
+from collections import OrderedDict
 
 from clld.db.models import common
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug
 
 
-#
-# FIXME: follow recommendations of EOPAS toolbox import http://www.eopas.org/help
-#
-#
 class Example(Entry):
-    """
-    \ref
-    \rf
-    \tx
-    \mr
-    \mg
-    \fg
-    """
-    markers = ['ref', 'lemma', 'rf', 'tx', 'mr', 'mg', 'fg']
+    markers = OrderedDict()
+    for k, v in [
+        ('ref', 'id'),
+        ('lemma', None),
+        ('rf', 'corpus_ref'),
+        ('tx', 'text'),
+        ('mb', 'morphemes'),
+        ('gl', 'gloss'),
+        ('ft', 'translation')
+    ]:
+        markers[k] = v
+    name_to_marker = {v: k for k, v in markers.items()}
 
     @staticmethod
     def normalize(morphemes_or_gloss):
+        """
+        Normalize aligned words by replacing whitespace with single tab, and removing
+        ELAN comments.
+        """
         if morphemes_or_gloss:
             return '\t'.join(
                 [p for p in morphemes_or_gloss.split() if not p.startswith('#')])
@@ -37,7 +41,8 @@ class Example(Entry):
         return res
 
     def set(self, key, value):
-        assert key in self.markers
+        assert (key in self.markers) or (key in self.name_to_marker)
+        key = self.name_to_marker.get(key, key)
         for i, (k, v) in enumerate(self):
             if k == key:
                 if key == 'lemma':
@@ -61,34 +66,29 @@ class Example(Entry):
 
     @property
     def translation(self):
-        return self.get('fg')
+        return self.get('ft')
 
     @property
     def morphemes(self):
-        return self.normalize(self.get('mr'))
+        return self.normalize(self.get('mb'))
 
     @property
     def gloss(self):
-        return self.normalize(self.get('mg'))
+        return self.normalize(self.get('gl'))
 
     def __unicode__(self):
         lines = []
         for key in self.markers:
             value = self.get(key) or ''
-            if key in ['mr', 'mg']:
+            if key in ['mb', 'gl']:
                 value = self.normalize(value) or ''
+            else:
+                value = ' '.join(value.split())
             lines.append('%s %s' % (key, value))
         return '\n'.join('\\' + l for l in lines)
 
 
 class Examples(SFM):
-    """
-    \ref d48204ced7d012dd071d0ec402e58d20
-    \tx A beiko.
-    \mb
-    \gl
-    \ft The child.
-    """
     def read(self, filename, **kw):
         return SFM.read(self, filename, entry_impl=Example, **kw)
 

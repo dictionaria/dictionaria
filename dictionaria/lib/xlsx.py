@@ -6,6 +6,8 @@ import xlrd
 from clldutils.path import Path, as_posix
 from clldutils.dsv import UnicodeWriter, reader
 from clld.scripts.util import Data
+from clld.db.meta import DBSession
+from clld.db.models.common import Unit_data
 
 from dictionaria.lib.ingest import Example, Examples, load_examples
 from dictionaria import models
@@ -75,11 +77,11 @@ class Dictionary(object):
     def yield_examples(self):
         for d in self['examples'].yield_dicts():
             ex = Example()
-            ex.set('ref', d['ID'])
-            ex.set('tx', d['vernacular'])
-            ex.set('mr', d['morphemes'])
-            ex.set('mg', d['gloss'])
-            ex.set('fg', d['translation'])
+            ex.set('id', d['ID'])
+            ex.set('text', d['vernacular'])
+            ex.set('morphemes', d['morphemes'])
+            ex.set('gloss', d['gloss'])
+            ex.set('translation', d['translation'])
             yield ex
 
     def process(self, outfile):
@@ -113,7 +115,7 @@ class Dictionary(object):
 
         for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
             try:
-                data.add(
+                word = data.add(
                     models.Word,
                     lemma['ID'],
                     id=id_(lemma),
@@ -125,6 +127,18 @@ class Dictionary(object):
                 print(submission.id)
                 print(lemma)
                 raise
+
+        DBSession.flush()
+        for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
+            #
+            # FIXME: handle relations between words!
+            #
+            word = data['Word'][lemma['ID']]
+            for key in lemma:
+                if key not in ['ID', 'Lemma', 'PoS']:
+                    value = lemma[key]
+                    if value:
+                        DBSession.add(Unit_data(key=key, value=value, object_pk=word.pk))
 
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
             try:

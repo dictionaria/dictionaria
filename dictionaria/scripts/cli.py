@@ -11,7 +11,7 @@ def main():
     add_args = [
         (("command",), dict(help="stats|process")),
         (("dict",), dict(help="dictionary ID")),
-        (("--internal",), dict(action='store_true')),
+        (("--internal",), dict(action='store_true', help='run on private repos')),
         (("--raw",), dict(action='store_true')),
     ]
 

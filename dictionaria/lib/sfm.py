@@ -56,10 +56,10 @@ class ExampleExtractor(object):
         self.example_props = {
             'rf': 'rf',
             'xv': 'tx',
-            'xvm': 'mr',
-            'xeg': 'mg',
-            'xo': 'og',
-            'xe': 'fg',
+            'xvm': 'mb',
+            'xeg': 'gl',
+            'xo': 'ot',
+            'xe': 'ft',
         }
         self.examples = OrderedDict()
         self.corpus = corpus
@@ -76,10 +76,6 @@ class ExampleExtractor(object):
                 lx = content
 
             if marker in self.example_props:
-                #
-                # FIXME: keep example data in place
-                #
-                items.append((marker, content))
                 if marker == 'rf':
                     rf = content
                 elif marker == 'xv':
@@ -95,7 +91,7 @@ class ExampleExtractor(object):
                     if example:
                         if rf:
                             example.insert(0, ('rf', rf))
-                        example.append(('fg', content))
+                        example.append(('ft', content))
                         example.set('lemma', lx)
                         items.append(('xref', self.xref(example)))
                         rf = None
@@ -113,7 +109,7 @@ class ExampleExtractor(object):
         return entry.__class__(items)
 
     def merge(self, ex1, ex2):
-        for prop in 'rf tx mr mg fg'.split():
+        for prop in 'rf tx mb gl ft'.split():
             p1 = ex1.get(prop)
             p2 = ex2.get(prop)
             if p1:
@@ -312,10 +308,6 @@ class Dictionary(object):
         self.sfm = sfm.SFM.from_file(filename, **kw)
         self.dir = Path(filename).parent
 
-    #def validated(self, entry):
-    #    entry = sfm.Dictionary.validated(self, entry)
-    #    return entry.preprocessed()
-
     def stats(self):
         stats = Stats()
         self.sfm.visit(stats)
@@ -349,7 +341,7 @@ class Dictionary(object):
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
-        load_examples(self.dir, data, lang)
+        load_examples(submission, data, lang)
 
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
