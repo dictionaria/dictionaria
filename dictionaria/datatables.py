@@ -1,7 +1,9 @@
+from collections import OrderedDict
+
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Integer, Float
-from sqlalchemy.orm import joinedload_all, joinedload
+from sqlalchemy.orm import joinedload_all, joinedload, aliased
 
 from clld.web import datatables
 from clld.web.datatables.base import (
@@ -89,21 +91,25 @@ class WordCol(LinkCol):
 
 
 class CustomCol(Col):
-    #
-    # TODO: pull relevant key from dictionary config!
-    #
-    def format(self, item):
-        return item.datadict().get('ph')
-
-    def order(self, ):
-        return common.Unit_data.value
-
     def search(self, qs):
-        return icontains(common.Unit_data.value, qs)
+        return icontains(self.dt.vars[self.name].value, qs)
+
+    def format(self, item):
+        return item.datadict().get(self.name, '')
+
+    def order(self):
+        return self.dt.vars[self.name].value
 
 
 class Words(datatables.Units):
     __constraints__ = [common.Language, common.Contribution, common.Parameter]
+
+    def __init__(self, req, model, **kw):
+        datatables.Units.__init__(self, req, model, **kw)
+        self.vars = OrderedDict()
+        if self.contribution:
+            for name in self.contribution.jsondata['custom_fields']:
+                self.vars[name] = aliased(common.Unit_data, name=name)
 
     def base_query(self, query):
         query = query.join(Dictionary)\
@@ -117,20 +123,26 @@ class Words(datatables.Units):
                     Word.counterparts, common.Value.valueset, common.ValueSet.parameter),
                 joinedload(common.Unit.data))
         if self.contribution:
-            query = query.filter(Word.dictionary_pk == self.contribution.pk)
+            for name, var in self.vars.items():
+                query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
+            return query.filter(Word.dictionary_pk == self.contribution.pk)
+
         return query.distinct()
 
     def col_defs(self):
         poscol = Col(self, 'part_of_speech', model_col=Word.pos)
 
         if self.contribution:
-            return [
+            res = [
                 WordCol(self, 'word', model_col=common.Unit.name),
                 Col(self, 'description', model_col=common.Unit.description),
                 MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
                 poscol,
                 #CustomCol(self, 'custom'),
             ]
+            for name in self.vars:
+                res.append(CustomCol(self, name))
+            return res
         return [
             WordCol(self, 'word'),
             Col(self, 'description'),

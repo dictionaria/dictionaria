@@ -101,7 +101,8 @@ def main(args):
             id=id_,
             name=lmd['name'] + ' Dictionary',
             language=language,
-            published=date(*map(int, md['published'].split('-'))))
+            published=date(*map(int, md['published'].split('-'))),
+            jsondata=dict(custom_fields=md.get('custom_fields', [])))
 
         for i, cname in enumerate(md['authors']):
             name = HumanName(cname)
@@ -122,9 +123,20 @@ def main(args):
         try:
             mod = __import__(
                 'dictionaria.loader.' + submission.id, fromlist=['MARKER_MAP'])
-            marker_map = mod.MARKER_MAP
+            _marker_map = mod.MARKER_MAP
         except ImportError:
-            marker_map = {}
+            _marker_map = {}
+
+        marker_map = {}
+        for k, v in submission.md.get('labels', {}).items():
+            marker_map[k] = v
+
+        for k, v in _marker_map.items():
+            if k in marker_map:
+                if isinstance(v, tuple):
+                    marker_map[k] = (marker_map[k], v[1])
+            else:
+                marker_map[k] = v
 
         transaction.begin()
         print('loading %s ...' % submission.id)
