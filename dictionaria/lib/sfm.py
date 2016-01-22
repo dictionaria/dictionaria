@@ -335,7 +335,8 @@ class Dictionary(object):
             lid,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map):
+            marker_map,
+            args):
         data = Data()
         rel = []
 

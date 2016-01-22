@@ -1,5 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function
+from mimetypes import guess_type
 
 import xlrd
 
@@ -7,7 +8,7 @@ from clldutils.path import Path, as_posix
 from clldutils.dsv import UnicodeWriter, reader
 from clld.scripts.util import Data
 from clld.db.meta import DBSession
-from clld.db.models.common import Unit_data
+from clld.db.models.common import Unit_data, Unit_files
 
 from dictionaria.lib.ingest import Example, Examples, load_examples
 from dictionaria import models
@@ -102,7 +103,8 @@ class Dictionary(object):
             lid,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map):
+            marker_map,
+            args):
         data = Data()
         rel = []
 
@@ -112,6 +114,13 @@ class Dictionary(object):
 
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])
+
+        images = {}
+        image_dir = self.dir.parent.joinpath('images')
+        if image_dir.exists():
+            for p in image_dir.iterdir():
+                if p.is_file():
+                    images[p.name] = p
 
         for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
             try:
@@ -123,6 +132,22 @@ class Dictionary(object):
                     pos=lemma['PoS'],
                     dictionary=vocab,
                     language=lang)
+                DBSession.flush()
+                img = lemma.get('picture')
+                if img:
+                    assert img in images
+                    mimetype = guess_type(img)[0]
+                    assert mimetype.startswith('image/')
+                    f = Unit_files(
+                        id=id_(lemma),
+                        name=img,
+                        object_pk=word.pk,
+                        mime_type=mimetype)
+                    DBSession.add(f)
+                    DBSession.flush()
+                    DBSession.refresh(f)
+                    with open(images[img].as_posix(), 'rb') as fp:
+                        f.create(args.data_file('files'), fp.read())
             except:
                 print(submission.id)
                 print(lemma)

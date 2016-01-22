@@ -145,7 +145,8 @@ def main(args):
             lid,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map)
+            marker_map,
+            args)
         transaction.commit()
         print('... done')
 
