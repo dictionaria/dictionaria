@@ -10,7 +10,7 @@
     </%util:well>
     % for file in ctx._files:
         % if file.mime_type.startswith('image'):
-        <img src="${h.data_uri(request.file_ospath(file), file.mime_type).decode('utf8')}" class="img-polaroid">
+        <img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
         % endif
     % endfor
 </%def>
