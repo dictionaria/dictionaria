@@ -160,11 +160,17 @@ class Dictionary(object):
             #
             word = data['Word'][lemma['ID']]
             for key in lemma:
-                if key not in ['ID', 'Lemma', 'PoS']:
+                if key not in ['ID', 'Lemma', 'PoS', 'associated lemmas', 'picture']:
                     value = lemma[key]
                     if value:
                         DBSession.add(Unit_data(key=key, value=value, object_pk=word.pk))
-
+            for lid in split(lemma.get('associated lemmas', '')):
+                # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
+                lid = lid.replace(' ', '').lower()
+                DBSession.add(models.SeeAlso(
+                    source_pk=word.pk,
+                    target_pk=data['Word'][lid].pk,
+                    description='see also'))
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
             try:
                 m = models.Meaning(
