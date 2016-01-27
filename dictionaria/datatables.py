@@ -135,9 +135,9 @@ class Words(datatables.Units):
         if self.contribution:
             res = [
                 WordCol(self, 'word', model_col=common.Unit.name),
+                poscol,
                 Col(self, 'description', model_col=common.Unit.description),
                 MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
-                poscol,
                 #CustomCol(self, 'custom'),
             ]
             for name in self.vars:
@@ -145,9 +145,9 @@ class Words(datatables.Units):
             return res
         return [
             WordCol(self, 'word'),
+            poscol,
             Col(self, 'description'),
             MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison meaning'),
-            poscol,
             DictionaryCol(self, 'dictionary'),
         ]
 
