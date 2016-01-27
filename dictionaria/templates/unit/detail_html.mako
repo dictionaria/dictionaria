@@ -95,8 +95,13 @@
 % if ctx.linked_from or ctx.links_to:
 <h4>Related</h4>
 <ul>
-    % for w in set(list(ctx.linked_from) + list(ctx.links_to)):
-        <li>${h.link(request, w)}</li>
+    % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
+        <li>
+            ${h.link(request, w)}
+            % if desc:
+            <span>(${desc})</span>
+            % endif
+        </li>
     % endfor
 </ul>
 % endif

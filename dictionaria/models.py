@@ -59,11 +59,11 @@ class Word(CustomModelMixin, common.Unit):
 
     @property
     def linked_from(self):
-        return [w.source for w in self.source_assocs]
+        return [(w.source, w.description) for w in self.source_assocs]
 
     @property
     def links_to(self):
-        return [w.target for w in self.target_assocs]
+        return [(w.target, w.description) for w in self.target_assocs]
 
 
 class SeeAlso(Base):

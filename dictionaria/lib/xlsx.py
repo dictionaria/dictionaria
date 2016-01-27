@@ -1,6 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function
 from mimetypes import guess_type
+import re
 
 import xlrd
 
@@ -12,6 +13,9 @@ from clld.db.models.common import Unit_data, Unit_files
 
 from dictionaria.lib.ingest import Example, Examples, load_examples
 from dictionaria import models
+
+
+ASSOC_PATTERN = re.compile('associated\s+[a-z]+\s*(\((?P<rel>[^\)]+)\))?')
 
 
 def split(s, sep=';'):
@@ -106,7 +110,6 @@ class Dictionary(object):
             marker_map,
             args):
         data = Data()
-        rel = []
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
@@ -115,12 +118,17 @@ class Dictionary(object):
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])
 
+        img_map = {
+            'nan-ke-öm.jpg': 'nan_ke-öm.jpg',
+            'nan-ki-geigei.jpg': 'nan_ki-geigei.jpg',
+            'nan_ki-nde': 'nan_ki-nde.jpg',
+        }
         images = {}
         image_dir = self.dir.parent.joinpath('images')
         if image_dir.exists():
             for p in image_dir.iterdir():
                 if p.is_file():
-                    images[p.name] = p
+                    images[p.name.decode('utf8')] = p
 
         for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
             try:
@@ -135,19 +143,23 @@ class Dictionary(object):
                 DBSession.flush()
                 img = lemma.get('picture')
                 if img:
-                    assert img in images
-                    mimetype = guess_type(img)[0]
-                    assert mimetype.startswith('image/')
-                    f = Unit_files(
-                        id=id_(lemma),
-                        name=img,
-                        object_pk=word.pk,
-                        mime_type=mimetype)
-                    DBSession.add(f)
-                    DBSession.flush()
-                    DBSession.refresh(f)
-                    with open(images[img].as_posix(), 'rb') as fp:
-                        f.create(args.data_file('files'), fp.read())
+                    img = img_map.get(img, img)
+                    if img not in images:
+                        print(img, self.dir)
+                        raise ValueError
+                    else:
+                        mimetype = guess_type(img)[0]
+                        assert mimetype.startswith('image/')
+                        f = Unit_files(
+                            id=id_(lemma),
+                            name=img,
+                            object_pk=word.pk,
+                            mime_type=mimetype)
+                        DBSession.add(f)
+                        DBSession.flush()
+                        DBSession.refresh(f)
+                        with open(images[img].as_posix(), 'rb') as fp:
+                            f.create(args.data_file('files'), fp.read())
             except:
                 print(submission.id)
                 print(lemma)
@@ -155,22 +167,23 @@ class Dictionary(object):
 
         DBSession.flush()
         for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
-            #
-            # FIXME: handle relations between words!
-            #
             word = data['Word'][lemma['ID']]
             for key in lemma:
-                if key not in ['ID', 'Lemma', 'PoS', 'associated lemmas', 'picture']:
+                if key in ['ID', 'Lemma', 'PoS', 'picture']:
+                    continue
+                assoc = ASSOC_PATTERN.match(key)
+                if not assoc:
                     value = lemma[key]
                     if value:
                         DBSession.add(Unit_data(key=key, value=value, object_pk=word.pk))
-            for lid in split(lemma.get('associated lemmas', '')):
-                # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
-                lid = lid.replace(' ', '').lower()
-                DBSession.add(models.SeeAlso(
-                    source_pk=word.pk,
-                    target_pk=data['Word'][lid].pk,
-                    description='see also'))
+                else:
+                    for lid in split(lemma.get(key, '')):
+                        # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
+                        lid = lid.replace(' ', '').lower()
+                        DBSession.add(models.SeeAlso(
+                            source_pk=word.pk,
+                            target_pk=data['Word'][lid].pk,
+                            description=assoc.group('rel')))
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
             try:
                 m = models.Meaning(
