@@ -36,7 +36,7 @@ class Example(Entry):
     def id(self):
         res = self.get('ref')
         if not res:
-            res = md5(slug(self.text + self.translation).encode('utf')).hexdigest()
+            res = md5(slug(self.text or '' + self.translation or '').encode('utf')).hexdigest()
             self.insert(0, ('ref', res))
         return res
 

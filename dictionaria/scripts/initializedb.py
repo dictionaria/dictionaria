@@ -48,11 +48,6 @@ def main(args):
 
     concepticon = Concepticon()
     for i, concept_set in enumerate(concepticon.resources('parameter').members):
-
-
-        break
-
-
         concept_set = concepticon.resource(concept_set)
         cm = ComparisonMeaning(
             id=concept_set.id,
@@ -85,6 +80,9 @@ def main(args):
             continue
 
         md = submission.md
+        if md is None:
+            continue
+
         id_ = submission.id
         lmd = md['language']
 

@@ -366,7 +366,7 @@ class Dictionary(object):
                     word.id,
                     id='%s-%s-%s' % (submission.id, i + 1, j + 1),
                     name=word.form,
-                    number=int(word.hm) if word.hm else 0,
+                    number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
                     pos=word.ps,
                     dictionary=vocab,
