@@ -15,7 +15,7 @@
     % endfor
 </%def>
 
-<h2>Word ${ctx.name}</h2>
+<h2><span class="lemma">${ctx.name}</span></h2>
 
 <p>
     % for file in ctx._files:
@@ -97,7 +97,7 @@
 <ul>
     % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
         <li>
-            ${h.link(request, w)}
+            <span class="lemma">${h.link(request, w)}</span>
             % if desc:
             <span>(${desc})</span>
             % endif

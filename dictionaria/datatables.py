@@ -79,9 +79,13 @@ class DictionaryCol(Col):
 
 class WordCol(LinkCol):
     def get_attrs(self, item):
-        return dict(
-            label=item.name if not item.number
-            else HTML.span(item.name, HTML.sup(str(item.number))))
+        attrs = dict(title=item.name)
+        if not item.number:
+            attrs['label'] = HTML.span(item.name, class_='lemma')
+        else:
+            attrs['label'] = HTML.span(
+                item.name, HTML.sup(str(item.number)), class_='lemma')
+        return attrs
 
     def order(self):
         return Word.name, Word.number
@@ -108,7 +112,7 @@ class Words(datatables.Units):
         datatables.Units.__init__(self, req, model, **kw)
         self.vars = OrderedDict()
         if self.contribution:
-            for name in self.contribution.jsondata['custom_fields']:
+            for name in self.contribution.jsondata.get('custom_fields', []):
                 self.vars[name] = aliased(common.Unit_data, name=name)
 
     def base_query(self, query):
