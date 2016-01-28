@@ -52,7 +52,11 @@ class Varieties(Languages):
 class MeaningsCol(Col):
     def format(self, item):
         return HTML.ul(
-            *[HTML.li(link(self.dt.req, c.valueset.parameter)) for c in item.counterparts],
+            *[HTML.li(HTML.span(
+                link(self.dt.req, c.valueset.parameter),
+                ' ',
+                concepticon_link(self.dt.req, c.valueset.parameter)
+            )) for c in item.counterparts],
             class_='unstyled'
         )
 
