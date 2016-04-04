@@ -5,6 +5,7 @@ Parsing functionality for the SFM variant understood for Dictionaria submissions
 from __future__ import unicode_literals, print_function
 from collections import defaultdict, Counter, OrderedDict
 import re
+from mimetypes import guess_type
 
 from clld.scripts.util import Data
 from clld.db.models import common
@@ -344,6 +345,13 @@ class Dictionary(object):
         lang = models.Variety.get(lid)
         load_examples(submission, data, lang)
 
+        images = {}
+        image_dir = self.dir.parent.joinpath('images')
+        if image_dir.exists():
+            for p in image_dir.iterdir():
+                if p.is_file():
+                    images[p.stem.decode('utf8')] = p
+
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
             headword = None
@@ -373,11 +381,29 @@ class Dictionary(object):
                     language=lang)
                 DBSession.flush()
 
+                img = images.get(w.name)
+                if img:
+                    print('illustration: %s' % img)
+                    mimetype = guess_type(img.name)[0]
+                    assert mimetype.startswith('image/')
+                    f = common.Unit_files(
+                        id='%s-%s' % (submission.id, w.id),
+                        name=img.name,
+                        object_pk=w.pk,
+                        mime_type=mimetype)
+                    DBSession.add(f)
+                    DBSession.flush()
+                    DBSession.refresh(f)
+                    with open(img.as_posix(), 'rb') as fp:
+                        f.create(args.data_file('files'), fp.read())
+
+
                 concepts = []
 
                 for k, meaning in enumerate(word.meanings):
                     if not (meaning.ge or meaning.de):
-                        print('meaning without description for word %s' % w.name)
+                        # FIXME: better logging!
+                        #print('meaning without description for word %s' % w.name)
                         continue
 
                     if meaning.ge:
@@ -394,9 +420,12 @@ class Dictionary(object):
                     assert not meaning.x
                     for xref in meaning.xref:
                         s = data['Sentence'].get(xref)
-                        assert s
-                        models.MeaningSentence(meaning=m, sentence=s)
+                        if s is None:
+                            print('missing example referenced: %s' % xref)
+                        else:
+                            models.MeaningSentence(meaning=m, sentence=s)
 
+                    # FIXME: lookup ge as well as de in comparison meanings!
                     key = (meaning.ge or meaning.de).replace('.', ' ').lower()
                     concept = None
                     if key in comparison_meanings:
@@ -456,4 +485,6 @@ class Dictionary(object):
                     target_pk=data['Word'][t].pk,
                     description=d))
             else:
-                print('---m---', s if s not in data['Word'] else t)
+                pass
+                # FIXME: better logging!
+                #print('---m---', s if s not in data['Word'] else t)

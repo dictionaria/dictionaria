@@ -102,3 +102,10 @@ class Counterpart(CustomModelMixin, common.Value):
 
     word_pk = Column(Integer, ForeignKey('word.pk'))
     word = relationship(Word, backref='counterparts')
+
+
+@implementer(interfaces.ISentence)
+class Example(CustomModelMixin, common.Sentence):
+    pk = Column(Integer, ForeignKey('sentence.pk'), primary_key=True)
+    alt_translation = Column(Unicode)
+    alt_translation_language = Column(Unicode)

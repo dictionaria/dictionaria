@@ -2,6 +2,32 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "units" %>
 
+<%def name="sentences(obj=None, fmt='long')">
+    <% obj = obj or ctx %>
+    <ul id="sentences-${obj.pk}" class="unstyled">
+        % for a in obj.sentence_assocs:
+            <li>
+                <blockquote style="margin-top: 5px;">
+                ${h.link(request, a.sentence, label='%s %s:' % (_('Sentence'), a.sentence.id))}<br>
+            % if a.description and fmt == 'long':
+            <p>${a.description}</p>
+            % endif
+            ${h.rendered_sentence(a.sentence, fmt=fmt)}
+            % if a.sentence.audio:
+            <div>
+                <audio controls="controls">
+                    <source src="${request.file_url(a.sentence.audio)}"/>
+                </audio>
+            </div>
+            % endif
+            % if a.sentence.references and fmt == 'long':
+            <p>Source: ${h.linked_references(request, a.sentence)|n}</p>
+            % endif
+                    </blockquote>
+            </li>
+        % endfor
+    </ul>
+</%def>
 
 <%def name="sidebar()">
     <%util:well title="Dictionary">
@@ -70,13 +96,13 @@
 </table>
 
 <h4>Meanings</h4>
-<ul>
+<ol>
     % for m in ctx.meanings:
         <li>
             % if m.language != 'en':
                 ${m.language}:
             % endif
-            ${m.name}
+            <strong>${m.name}</strong>
             % if m.language == 'en':
                 % if m.gloss and m.name != m.gloss:
                 [${m.gloss}]
@@ -85,12 +111,12 @@
                     (${m.semantic_domain})
                 % endif
                 % if m.sentence_assocs:
-                    ${util.sentences(m)}
+                    ${sentences(m)}
                 % endif
             % endif
         </li>
     % endfor
-</ul>
+</ol>
 
 % if ctx.linked_from or ctx.links_to:
 <h4>Related</h4>

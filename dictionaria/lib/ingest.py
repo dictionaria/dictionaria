@@ -105,7 +105,7 @@ def load_examples(submission, data, lang):
         data.add(
             common.Sentence,
             ex.id,
-            id='%s-%s' % (submission.id, ex.id),
+            id='%s-%s' % (submission.id, ex.id.replace('.', '_')),
             name=ex.text,
             language=lang,
             analyzed=ex.morphemes,
