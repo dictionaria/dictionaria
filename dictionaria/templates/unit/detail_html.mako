@@ -36,7 +36,12 @@
     </%util:well>
     % for file in ctx._files:
         % if file.mime_type.startswith('image'):
-        <img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
+            <div class="img-with-caption">
+                <img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
+                % if file.jsondata.get('copyright'):
+                    <p>© ${file.jsondata.get('copyright')}</p>
+                % endif
+            </div>
         % endif
     % endfor
 </%def>

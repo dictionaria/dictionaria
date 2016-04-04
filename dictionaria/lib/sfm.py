@@ -390,7 +390,8 @@ class Dictionary(object):
                         id='%s-%s' % (submission.id, w.id),
                         name=img.name,
                         object_pk=w.pk,
-                        mime_type=mimetype)
+                        mime_type=mimetype,
+                        jsondata=submission.md.get('images', {}))
                     DBSession.add(f)
                     DBSession.flush()
                     DBSession.refresh(f)
