@@ -6,6 +6,7 @@ from clldutils.jsonlib import load
 
 from dictionaria.lib import sfm
 from dictionaria.lib import xlsx
+from dictionaria.lib import filemaker
 import dictionaria
 
 
@@ -27,13 +28,16 @@ class Submission(object):
         md = self.dir.joinpath('md.json')
         self.md = load(md) if md.exists() else None
         self.db_name = None
-        self.type = None
+        self.impl = None
         if self.dir.joinpath('db.sfm').exists():
             self.db_name = 'db.sfm'
-            self.type = 'sfm'
+            self.impl = sfm.Dictionary
         elif list(self.dir.glob('*.xlsx')):
             self.db_name = list(self.dir.glob('*.xlsx'))[0].name
-            self.type = 'xlsx'
+            self.impl = xlsx.Dictionary
+        elif self.dir.joinpath('FIELDS.txt').exists():
+            self.db_name = 'FIELDS.txt'
+            self.impl = filemaker.Dictionary
         else:
             raise ValueError('no valid db file in %s' % self.dir)
 
@@ -43,14 +47,12 @@ class Submission(object):
         return self.dir.joinpath(*comps)
 
     def dictionary(self, processed=True):
-        db_path = self.db_path(processed=processed)
-        if self.type == 'sfm':
-            return sfm.Dictionary(
-                db_path,
+        kw = {}
+        if self.impl == sfm.Dictionary:
+            kw = dict(
                 marker_map=self.md.get('marker_map'),
                 encoding=self.md.get('encoding') if not processed else 'utf8')
-        if self.type == 'xlsx':
-            return xlsx.Dictionary(db_path)
+        return self.impl(self.db_path(processed=processed), **kw)
 
     def process(self):
         d = self.dictionary(processed=False)

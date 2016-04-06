@@ -1,3 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
-from clld.web.util.helpers import rendered_sentence
+
+
+def default_value_converter(x, *args, **kw):
+    return x

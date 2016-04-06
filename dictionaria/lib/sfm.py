@@ -352,6 +352,11 @@ class Dictionary(object):
                 if p.is_file():
                     images[p.stem.decode('utf8')] = p
 
+        def meaning_descriptions(s):
+            s = s or ''
+            return [
+                ss.strip() for ss in s.replace('.', ' ').lower().split(';') if ss.strip()]
+
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
             headword = None
@@ -426,13 +431,17 @@ class Dictionary(object):
                         else:
                             models.MeaningSentence(meaning=m, sentence=s)
 
-                    # FIXME: lookup ge as well as de in comparison meanings!
-                    key = (meaning.ge or meaning.de).replace('.', ' ').lower()
+                    #
+                    # Lookup comparison meanings.
+                    #
                     concept = None
-                    if key in comparison_meanings:
-                        concept = comparison_meanings[key]
-                    elif key in comparison_meanings_alt_labels:
-                        concept = comparison_meanings_alt_labels[key]
+                    for key in meaning_descriptions(meaning.de) + meaning_descriptions(meaning.ge):
+                        if key in comparison_meanings:
+                            concept = comparison_meanings[key]
+                        elif key in comparison_meanings_alt_labels:
+                            concept = comparison_meanings_alt_labels[key]
+                        if concept:
+                            break
 
                     if concept and concept not in concepts:
                         concepts.append(concept)
