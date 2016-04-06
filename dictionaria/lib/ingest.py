@@ -269,21 +269,42 @@ class BaseDictionary(object):
                             source_pk=word.pk,
                             target_pk=data['Word'][lid].pk,
                             description=assoc.group('rel')))
-        for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
-            try:
-                m = models.Meaning(
-                    id=id_(sense),
-                    name=sense['meaning description'],
-                    word=data['Word'][sense['belongs to lemma']])
-            except:
-                print(submission.id)
-                print(sense)
-                raise
 
-            for exid in split(sense.get('example ID', '')):
-                s = data['Sentence'].get(exid)
-                if not s:
+        for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
+            w = data['Word'][sense['belongs to lemma']]
+            for i, md in enumerate(split(sense['meaning description'])):
+                try:
+                    m = models.Meaning(
+                        id='%s-%s-%s' % (submission.id, sense['ID'], i), name=md, word=w)
+                except:
                     print(submission.id)
                     print(sense)
-                    raise ValueError
-                models.MeaningSentence(meaning=m, sentence=s)
+                    raise
+
+                for exid in split(sense.get('example ID', '')):
+                    s = data['Sentence'].get(exid)
+                    if not s:
+                        print(submission.id)
+                        print(sense)
+                        raise ValueError
+                    models.MeaningSentence(meaning=m, sentence=s)
+
+                key = md.lower()
+                if key in comparison_meanings:
+                    concept = comparison_meanings[key]
+                elif key in comparison_meanings_alt_labels:
+                    concept = comparison_meanings_alt_labels[key]
+                else:
+                    continue
+
+                vs = data['ValueSet'].get(m.id)
+                if not vs:
+                    vs = data.add(
+                        common.ValueSet, m.id,
+                        id=m.id,
+                        language=lang,
+                        contribution=vocab,
+                        parameter_pk=concept)
+
+                DBSession.add(models.Counterpart(
+                    id=m.id, name=w.name, valueset=vs, word=w))
