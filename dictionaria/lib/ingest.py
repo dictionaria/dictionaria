@@ -272,23 +272,23 @@ class BaseDictionary(object):
 
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
             w = data['Word'][sense['belongs to lemma']]
-            for i, md in enumerate(split(sense['meaning description'])):
-                try:
-                    m = models.Meaning(
-                        id='%s-%s-%s' % (submission.id, sense['ID'], i), name=md, word=w)
-                except:
+            try:
+                m = models.Meaning(
+                    id=id_(sense), name=sense['meaning description'], word=w)
+            except:
+                print(submission.id)
+                print(sense)
+                raise
+
+            for exid in split(sense.get('example ID', '')):
+                s = data['Sentence'].get(exid)
+                if not s:
                     print(submission.id)
                     print(sense)
-                    raise
+                    raise ValueError
+                models.MeaningSentence(meaning=m, sentence=s)
 
-                for exid in split(sense.get('example ID', '')):
-                    s = data['Sentence'].get(exid)
-                    if not s:
-                        print(submission.id)
-                        print(sense)
-                        raise ValueError
-                    models.MeaningSentence(meaning=m, sentence=s)
-
+            for i, md in enumerate(split(sense['meaning description'])):
                 key = md.lower()
                 if key in comparison_meanings:
                     concept = comparison_meanings[key]
@@ -297,14 +297,15 @@ class BaseDictionary(object):
                 else:
                     continue
 
-                vs = data['ValueSet'].get(m.id)
+                vsid = '%s-%s' % (m.id, i)
+                vs = data['ValueSet'].get(vsid)
                 if not vs:
                     vs = data.add(
-                        common.ValueSet, m.id,
-                        id=m.id,
+                        common.ValueSet, vsid,
+                        id=vsid,
                         language=lang,
                         contribution=vocab,
                         parameter_pk=concept)
 
                 DBSession.add(models.Counterpart(
-                    id=m.id, name=w.name, valueset=vs, word=w))
+                    id=vsid, name=w.name, valueset=vs, word=w))
