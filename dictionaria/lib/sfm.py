@@ -15,8 +15,29 @@ from clldutils.misc import slug
 from clldutils.path import Path
 from clldutils import sfm
 
-from dictionaria.lib.ingest import Corpus, Example, Examples, load_examples
+from dictionaria.lib.ingest import Corpus, Example, load_examples, MeaningDescription
 from dictionaria import models
+
+
+def move_marker(entry, m, before):
+    reorder_map = []
+    last_m = 0
+
+    for index, (marker, content) in enumerate(entry):
+        if marker == m:
+            # search for the preceding 'before' marker, but make sure we do not go
+            # back before the last 'm' marker.
+            for i in range(index - 1, last_m, -1):
+                if entry[i][0] == before:
+                    reorder_map.append((i, content, index))
+                    break
+            else:
+                entry[index] = (m, content)
+            last_m = index
+
+    for insert, content, delete in reorder_map:
+        del entry[delete]
+        entry.insert(insert, (m, content))
 
 
 class Rearrange(object):
@@ -51,6 +72,26 @@ class Rearrange(object):
             del entry[delete]
             entry.insert(insert, ('rf', content))
 
+        move_marker(entry, 'xo', 'xe')
+
+
+class Concepticon(object):
+    def __init__(self):
+        self.count = 0
+
+    def __call__(self, entry):
+        items = []
+        for marker, content in entry:
+            if marker == 'de':
+                md = MeaningDescription(content)
+                items.append((marker, md.meanings))
+                if md.has_comparison_meaning:
+                    self.count += 1
+                items.append(('comparison_meanings', md.comparison_meanings))
+            else:
+                items.append((marker, content))
+        return entry.__class__(items)
+
 
 class ExampleExtractor(object):
     def __init__(self, corpus, log):
@@ -60,6 +101,7 @@ class ExampleExtractor(object):
             'xvm': 'mb',
             'xeg': 'gl',
             'xo': 'ot',
+            'xn': 'ot',
             'xe': 'ft',
         }
         self.examples = OrderedDict()
@@ -110,7 +152,7 @@ class ExampleExtractor(object):
         return entry.__class__(items)
 
     def merge(self, ex1, ex2):
-        for prop in 'rf tx mb gl ft'.split():
+        for prop in 'rf tx mb gl ft ot'.split():
             p1 = ex1.get(prop)
             p2 = ex2.get(prop)
             if p1:
@@ -316,6 +358,13 @@ class Dictionary(object):
         print(stats._mult_markers)
         print(stats._implicit_mult_markers)
 
+    def concepticon(self, db):
+        visitor = Concepticon()
+        self.sfm.visit(visitor)
+        print('Found comparison meanings for %s of %s entries' % (
+            visitor.count, len(self.sfm)))
+        self.sfm.write(db)
+
     def process(self, outfile):
         """extract examples, etc."""
         assert self.dir.name != 'processed'
@@ -343,7 +392,10 @@ class Dictionary(object):
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
-        load_examples(submission, data, lang)
+        xrefs = []
+        for entry in self.sfm:
+            xrefs.extend(entry.getall('xref'))
+        load_examples(submission, data, lang, set(xrefs))
 
         images = {}
         image_dir = self.dir.parent.joinpath('images')
@@ -382,6 +434,7 @@ class Dictionary(object):
                     number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
                     pos=word.ps,
+                    #original='%s' % entry
                     dictionary=vocab,
                     language=lang)
                 DBSession.flush()
@@ -420,12 +473,13 @@ class Dictionary(object):
                         name=meaning.de or meaning.ge,
                         description=meaning.de,
                         gloss=meaning.ge,
+                        #ord=k + 1,
                         word=w,
                         semantic_domain=', '.join(meaning.sd))
 
                     assert not meaning.x
                     for xref in meaning.xref:
-                        s = data['Sentence'].get(xref)
+                        s = data['Example'].get(xref)
                         if s is None:
                             print('missing example referenced: %s' % xref)
                         else:
@@ -434,8 +488,9 @@ class Dictionary(object):
                     #
                     # Lookup comparison meanings.
                     #
-                    concept = None
-                    for key in meaning_descriptions(meaning.de) + meaning_descriptions(meaning.ge):
+                    concept, key = None, None
+                    for key in meaning_descriptions(meaning.de) + \
+                            meaning_descriptions(meaning.ge):
                         if key in comparison_meanings:
                             concept = comparison_meanings[key]
                         elif key in comparison_meanings_alt_labels:
@@ -443,7 +498,7 @@ class Dictionary(object):
                         if concept:
                             break
 
-                    if concept and concept not in concepts:
+                    if concept and key and concept not in concepts:
                         concepts.append(concept)
                         vsid = '%s-%s' % (key, submission.id),
                         if vsid in data['ValueSet']:
@@ -464,14 +519,20 @@ class Dictionary(object):
 
                 for _lang, meanings in word.non_english_meanings.items():
                     assert _lang in submission.md['metalanguages']
-                    for meaning in meanings:
-                        k += 1
-                        models.Meaning(
-                            id='%s-%s' % (w.id, k + 1),
-                            name=meaning,
-                            gloss=meaning,
-                            language=submission.md['metalanguages'][_lang],
-                            word=w)
+
+                    DBSession.add(common.Unit_data(
+                        object_pk=w.pk,
+                        key='lang-%s' % submission.md['metalanguages'][_lang],
+                        value='; '.join(meanings),
+                        ord=-1))
+
+                    k += 1
+                    models.Meaning(
+                        id='%s-%s' % (w.id, k + 1),
+                        name='; '.join(meanings),
+                        gloss='; '.join(meanings),
+                        language=submission.md['metalanguages'][_lang],
+                        word=w)
 
                 for index, (key, values) in enumerate(word.data.items()):
                     if key in marker_map:

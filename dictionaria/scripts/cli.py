@@ -6,10 +6,14 @@ from clld.scripts.util import parsed_args
 
 from dictionaria.lib.submission import Submission
 
+#
+# FIXME: new command "concepticon"
+#
+
 
 def main():
     add_args = [
-        (("command",), dict(help="stats|process")),
+        (("command",), dict(help="stats|process|concepticon")),
         (("dict",), dict(help="dictionary ID")),
         (("--internal",), dict(action='store_true', help='run on private repos')),
         (("--raw",), dict(action='store_true')),
@@ -39,5 +43,7 @@ def main():
             for e in submission.dict:
                 if len(e.getall('ps')) > len(e.getall('se')) + len(e.getall('lx')):
                     print(e.get('lx'))
+    elif args.command == 'concepticon':
+        submission.concepticon()
     elif args.command == 'process':
         submission.process()

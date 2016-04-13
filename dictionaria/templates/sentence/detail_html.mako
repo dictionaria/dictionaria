@@ -37,6 +37,12 @@
 </dl>
 
 ${h.rendered_sentence(ctx)|n}
+% if ctx.alt_translation:
+    <div style="margin-top: -10px;">
+        <span class="translation">${ctx.alt_translation}</span>
+        <span>[${ctx.alt_translation_language}]</span>
+    </div>
+% endif
 
 % if getattr(ctx, 'audio'):
 <div>

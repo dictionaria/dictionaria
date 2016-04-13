@@ -54,6 +54,10 @@ class Submission(object):
                 encoding=self.md.get('encoding') if not processed else 'utf8')
         return self.impl(self.db_path(processed=processed), **kw)
 
+    def concepticon(self):
+        d = self.dictionary()
+        d.concepticon(self.db_path())
+
     def process(self):
         d = self.dictionary(processed=False)
         outfile = self.db_path(processed=True)

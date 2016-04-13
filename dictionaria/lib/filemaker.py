@@ -8,6 +8,7 @@ from clldutils.dsv import UnicodeWriter
 
 from dictionaria.lib.ingest import Example, Examples, BaseDictionary
 
+
 FORMAT_MAP = {
     'entries': (
         'lemmas.csv',

@@ -9,10 +9,16 @@
             <li>
                 <blockquote style="margin-top: 5px;">
                 ${h.link(request, a.sentence, label='%s %s:' % (_('Sentence'), a.sentence.id))}<br>
-            % if a.description and fmt == 'long':
-            <p>${a.description}</p>
-            % endif
-            ${h.rendered_sentence(a.sentence, fmt=fmt)}
+                % if a.description and fmt == 'long':
+                    <p>${a.description}</p>
+                % endif
+                ${h.rendered_sentence(a.sentence, fmt=fmt)}
+                % if a.sentence.alt_translation:
+                <div>
+                    <span class="translation">${a.sentence.alt_translation}</span>
+                    <span>[${a.sentence.alt_translation_language}]</span>
+                </div>
+                % endif
             % if a.sentence.audio:
             <div>
                 <audio controls="controls">
@@ -93,10 +99,12 @@
     </tr>
     % endfor
 % for _d in ctx.data:
+    % if not _d.key.startswith('lang-'):
     <tr>
         <td>${_d.key}</td>
         <td>${_d.value}</td>
     </tr>
+    % endif
 % endfor
 </table>
 

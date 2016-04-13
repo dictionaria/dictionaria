@@ -9,7 +9,8 @@ from sqlalchemy import (
     ForeignKey,
     Date,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.declarative import declared_attr
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
@@ -50,6 +51,8 @@ class Word(CustomModelMixin, common.Unit):
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
 
+    # original ...?
+
     # the concatenated values for the UnitParameter part of speech is stored denormalized.
     pos = Column(Unicode)
 
@@ -77,10 +80,19 @@ class SeeAlso(Base):
 
 class Meaning(Base, common.IdNameDescriptionMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
-    word = relationship(Word, backref='meanings')
+    ord = Column(Integer, default=1)
     gloss = Column(Unicode)
     language = Column(Unicode, default='en')
     semantic_domain = Column(Unicode)
+
+    @declared_attr
+    def word(cls):
+        return relationship(Word, backref=backref('meanings', order_by=[cls.ord]))
+
+
+#
+# FIXME: need relations between senses as well!
+#
 
 
 class MeaningSentence(Base):

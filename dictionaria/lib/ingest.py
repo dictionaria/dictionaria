@@ -10,9 +10,11 @@ from clld.db.meta import DBSession
 from clld.scripts.util import Data
 from clldutils.dsv import reader
 from clldutils.sfm import SFM, Entry
-from clldutils.misc import cached_property, slug
+from clldutils.misc import cached_property, slug, UnicodeMixin
 from clldutils.path import Path
+from clldutils.jsonlib import load
 
+import dictionaria
 from dictionaria import models
 
 
@@ -21,6 +23,59 @@ def split(s, sep=';'):
         p = p.strip()
         if p:
             yield p
+
+
+_concepticon = None
+
+
+def get_concept(s):
+    global _concepticon
+    if _concepticon is None:
+        _concepticon = load(Path(dictionaria.__file__).parent.joinpath(
+            'static', 'concepticon-1.0-labels.json'))
+    s = s.lower()
+    if s in _concepticon['conceptset_labels']:
+        return _concepticon['conceptset_labels'][s]
+    return _concepticon['alternative_labels'].get(s)
+
+
+class ComparisonMeaning(UnicodeMixin):
+    def __init__(self, s):
+        self.id = None
+        self.label = None
+        cid = get_concept(s)
+        if cid:
+            self.id, self.label = cid
+
+    def __unicode__(self):
+        if self.id:
+            return '[%s](http://concepticon.clld.org/parameters/%s)' % (
+                self.label, self.id)
+        return ''
+
+
+class MeaningDescription(object):
+    # split s at ;
+    # lookup concepticon match
+    def __init__(self, s):
+        self._meanings = []
+        self._comparison_meanings = []
+        for m in split(s):
+            self._meanings.append(m)
+            cm = ComparisonMeaning(m)
+            self._comparison_meanings.append(cm if cm.id else '')
+
+    @property
+    def has_comparison_meaning(self):
+        return any(self._comparison_meanings)
+
+    @property
+    def meanings(self):
+        return '; '.join(self._meanings)
+
+    @property
+    def comparison_meanings(self):
+        return '; '.join('%s' % cm for cm in self._comparison_meanings)
 
 
 class Example(Entry):
@@ -32,7 +87,8 @@ class Example(Entry):
         ('tx', 'text'),
         ('mb', 'morphemes'),
         ('gl', 'gloss'),
-        ('ft', 'translation')
+        ('ft', 'translation'),
+        ('ot', 'alt_translation'),
     ]:
         markers[k] = v
     name_to_marker = {v: k for k, v in markers.items()}
@@ -84,6 +140,10 @@ class Example(Entry):
         return self.get('ft')
 
     @property
+    def alt_translation(self):
+        return self.get('ot')
+
+    @property
     def morphemes(self):
         return self.normalize(self.get('mb'))
 
@@ -115,17 +175,20 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-def load_examples(submission, data, lang):
+def load_examples(submission, data, lang, xrefs=None):
     for ex in Examples.from_file(submission.dir.joinpath('processed', 'examples.sfm')):
-        data.add(
-            common.Sentence,
-            ex.id,
-            id='%s-%s' % (submission.id, ex.id.replace('.', '_')),
-            name=ex.text,
-            language=lang,
-            analyzed=ex.morphemes,
-            gloss=ex.gloss,
-            description=ex.translation)
+        if xrefs is None or ex.id in xrefs:
+            data.add(
+                models.Example,
+                ex.id,
+                id='%s-%s' % (submission.id, ex.id.replace('.', '_')),
+                name=ex.text,
+                language=lang,
+                analyzed=ex.morphemes,
+                gloss=ex.gloss,
+                description=ex.translation,
+                alt_translation=ex.alt_translation,
+                alt_translation_language=submission.md.get('metalanguages', {}).get('gxx'))
 
 
 class Corpus(object):
@@ -281,7 +344,7 @@ class BaseDictionary(object):
                 raise
 
             for exid in split(sense.get('example ID', '')):
-                s = data['Sentence'].get(exid)
+                s = data['Example'].get(exid)
                 if not s:
                     print(submission.id)
                     print(sense)
