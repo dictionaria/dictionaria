@@ -89,6 +89,7 @@ class Example(Entry):
         ('gl', 'gloss'),
         ('ft', 'translation'),
         ('ot', 'alt_translation'),
+        ('sf', 'soundfile'),
     ]:
         markers[k] = v
     name_to_marker = {v: k for k, v in markers.items()}
@@ -144,6 +145,10 @@ class Example(Entry):
         return self.get('ot')
 
     @property
+    def soundfile(self):
+        return self.get('sf')
+
+    @property
     def morphemes(self):
         return self.normalize(self.get('mb'))
 
@@ -175,10 +180,10 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-def load_examples(submission, data, lang, xrefs=None):
+def load_examples(args, submission, data, lang, xrefs=None):
     for ex in Examples.from_file(submission.dir.joinpath('processed', 'examples.sfm')):
         if xrefs is None or ex.id in xrefs:
-            data.add(
+            obj = data.add(
                 models.Example,
                 ex.id,
                 id='%s-%s' % (submission.id, ex.id.replace('.', '_')),
@@ -189,6 +194,28 @@ def load_examples(submission, data, lang, xrefs=None):
                 description=ex.translation,
                 alt_translation=ex.alt_translation,
                 alt_translation_language=submission.md.get('metalanguages', {}).get('gxx'))
+            DBSession.flush()
+
+            if ex.soundfile:
+                name = ex.soundfile.replace('.wav', '.mp3').encode('utf8')
+                sf = submission.dir.joinpath('audio', name)
+                if sf.exists():
+                    mimetype = guess_type(sf.name)[0]
+                    if not mimetype:
+                        print('missing soundfile:', sf.name)
+                    else:
+                        assert mimetype.startswith('audio/')
+                        f = common.Sentence_files(
+                            id='%s-%s' % (submission.id, obj.id),
+                            name=sf.name.decode('utf8'),
+                            object_pk=obj.pk,
+                            mime_type=mimetype,
+                            jsondata=submission.md.get('audio', {}))
+                        DBSession.add(f)
+                        DBSession.flush()
+                        DBSession.refresh(f)
+                        with open(sf.as_posix(), 'rb') as fp:
+                            f.create(args.data_file('files'), fp.read())
 
 
 class Corpus(object):
@@ -253,7 +280,7 @@ class BaseDictionary(object):
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
-        load_examples(submission, data, lang)
+        load_examples(args, submission, data, lang)
 
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])

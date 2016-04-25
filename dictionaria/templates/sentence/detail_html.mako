@@ -45,7 +45,7 @@ ${h.rendered_sentence(ctx)|n}
 % endif
 
 % if getattr(ctx, 'audio'):
-<div>
+<div style="margin-top: 20px;">
     <audio controls="controls">
         <source src="${request.file_url(ctx.audio)}"/>
     </audio>

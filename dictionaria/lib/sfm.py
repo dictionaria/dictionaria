@@ -72,6 +72,7 @@ class Rearrange(object):
             del entry[delete]
             entry.insert(insert, ('rf', content))
 
+        move_marker(entry, 'xsf', 'xe')
         move_marker(entry, 'xo', 'xe')
 
 
@@ -103,6 +104,7 @@ class ExampleExtractor(object):
             'xo': 'ot',
             'xn': 'ot',
             'xe': 'ft',
+            'xsf': 'sf',
         }
         self.examples = OrderedDict()
         self.corpus = corpus
@@ -378,6 +380,15 @@ class Dictionary(object):
         self.sfm.write(outfile)
         extractor.write_examples(outfile.parent.joinpath('examples.sfm'))
 
+    def scan_dir(self, name, suffixes=None):
+        res = {}
+        _dir = self.dir.parent.joinpath(name)
+        if _dir.exists():
+            for p in _dir.iterdir():
+                if p.is_file() and (suffixes is None or p.suffix in suffixes):
+                    res[p.stem.decode('utf8')] = p
+        return res
+
     def load(
             self,
             submission,
@@ -395,14 +406,10 @@ class Dictionary(object):
         xrefs = []
         for entry in self.sfm:
             xrefs.extend(entry.getall('xref'))
-        load_examples(submission, data, lang, set(xrefs))
+        load_examples(args, submission, data, lang, set(xrefs))
 
-        images = {}
-        image_dir = self.dir.parent.joinpath('images')
-        if image_dir.exists():
-            for p in image_dir.iterdir():
-                if p.is_file():
-                    images[p.stem.decode('utf8')] = p
+        images = self.scan_dir('images')
+        audio = self.scan_dir('audio', suffixes=['.mp3'])
 
         def meaning_descriptions(s):
             s = s or ''
@@ -410,6 +417,18 @@ class Dictionary(object):
                 ss.strip() for ss in s.replace('.', ' ').lower().split(';') if ss.strip()]
 
         for i, entry in enumerate(self.sfm):
+            sf = set(entry.getall('sf'))
+            if len(sf) > 1:
+                print(entry.get('lx'))
+                print(sf)
+                raise ValueError
+            if sf:
+                sf = sf.pop().split('.')[0]
+                if sf not in audio:
+                    print(sf)
+                    sf = None
+                else:
+                    sf = audio[sf]
             words = list(entry.get_words())
             headword = None
 
@@ -456,6 +475,21 @@ class Dictionary(object):
                     with open(img.as_posix(), 'rb') as fp:
                         f.create(args.data_file('files'), fp.read())
 
+                if sf:
+                    #print('sound file: %s' % sf.name.decode('utf8'))
+                    mimetype = guess_type(sf.name)[0]
+                    assert mimetype.startswith('audio/')
+                    f = common.Unit_files(
+                        id='%s-%s' % (submission.id, w.id),
+                        name=sf.name.decode('utf8'),
+                        object_pk=w.pk,
+                        mime_type=mimetype,
+                        jsondata=submission.md.get('audio', {}))
+                    DBSession.add(f)
+                    DBSession.flush()
+                    DBSession.refresh(f)
+                    with open(sf.as_posix(), 'rb') as fp:
+                        f.create(args.data_file('files'), fp.read())
 
                 concepts = []
 

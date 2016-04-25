@@ -48,6 +48,8 @@ def main(args):
 
     concepticon = Concepticon()
     for i, concept_set in enumerate(concepticon.resources('parameter').members):
+        if args.no_concepts:
+            break
         concept_set = concepticon.resource(concept_set)
         cm = ComparisonMeaning(
             id=concept_set.id,
@@ -84,6 +86,8 @@ def main(args):
             continue
 
         id_ = submission.id
+        if args.dict and args.dict != id_ and args.dict != 'all':
+            continue
         lmd = md['language']
 
         language = data['Variety'].get(lmd['glottocode'])
@@ -184,4 +188,6 @@ def prime_cache(cfg):
 if __name__ == '__main__':
     initializedb(
         (("--internal",), dict(action='store_true')),
+        (("--no-concepts",), dict(action='store_true')),
+        (("--dict",), dict()),
         create=main, prime_cache=prime_cache)

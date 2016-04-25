@@ -2,6 +2,15 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "units" %>
 
+<%block name="head">
+    <script src="${request.static_url('clld:web/static/audiojs/audio.min.js')}"></script>
+    <script>
+        audiojs.events.ready(function() {
+            var as = audiojs.createAll();
+        });
+    </script>
+</%block>
+
 <%def name="sentences(obj=None, fmt='long')">
     <% obj = obj or ctx %>
     <ul id="sentences-${obj.pk}" class="unstyled">
