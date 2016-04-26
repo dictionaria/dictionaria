@@ -72,9 +72,9 @@ class Dictionary(BaseDictionary):
             ex.set('translation', d['translation'])
             yield ex
 
-    def process(self, outfile):
+    def process(self, outfile, submission):
         """extract examples, etc."""
-        assert self.dir.name != 'processed'
+        BaseDictionary.process(self, outfile, submission)
 
         examples = Examples(list(self.yield_examples()))
         examples.write(outfile.parent.joinpath('examples.sfm'))

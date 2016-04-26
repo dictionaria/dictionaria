@@ -5,7 +5,9 @@ Parsing functionality for the SFM variant understood for Dictionaria submissions
 from __future__ import unicode_literals, print_function
 from collections import defaultdict, Counter, OrderedDict
 import re
-from mimetypes import guess_type
+from copy import copy
+
+from transliterate import translit
 
 from clld.scripts.util import Data
 from clld.db.models import common
@@ -15,7 +17,7 @@ from clldutils.misc import slug
 from clldutils.path import Path
 from clldutils import sfm
 
-from dictionaria.lib.ingest import Corpus, Example, load_examples, MeaningDescription
+from dictionaria.lib.ingest import Corpus, Example, MeaningDescription, split
 from dictionaria import models
 
 
@@ -76,6 +78,44 @@ class Rearrange(object):
         move_marker(entry, 'xo', 'xe')
 
 
+class Files(object):
+    def __init__(self, submission):
+        self.submission = submission
+        # we create a lookup for files
+        self.files = {'audio': {}, 'image': {}}
+        for type_ in self.files:
+            _dir = submission.dir.joinpath(type_)
+            if _dir.exists():
+                for p in _dir.iterdir():
+                    if p.is_file():
+                        self.files[type_][p.name.decode('utf8')] = p
+                        # and just in case, add transliterated variants of file names:
+                        nname = translit(p.name.decode('utf8'), 'ru', reversed=True)
+                        if nname not in self.files[type_]:
+                            self.files[type_][nname] = p
+        self.missingg = set()
+
+    def process(self, type_, content):
+        fp = self.files[type_].get(content)
+        if fp:
+            res = self.submission.process_file(type_, fp)
+            return res.name.decode('utf8')
+        self.missingg.add(content)
+        print('missing image file: %s' % content)
+        return ''
+
+    def __call__(self, entry):
+        items = []
+        for marker, content in entry:
+            if marker == 'pc':
+                content = self.process('image', content)
+            if marker in ['sf', 'sfx']:
+                content = self.process('audio', content)
+            if content:
+                items.append((marker, content))
+        return entry.__class__(items)
+
+
 class Concepticon(object):
     def __init__(self):
         self.count = 0
@@ -104,7 +144,7 @@ class ExampleExtractor(object):
             'xo': 'ot',
             'xn': 'ot',
             'xe': 'ft',
-            'xsf': 'sf',
+            'sfx': 'sf',
         }
         self.examples = OrderedDict()
         self.corpus = corpus
@@ -208,7 +248,6 @@ class Meaning(object):
         self.de = None
         self.ge = None
         self.sd = []
-        self.x = []
         self.xref = []
 
 
@@ -220,13 +259,42 @@ class Word(object):
     """
     def __init__(self, form):
         self.form = form
-        self.hm = None  # homonym marker
+        self._hm = 0  # homonym marker
         self.ph = None  # phonetic representation of the word
-        self.ps = None  # part-of-speech
+        self._ps = None  # part-of-speech
         self.data = defaultdict(list)  # to store additional marker, value pairs
         self.rel = []
         self.meanings = []
         self.non_english_meanings = defaultdict(list)
+
+    @property
+    def ps(self):
+        return self._ps
+
+    @ps.setter
+    def ps(self, value):
+        if self._ps and self._ps != value:
+            raise ValueError('Multiple assignments of different pos for %s: %s, %s' % (
+                self.form, self._ps, value))
+        self._ps = value
+
+    @property
+    def hm(self):
+        return '{0}'.format(self._hm) if self._hm else ''
+
+    @hm.setter
+    def hm(self, value):
+        m = re.search('(?P<number>[0-9]+)', value)
+        self._hm = int(m.group('number')) if m else 0
+
+    def copy(self):
+        w = Word(self.form)
+        w.ph = self.ph
+        if not self.hm:
+            self.hm = '1'
+        w.hm = '{0}'.format(int(self.hm) + 1)
+        w.data = copy(self.data)
+        return w
 
     @property
     def id(self):
@@ -247,13 +315,21 @@ class Entry(sfm.Entry):
                     self.append(('ge', ge))
         return self
 
-    def checked_word(self, word, meaning):
+    def checked_word(self, word, meaning, pos):
         if meaning:
             if meaning.de or meaning.ge:
                 word.meanings.append(meaning)
-            else:
-                print('meaning without description for %s' % word.form)
+            #else:
+                #print('meaning without description for %s' % word.form)
+        if word.ps is None:
+            word.ps = pos
         return word
+
+    @property
+    def files(self):
+        res = [(n, 'audio') for n in self.getall('sf')]
+        res.extend([(n, 'image') for n in self.getall('pc')])
+        return res
 
     def get_words(self):
         """
@@ -264,28 +340,34 @@ class Entry(sfm.Entry):
         # as part-of-speech for all words.
         pos = None
 
-        example = None
         meaning = None
 
         # flag signaling whether we are dealing with the first meaning of a word or
         # subsequent ones.
         first_meaning = True
+        sn_is_se = False
 
         # now we loop over the (marker, value) pairs of the entry:
         for k, v in self:
             # individual words are identified by \lx or \se (sub-entry) markers.
             if k in ['lx', 'se']:
                 if word:
-                    yield self.checked_word(word, meaning)
+                    yield self.checked_word(word, meaning, pos)
                 word = Word(v)
-                if pos:
-                    word.ps = pos
                 meaning = Meaning()
             elif k == 'sn':  # a new sense number: initialize a new Meaning.
-                if not first_meaning:
-                    self.checked_word(word, meaning)
+                word.hm = word.hm or v
+                if first_meaning:
+                    # determine whether we are dealing with the case where \ps comes after
+                    # \sn, thus, \sn has to be treated like \se:
+                    sn_is_se = not bool(pos)
+                    first_meaning = False
+                else:
+                    self.checked_word(word, meaning, pos)
+                    if sn_is_se and word.form:
+                        yield word
+                        word = word.copy()
                     meaning = Meaning()
-                first_meaning = False
             # meaning-specific markers:
             elif k in ['de', 'ge']:
                 # FIXME: we must support multiple meanings expressed by
@@ -301,17 +383,24 @@ class Entry(sfm.Entry):
                     # only record first occurrence of the marker!
                     setattr(word, k, v)
             elif k == 'ps':
-                pos = word.ps = v
+                pos = v
+                try:
+                    word.ps = v
+                except ValueError:
+                    self.checked_word(word, meaning, pos)
+                    if word.form:
+                        yield word
+                        word = word.copy()
+                        word.ps = v
+                    meaning = Meaning()
             elif k in ['cf', 'mn']:
-                for vv in v.split(','):
-                    if vv.strip():
-                        word.rel.append((k, vv.strip()))
+                word.rel.extend([(k, vv) for vv in split(v, ',')])
             elif k == 'gxx':
                 word.non_english_meanings[k].extend(sfm.FIELD_SPLITTER_PATTERN.split(v))
             else:
                 word.data[k].append(v)
-        if word:
-            yield self.checked_word(word, meaning)
+        if word and word.form:
+            yield self.checked_word(word, meaning, pos)
 
 
 class Stats(object):
@@ -367,11 +456,15 @@ class Dictionary(object):
             visitor.count, len(self.sfm)))
         self.sfm.write(db)
 
-    def process(self, outfile):
+    def process(self, outfile, submission):
         """extract examples, etc."""
         assert self.dir.name != 'processed'
 
         self.sfm.visit(Rearrange())
+        files = Files(submission)
+        self.sfm.visit(files)
+        for m in files.missingg:
+            print(m)
 
         with self.dir.joinpath('examples.log').open('w', encoding='utf8') as log:
             extractor = ExampleExtractor(Corpus(self.dir), log)
@@ -379,15 +472,6 @@ class Dictionary(object):
 
         self.sfm.write(outfile)
         extractor.write_examples(outfile.parent.joinpath('examples.sfm'))
-
-    def scan_dir(self, name, suffixes=None):
-        res = {}
-        _dir = self.dir.parent.joinpath(name)
-        if _dir.exists():
-            for p in _dir.iterdir():
-                if p.is_file() and (suffixes is None or p.suffix in suffixes):
-                    res[p.stem.decode('utf8')] = p
-        return res
 
     def load(
             self,
@@ -406,35 +490,18 @@ class Dictionary(object):
         xrefs = []
         for entry in self.sfm:
             xrefs.extend(entry.getall('xref'))
-        load_examples(args, submission, data, lang, set(xrefs))
-
-        images = self.scan_dir('images')
-        audio = self.scan_dir('audio', suffixes=['.mp3'])
+        submission.load_examples(args, data, lang, set(xrefs))
 
         def meaning_descriptions(s):
-            s = s or ''
-            return [
-                ss.strip() for ss in s.replace('.', ' ').lower().split(';') if ss.strip()]
+            return list(split((s or '').replace('.', ' ').lower()))
 
         for i, entry in enumerate(self.sfm):
-            sf = set(entry.getall('sf'))
-            if len(sf) > 1:
-                print(entry.get('lx'))
-                print(sf)
-                raise ValueError
-            if sf:
-                sf = sf.pop().split('.')[0]
-                if sf not in audio:
-                    print(sf)
-                    sf = None
-                else:
-                    sf = audio[sf]
             words = list(entry.get_words())
             headword = None
 
             for j, word in enumerate(words):
                 if not word.meanings:
-                    print('no meanings for word %s' % word.form)
+                    print('skip entry without meaning: %s' % word.form)
                     continue
 
                 if not headword:
@@ -458,38 +525,12 @@ class Dictionary(object):
                     language=lang)
                 DBSession.flush()
 
-                img = images.get(w.name)
-                if img:
-                    print('illustration: %s' % img)
-                    mimetype = guess_type(img.name)[0]
-                    assert mimetype.startswith('image/')
-                    f = common.Unit_files(
-                        id='%s-%s' % (submission.id, w.id),
-                        name=img.name,
-                        object_pk=w.pk,
-                        mime_type=mimetype,
-                        jsondata=submission.md.get('images', {}))
-                    DBSession.add(f)
-                    DBSession.flush()
-                    DBSession.refresh(f)
-                    with open(img.as_posix(), 'rb') as fp:
-                        f.create(args.data_file('files'), fp.read())
+                submission.add_file(
+                    args, 'image', w.name + '.png', common.Unit_files, w, 1, log='found')
 
-                if sf:
-                    #print('sound file: %s' % sf.name.decode('utf8'))
-                    mimetype = guess_type(sf.name)[0]
-                    assert mimetype.startswith('audio/')
-                    f = common.Unit_files(
-                        id='%s-%s' % (submission.id, w.id),
-                        name=sf.name.decode('utf8'),
-                        object_pk=w.pk,
-                        mime_type=mimetype,
-                        jsondata=submission.md.get('audio', {}))
-                    DBSession.add(f)
-                    DBSession.flush()
-                    DBSession.refresh(f)
-                    with open(sf.as_posix(), 'rb') as fp:
-                        f.create(args.data_file('files'), fp.read())
+                for index, (fname, type_) in enumerate(entry.files):
+                    submission.add_file(
+                        args, type_, fname, common.Unit_files, w, index)
 
                 concepts = []
 
@@ -511,7 +552,6 @@ class Dictionary(object):
                         word=w,
                         semantic_domain=', '.join(meaning.sd))
 
-                    assert not meaning.x
                     for xref in meaning.xref:
                         s = data['Example'].get(xref)
                         if s is None:

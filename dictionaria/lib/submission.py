@@ -1,12 +1,18 @@
 # coding: utf8
 from __future__ import unicode_literals
+from mimetypes import guess_type
+import subprocess
 
-from clldutils.path import Path
+from clldutils.path import Path, remove, copy
 from clldutils.jsonlib import load
+from clld.db.meta import DBSession
+from clld.db.models import common
 
 from dictionaria.lib import sfm
 from dictionaria.lib import xlsx
 from dictionaria.lib import filemaker
+from dictionaria.lib.ingest import Examples
+from dictionaria import models
 import dictionaria
 
 
@@ -62,7 +68,7 @@ class Submission(object):
         d = self.dictionary(processed=False)
         outfile = self.db_path(processed=True)
         outfile.parent.mkdir(exist_ok=True)
-        d.process(outfile)
+        d.process(outfile, self)
 
     def stats(self, processed=True):
         d = self.dictionary(processed=processed)
@@ -71,3 +77,71 @@ class Submission(object):
     def load(self, *args):
         d = self.dictionary(processed=True)
         d.load(self, *args)
+
+    def process_file(self, type_, fp):
+        outdir = self.db_path(processed=True).parent.joinpath(type_)
+        if not outdir.exists():
+            outdir.mkdir()
+
+        if type_ == 'audio' and fp.suffix.lower() == '.wav':
+            target = outdir.joinpath(fp.stem + '.mp3'.encode('utf8'))
+            if target.exists():
+                remove(target)
+            subprocess.check_call([
+                'avconv', '-i', fp.as_posix(), '-ab', '192k', target.as_posix()])
+        else:
+            target = outdir.joinpath(fp.name)
+            copy(fp, target)
+        return target
+
+    def add_file(self, args, type_, name, file_cls, obj, index, log='missing'):
+        #
+        # FIXME: switch to uploading to cdstar for production db!
+        #
+        fpath = self.dir.joinpath('processed', type_, name.encode('utf8'))
+        if fpath.exists():
+            mimetype = guess_type(fpath.name)[0]
+            if mimetype:
+                assert mimetype.startswith(type_)
+                f = file_cls(
+                    id='%s-%s-%s' % (self.id, obj.id, index),
+                    name=name,
+                    object_pk=obj.pk,
+                    mime_type=mimetype,
+                    jsondata=self.md.get(type_, {}))
+                DBSession.add(f)
+                DBSession.flush()
+                DBSession.refresh(f)
+                with open(fpath.as_posix(), 'rb') as fp:
+                    f.create(args.data_file('files'), fp.read())
+                if log == 'found':
+                    print('{0} file added: {1}'.format(type_, name))
+                return
+
+        if log == 'missing':
+            print('{0} file missing: {1}'.format(type_, name))
+
+    def load_examples(self, args, data, lang, xrefs=None):
+        for ex in Examples.from_file(self.dir.joinpath('processed', 'examples.sfm')):
+            if xrefs is None or ex.id in xrefs:
+                obj = data.add(
+                    models.Example,
+                    ex.id,
+                    id='%s-%s' % (self.id, ex.id.replace('.', '_')),
+                    name=ex.text,
+                    language=lang,
+                    analyzed=ex.morphemes,
+                    gloss=ex.gloss,
+                    description=ex.translation,
+                    alt_translation=ex.alt_translation,
+                    alt_translation_language=self.md.get('metalanguages', {}).get('gxx'))
+                DBSession.flush()
+
+                if ex.soundfile:
+                    self.add_file(
+                        args,
+                        'audio',
+                        ex.soundfile.replace('.wav', '.mp3'),
+                        common.Sentence_files,
+                        obj,
+                        'audio')

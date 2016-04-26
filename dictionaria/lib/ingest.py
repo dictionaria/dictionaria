@@ -180,44 +180,6 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-def load_examples(args, submission, data, lang, xrefs=None):
-    for ex in Examples.from_file(submission.dir.joinpath('processed', 'examples.sfm')):
-        if xrefs is None or ex.id in xrefs:
-            obj = data.add(
-                models.Example,
-                ex.id,
-                id='%s-%s' % (submission.id, ex.id.replace('.', '_')),
-                name=ex.text,
-                language=lang,
-                analyzed=ex.morphemes,
-                gloss=ex.gloss,
-                description=ex.translation,
-                alt_translation=ex.alt_translation,
-                alt_translation_language=submission.md.get('metalanguages', {}).get('gxx'))
-            DBSession.flush()
-
-            if ex.soundfile:
-                name = ex.soundfile.replace('.wav', '.mp3').encode('utf8')
-                sf = submission.dir.joinpath('audio', name)
-                if sf.exists():
-                    mimetype = guess_type(sf.name)[0]
-                    if not mimetype:
-                        print('missing soundfile:', sf.name)
-                    else:
-                        assert mimetype.startswith('audio/')
-                        f = common.Sentence_files(
-                            id='%s-%s' % (submission.id, obj.id),
-                            name=sf.name.decode('utf8'),
-                            object_pk=obj.pk,
-                            mime_type=mimetype,
-                            jsondata=submission.md.get('audio', {}))
-                        DBSession.add(f)
-                        DBSession.flush()
-                        DBSession.refresh(f)
-                        with open(sf.as_posix(), 'rb') as fp:
-                            f.create(args.data_file('files'), fp.read())
-
-
 class Corpus(object):
     """
     ELAN corpus exported using the Toolbox exporter
@@ -262,10 +224,17 @@ class BaseDictionary(object):
     def stats(self):
         print(self.filename)
 
-    def process(self, outfile):
+    def process(self, outfile, submission):
         """extract examples, etc."""
         assert self.dir.name != 'processed'
-        raise NotImplementedError()
+        for t in ['audio', 'image']:
+            _dir = self.dir.joinpath(t)
+            if _dir.exists():
+                for p in _dir.iterdir():
+                    if p.is_file():
+                        submission.process_file(t, p)
+            else:
+                print('no directory %s' % _dir)
 
     def load(
             self,
@@ -280,7 +249,7 @@ class BaseDictionary(object):
 
         vocab = models.Dictionary.get(did)
         lang = models.Variety.get(lid)
-        load_examples(args, submission, data, lang)
+        submission.load_examples(args, data, lang)
 
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])
@@ -290,54 +259,30 @@ class BaseDictionary(object):
             'nan-ki-geigei.jpg': 'nan_ki-geigei.jpg',
             'nan_ki-nde': 'nan_ki-nde.jpg',
         }
-        images = {}
-        image_dir = self.dir.parent.joinpath('images')
-        if image_dir.exists():
-            for p in image_dir.iterdir():
-                if p.is_file():
-                    images[p.name.decode('utf8')] = p
 
         for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
-            try:
-                word = data.add(
-                    models.Word,
-                    lemma['ID'],
-                    id=id_(lemma),
-                    name=lemma['Lemma'],
-                    pos=lemma['PoS'],
-                    dictionary=vocab,
-                    language=lang)
-                DBSession.flush()
-                img = lemma.get('picture')
-                if img:
-                    img = img_map.get(img, img)
-                    if img not in images:
-                        print(img, self.dir)
-                        raise ValueError
-                    else:
-                        mimetype = guess_type(img)[0]
-                        assert mimetype.startswith('image/')
-                        f = common.Unit_files(
-                            id=id_(lemma),
-                            name=img,
-                            object_pk=word.pk,
-                            mime_type=mimetype)
-                        DBSession.add(f)
-                        DBSession.flush()
-                        DBSession.refresh(f)
-                        with open(images[img].as_posix(), 'rb') as fp:
-                            f.create(args.data_file('files'), fp.read())
-                for index, (key, value) in enumerate(lemma.items()):
-                    if key in marker_map:
-                        DBSession.add(common.Unit_data(
-                            object_pk=word.pk,
-                            key=marker_map[key],
-                            value=value,
-                            ord=index))
-            except:
-                print(submission.id)
-                print(lemma)
-                raise
+            word = data.add(
+                models.Word,
+                lemma['ID'],
+                id=id_(lemma),
+                name=lemma['Lemma'],
+                pos=lemma['PoS'],
+                dictionary=vocab,
+                language=lang)
+            DBSession.flush()
+            for attr, type_ in [('picture', 'image'), ('sound', 'audio')]:
+                fname = lemma.get(attr)
+                if fname:
+                    fname = img_map.get(fname, fname)
+                    submission.add_file(args, type_, fname, common.Unit_files, word, 1)
+
+            for index, (key, value) in enumerate(lemma.items()):
+                if key in marker_map:
+                    DBSession.add(common.Unit_data(
+                        object_pk=word.pk,
+                        key=marker_map[key],
+                        value=value,
+                        ord=index))
 
         DBSession.flush()
 
@@ -362,21 +307,10 @@ class BaseDictionary(object):
 
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
             w = data['Word'][sense['belongs to lemma']]
-            try:
-                m = models.Meaning(
-                    id=id_(sense), name=sense['meaning description'], word=w)
-            except:
-                print(submission.id)
-                print(sense)
-                raise
+            m = models.Meaning(id=id_(sense), name=sense['meaning description'], word=w)
 
             for exid in split(sense.get('example ID', '')):
-                s = data['Example'].get(exid)
-                if not s:
-                    print(submission.id)
-                    print(sense)
-                    raise ValueError
-                models.MeaningSentence(meaning=m, sentence=s)
+                models.MeaningSentence(meaning=m, sentence=data['Example'][exid])
 
             for i, md in enumerate(split(sense['meaning description'])):
                 key = md.lower()

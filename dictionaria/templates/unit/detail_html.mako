@@ -30,9 +30,7 @@
                 % endif
             % if a.sentence.audio:
             <div>
-                <audio controls="controls">
-                    <source src="${request.file_url(a.sentence.audio)}"/>
-                </audio>
+                <audio src="${request.file_url(a.sentence.audio)}"/>
             </div>
             % endif
             % if a.sentence.references and fmt == 'long':
@@ -66,9 +64,7 @@
 <p>
     % for file in ctx._files:
         % if file.mime_type.startswith('audio'):
-        <audio controls="controls">
-            <source src="${request.file_url(file)}"/>
-        </audio>
+        <audio src="${request.file_url(file)}"/>
         % endif
     % endfor
 </p>
