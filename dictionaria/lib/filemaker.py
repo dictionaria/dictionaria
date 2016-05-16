@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function
 from collections import defaultdict
 import re
 
-from clldutils.path import Path
 from clldutils.dsv import UnicodeWriter
 
 from dictionaria.lib.ingest import Example, Examples, BaseDictionary
@@ -11,17 +10,17 @@ from dictionaria.lib.ingest import Example, Examples, BaseDictionary
 
 FORMAT_MAP = {
     'entries': (
-        'lemmas.csv',
+        'entries.csv',
         {
             'entry_ID': 'ID',
-            'headword': 'Lemma',
+            'PoS': 'part-of-speech',
         }),
     'senses': (
         'senses.csv',
         {
             'sense_ID': 'ID',
-            'sense': 'meaning description',
-            'entry_ID': 'belongs to lemma',
+            'sense': 'description',
+            'entry_ID': 'entry ID',
         }),
 }
 
@@ -74,14 +73,14 @@ class Dictionary(BaseDictionary):
             ex.set('translation', translation)
             yield ex
 
-    def process(self, outfile):
+    def process(self, outfile, submission):
         """extract examples, etc."""
         assert self.dir.name != 'processed'
         #
         # TODO:
         # - convert examples.csv into sfm
         # - inline assoc table data
-        # - include associations.csv as col "associated lemma" in lemmas.csv!
+        # - include associations.csv as col "associated lemma" in entries.csv!
         #
         associations = defaultdict(list)
         for s, t in self.readrows('associations'):
@@ -96,14 +95,14 @@ class Dictionary(BaseDictionary):
                 name, col_map = FORMAT_MAP[fname]
                 header = [col_map.get(col, col) for col in header]
                 with UnicodeWriter(outfile.parent.joinpath(name)) as fp:
-                    if name == 'lemmas.csv':
+                    if name == 'entries.csv':
                         header.append('associated lemma')
                     elif name == 'senses.csv':
                         header.append('example ID')
                     assert header[0] == 'ID'
                     fp.writerow(header)
                     for row in self.readrows(fname):
-                        if name == 'lemmas.csv':
+                        if name == 'entries.csv':
                             row.append('; '.join(associations.get(row[0], [])))
                         elif name == 'senses.csv':
                             row.append('; '.join(examples.get(row[0], [])))

@@ -260,13 +260,13 @@ class BaseDictionary(object):
             'nan_ki-nde': 'nan_ki-nde.jpg',
         }
 
-        for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
+        for lemma in reader(self.dir.joinpath('entries.csv'), dicts=True):
             word = data.add(
                 models.Word,
                 lemma['ID'],
                 id=id_(lemma),
-                name=lemma['Lemma'],
-                pos=lemma['PoS'],
+                name=lemma['headword'],
+                pos=lemma['part-of-speech'],
                 dictionary=vocab,
                 language=lang)
             DBSession.flush()
@@ -286,10 +286,10 @@ class BaseDictionary(object):
 
         DBSession.flush()
 
-        for lemma in reader(self.dir.joinpath('lemmas.csv'), dicts=True):
+        for lemma in reader(self.dir.joinpath('entries.csv'), dicts=True):
             word = data['Word'][lemma['ID']]
             for key in lemma:
-                if key in ['ID', 'Lemma', 'PoS', 'picture']:
+                if key in ['ID', 'headword', 'part-of-speech', 'picture']:
                     continue
                 assoc = ASSOC_PATTERN.match(key)
                 if not assoc:
@@ -306,13 +306,13 @@ class BaseDictionary(object):
                             description=assoc.group('rel')))
 
         for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
-            w = data['Word'][sense['belongs to lemma']]
-            m = models.Meaning(id=id_(sense), name=sense['meaning description'], word=w)
+            w = data['Word'][sense['entry ID']]
+            m = models.Meaning(id=id_(sense), name=sense['description'], word=w)
 
             for exid in split(sense.get('example ID', '')):
                 models.MeaningSentence(meaning=m, sentence=data['Example'][exid])
 
-            for i, md in enumerate(split(sense['meaning description'])):
+            for i, md in enumerate(split(sense['description'])):
                 key = md.lower()
                 if key in comparison_meanings:
                     concept = comparison_meanings[key]
