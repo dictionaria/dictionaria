@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from datetime import date
+from itertools import groupby
 import re
 
 import transaction
@@ -169,7 +170,7 @@ def main(args):
 def prime_cache(cfg):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
-    it will have to be run periodiucally whenever data has been updated.
+    it will have to be run periodically whenever data has been updated.
     """
     for meaning in DBSession.query(ComparisonMeaning).options(
         joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
@@ -178,8 +179,14 @@ def prime_cache(cfg):
         if meaning.representation == 0:
             meaning.active = False
 
-    for word in DBSession.query(Word).options(joinedload(Word.meanings)):
-        word.description = ' / '.join(m.name for m in word.meanings if m.language == 'en')
+    q = DBSession.query(Word)\
+        .order_by(common.Unit.language_pk, common.Unit.name, common.Unit.pk)\
+        .options(joinedload(Word.meanings))
+    for _, words in groupby(q, lambda u: u.name):
+        words = list(words)
+        for i, word in enumerate(words):
+            word.description = ' / '.join(m.name for m in word.meanings if m.language == 'en')
+            word.number = i + 1 if len(words) > 1 else 0
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
         d.count_words = len(d.words)
