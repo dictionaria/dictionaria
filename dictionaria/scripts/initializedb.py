@@ -187,6 +187,10 @@ def prime_cache(cfg):
         for i, word in enumerate(words):
             word.description = ' / '.join(m.name for m in word.meanings if m.language == 'en')
             word.number = i + 1 if len(words) > 1 else 0
+            DBSession.add(common.Unit_data(
+                object_pk=word.pk,
+                key='Semantic domain',
+                value=' / '.join(m.semantic_domain for m in word.meanings if m.semantic_domain)))
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
         d.count_words = len(d.words)
