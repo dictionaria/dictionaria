@@ -103,6 +103,7 @@ def main(args):
             id_,
             id=id_,
             name=lmd['name'] + ' Dictionary',
+            description=submission.description,
             language=language,
             published=date(*map(int, md['published'].split('-'))),
             jsondata=dict(custom_fields=md.get('custom_fields', [])))

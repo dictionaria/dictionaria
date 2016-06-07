@@ -31,6 +31,12 @@ class Submission(object):
 
         print(self.dir)
         assert self.dir.exists()
+        desc = self.dir.joinpath('md.html')
+        if desc.exists():
+            with desc.open(encoding='utf8') as fp:
+                self.description = fp.read()
+        else:
+            self.description = None
         md = self.dir.joinpath('md.json')
         self.md = load(md) if md.exists() else None
         self.db_name = None

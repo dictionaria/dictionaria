@@ -17,6 +17,7 @@
         <div id="tab2" class="tab-pane">
             ${util.files()}
             ${util.data()}
+            ${ctx.description or ''|n}
         </div>
     </div>
     <script>
