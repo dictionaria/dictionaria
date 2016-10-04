@@ -108,9 +108,17 @@ class Files(object):
         items = []
         for marker, content in entry:
             if marker == 'pc':
-                content = self.process('image', content)
+                for fname in split(content):
+                    content = self.process('image', fname)
+                    if content:
+                        items.append((marker, content))
+                continue
             if marker in ['sf', 'sfx']:
-                content = self.process('audio', content)
+                for fname in split(content):
+                    content = self.process('audio', fname)
+                    if content:
+                        items.append((marker, content))
+                continue
             if content:
                 items.append((marker, content))
         return entry.__class__(items)
@@ -171,6 +179,7 @@ class ExampleExtractor(object):
                             '# incomplete example in lx: %s - missing xe:\n%s\n\n'
                             % (lx, example))
                     example = Example([('tx', content)])
+                    assert example
                 elif marker == 'xe':
                     # example ends
                     if example:
@@ -327,7 +336,12 @@ class Entry(sfm.Entry):
 
     @property
     def files(self):
-        res = [(n, 'audio') for n in self.getall('sf')]
+        res = []
+        for n in self.getall('sf'):
+            for nn in n.split(' ;'):
+                nn = nn.strip()
+                if nn:
+                    res.append((nn, 'audio'))
         res.extend([(n, 'image') for n in self.getall('pc')])
         return res
 
@@ -395,7 +409,7 @@ class Entry(sfm.Entry):
                     meaning = Meaning()
             elif k in ['cf', 'mn']:
                 word.rel.extend([(k, vv) for vv in split(v, ',')])
-            elif k == 'gxx':
+            elif k in ['gxx', 'gxy']:  # support two meta/target languages
                 word.non_english_meanings[k].extend(sfm.FIELD_SPLITTER_PATTERN.split(v))
             else:
                 word.data[k].append(v)

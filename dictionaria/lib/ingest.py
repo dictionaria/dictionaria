@@ -79,8 +79,7 @@ class MeaningDescription(object):
 
 
 class Example(Entry):
-    markers = OrderedDict()
-    for k, v in [
+    markers = OrderedDict([
         ('ref', 'id'),
         ('lemma', None),
         ('rf', 'corpus_ref'),
@@ -90,8 +89,7 @@ class Example(Entry):
         ('ft', 'translation'),
         ('ot', 'alt_translation'),
         ('sf', 'soundfile'),
-    ]:
-        markers[k] = v
+    ])
     name_to_marker = {v: k for k, v in markers.items()}
 
     @staticmethod
