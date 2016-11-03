@@ -93,6 +93,8 @@ class Files(object):
                         nname = translit(p.name.decode('utf8'), 'ru', reversed=True)
                         if nname not in self.files[type_]:
                             self.files[type_][nname] = p
+                        self.files[type_][p.stem.decode('utf8') + p.suffix.lower()] = p
+                        self.files[type_][p.stem.decode('utf8') + p.suffix.upper()] = p
         self.missingg = set()
 
     def process(self, type_, content):
@@ -101,7 +103,7 @@ class Files(object):
             res = self.submission.process_file(type_, fp)
             return res.name.decode('utf8')
         self.missingg.add(content)
-        print('missing image file: %s' % content)
+        print('missing {0} file: {1}'.format(type_, content))
         return ''
 
     def __call__(self, entry):
@@ -256,6 +258,7 @@ class Meaning(object):
     def __init__(self):
         self.de = None
         self.ge = None
+        self.re = None
         self.sd = []
         self.xref = []
 
@@ -383,7 +386,7 @@ class Entry(sfm.Entry):
                         word = word.copy()
                     meaning = Meaning()
             # meaning-specific markers:
-            elif k in ['de', 'ge']:
+            elif k in ['de', 'ge', 're']:
                 # FIXME: we must support multiple meanings expressed by
                 # semicolon-separated \ge values, e.g. "jump ; jump at"
                 setattr(meaning, k, v)
@@ -477,8 +480,9 @@ class Dictionary(object):
         self.sfm.visit(Rearrange())
         files = Files(submission)
         self.sfm.visit(files)
-        for m in files.missingg:
-            print(m)
+        print('{0} files missing'.format(len(files.missingg)))
+        #for m in files.missingg:
+        #    print(m)
 
         with self.dir.joinpath('examples.log').open('w', encoding='utf8') as log:
             extractor = ExampleExtractor(Corpus(self.dir), log)
@@ -577,7 +581,8 @@ class Dictionary(object):
                     # Lookup comparison meanings.
                     #
                     concept, key = None, None
-                    for key in meaning_descriptions(meaning.de) + \
+                    for key in meaning_descriptions(meaning.re) + \
+                            meaning_descriptions(meaning.de) + \
                             meaning_descriptions(meaning.ge):
                         if key in comparison_meanings:
                             concept = comparison_meanings[key]

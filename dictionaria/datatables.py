@@ -1,8 +1,6 @@
 from collections import OrderedDict
 
 from sqlalchemy import and_
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.types import Integer, Float
 from sqlalchemy.orm import joinedload_all, joinedload, aliased
 
 from clld.web import datatables
@@ -15,10 +13,11 @@ from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.db.util import icontains, get_distinct_values
-from clld.web.util.helpers import link, linked_contributors
+from clld.web.util.helpers import link, linked_contributors, icon
 from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import Family
 from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
+from clldmpg.cdstar import MediaCol
 
 from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning, Variety
 from dictionaria.util import concepticon_link
@@ -129,7 +128,8 @@ class Words(datatables.Units):
             .options(
                 joinedload_all(
                     Word.counterparts, common.Value.valueset, common.ValueSet.parameter),
-                joinedload(common.Unit.data))
+                joinedload(common.Unit.data),
+                joinedload(common.Unit._files))
         if self.contribution:
             for name, var in self.vars.items():
                 query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
@@ -139,13 +139,17 @@ class Words(datatables.Units):
 
     def col_defs(self):
         poscol = Col(self, 'part_of_speech', model_col=Word.pos)
-
         if self.contribution:
+            pos = sorted((c for c, in DBSession.query(Word.pos)
+                         .filter(Word.dictionary_pk == self.contribution.pk)
+                         .distinct() if c))
             res = [
                 WordCol(self, 'word', model_col=common.Unit.name),
-                poscol,
+                Col(self, 'part_of_speech', model_col=Word.pos, choices=pos),
                 Col(self, 'description', model_col=common.Unit.description),
                 MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
+                MediaCol(self, 'audio', 'audio'),
+                MediaCol(self, 'image', 'image'),
                 #CustomCol(self, 'custom'),
             ]
             for name in self.vars:

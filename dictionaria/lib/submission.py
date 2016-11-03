@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from mimetypes import guess_type
 import subprocess
 
-from clldutils.path import Path, remove, copy
+from clldutils.path import Path, remove, copy, md5
 from clldutils.jsonlib import load
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -29,6 +29,7 @@ class Submission(object):
             self.dir = REPOS.joinpath(
                 'submissions-internal' if internal else 'submissions', path_or_id)
 
+        self.cdstar = load(REPOS.joinpath('cdstar.json'))
         print(self.dir)
         assert self.dir.exists()
         desc = self.dir.joinpath('md.html')
@@ -85,44 +86,71 @@ class Submission(object):
         d.load(self, *args)
 
     def process_file(self, type_, fp):
+        #print(type_, fp)
         outdir = self.db_path(processed=True).parent.joinpath(type_)
         if not outdir.exists():
             outdir.mkdir()
 
-        if type_ == 'audio' and fp.suffix.lower() == '.wav':
-            target = outdir.joinpath(fp.stem + '.mp3'.encode('utf8'))
-            if target.exists():
-                remove(target)
-            subprocess.check_call([
-                'avconv', '-i', fp.as_posix(), '-ab', '192k', target.as_posix()])
-        else:
-            target = outdir.joinpath(fp.name)
-            copy(fp, target)
+        #if type_ == 'audio' and fp.suffix.lower() == '.wav':
+        #    target = outdir.joinpath(fp.stem + '.mp3'.encode('utf8'))
+        #    if target.exists():
+        #        remove(target)
+        #    subprocess.check_call([
+        #        'avconv', '-i', fp.as_posix(), '-ab', '192k', target.as_posix()])
+        #else:
+        target = outdir.joinpath(fp.name)
+        copy(fp, target)
         return target
 
     def add_file(self, args, type_, name, file_cls, obj, index, log='missing'):
         #
         # FIXME: switch to uploading to cdstar for production db!
+        # - first step: store md5 in DB to later match files in cdstar!
         #
         fpath = self.dir.joinpath('processed', type_, name.encode('utf8'))
         if fpath.exists():
-            mimetype = guess_type(fpath.name)[0]
-            if mimetype:
-                assert mimetype.startswith(type_)
+            #
+            # 1. compute md5
+            # 2. lookup in cdstar catalog
+            # 3. Assign metadata to file object's jsondata
+            #
+            checksum = md5(fpath)
+            if checksum in self.cdstar:
+                jsondata = {k: v for k, v in self.md.get(type_, {}).items()}
+                jsondata.update(self.cdstar[checksum])
                 f = file_cls(
                     id='%s-%s-%s' % (self.id, obj.id, index),
                     name=name,
                     object_pk=obj.pk,
-                    mime_type=mimetype,
-                    jsondata=self.md.get(type_, {}))
+                    mime_type=self.cdstar[checksum]['mimetype'],
+                    jsondata=jsondata)
                 DBSession.add(f)
                 DBSession.flush()
                 DBSession.refresh(f)
-                with open(fpath.as_posix(), 'rb') as fp:
-                    f.create(args.data_file('files'), fp.read())
-                if log == 'found':
-                    print('{0} file added: {1}'.format(type_, name))
                 return
+            else:
+                print(fpath)
+                return
+                mimetype = guess_type(fpath.name)[0]
+                if mimetype:
+                    assert mimetype.startswith(type_)
+                    f = file_cls(
+                        id='%s-%s-%s' % (self.id, obj.id, index),
+                        name=name,
+                        object_pk=obj.pk,
+                        mime_type=mimetype,
+                        jsondata=self.md.get(type_, {}))
+                    DBSession.add(f)
+                    DBSession.flush()
+                    DBSession.refresh(f)
+                    #
+                    # Don't create files this way for the production DB!
+                    #
+                    with open(fpath.as_posix(), 'rb') as fp:
+                        f.create(args.data_file('files'), fp.read())
+                    if log == 'found':
+                        print('{0} file added: {1}'.format(type_, name))
+                    return
 
         if log == 'missing':
             print('{0} file missing: {1}'.format(type_, name))

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from clld.web.util.htmllib import HTML
+from clldmpg import cdstar
 
 
 def concepticon_link(request, meaning):

@@ -2,15 +2,6 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "units" %>
 
-<%block name="head">
-    <script src="${request.static_url('clld:web/static/audiojs/audio.min.js')}"></script>
-    <script>
-        audiojs.events.ready(function() {
-            var as = audiojs.createAll();
-        });
-    </script>
-</%block>
-
 <%def name="sentences(obj=None, fmt='long')">
     <% obj = obj or ctx %>
     <ul id="sentences-${obj.pk}" class="unstyled">
@@ -49,8 +40,9 @@
     </%util:well>
     % for file in ctx._files:
         % if file.mime_type.startswith('image'):
-            <div class="img-with-caption">
-                <img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
+            <div class="img-with-caption well">
+                ${u.cdstar.linked_image(file)}
+                ##<img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
                 % if file.jsondata.get('copyright'):
                     <p>© ${file.jsondata.get('copyright')}</p>
                 % endif
@@ -64,7 +56,8 @@
 <p>
     % for file in ctx._files:
         % if file.mime_type.startswith('audio'):
-        <audio src="${request.file_url(file)}"/>
+            ${u.cdstar.audio(file)}
+        ##<audio src="${request.file_url(file)}"/>
         % endif
     % endfor
 </p>
