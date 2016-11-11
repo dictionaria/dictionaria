@@ -6,6 +6,7 @@ from __future__ import unicode_literals, print_function
 from collections import defaultdict, Counter, OrderedDict
 import re
 from copy import copy
+from mimetypes import guess_type
 
 from transliterate import translit
 
@@ -76,6 +77,7 @@ class Rearrange(object):
 
         move_marker(entry, 'xsf', 'xe')
         move_marker(entry, 'xo', 'xe')
+        move_marker(entry, 'xr', 'xe')
 
 
 class Files(object):
@@ -117,7 +119,11 @@ class Files(object):
                 continue
             if marker in ['sf', 'sfx']:
                 for fname in split(content):
-                    content = self.process('audio', fname)
+                    maintype = 'audio'
+                    mtype = guess_type(fname)[0]
+                    if mtype and mtype.startswith('image/'):
+                        maintype = 'image'
+                    content = self.process(maintype, fname)
                     if content:
                         items.append((marker, content))
                 continue
@@ -153,6 +159,7 @@ class ExampleExtractor(object):
             'xeg': 'gl',
             'xo': 'ot',
             'xn': 'ot',
+            'xr': 'ota',
             'xe': 'ft',
             'sfx': 'sf',
         }
@@ -518,9 +525,9 @@ class Dictionary(object):
             headword = None
 
             for j, word in enumerate(words):
-                if not word.meanings:
-                    print('skip entry without meaning: %s' % word.form)
-                    continue
+                #if not word.meanings:
+                #    print('skip entry without meaning: %s' % word.form)
+                #    continue
 
                 if not headword:
                     headword = word.id
@@ -566,6 +573,7 @@ class Dictionary(object):
                         name=meaning.de or meaning.ge,
                         description=meaning.de,
                         gloss=meaning.ge,
+                        reverse=meaning.re,
                         #ord=k + 1,
                         word=w,
                         semantic_domain=', '.join(meaning.sd))
@@ -613,19 +621,20 @@ class Dictionary(object):
                 for _lang, meanings in word.non_english_meanings.items():
                     assert _lang in submission.md['metalanguages']
 
-                    DBSession.add(common.Unit_data(
-                        object_pk=w.pk,
-                        key='lang-%s' % submission.md['metalanguages'][_lang],
-                        value='; '.join(meanings),
-                        ord=-1))
+                    #DBSession.add(common.Unit_data(
+                    #    object_pk=w.pk,
+                    #    key='lang-%s' % submission.md['metalanguages'][_lang],
+                    #    value='; '.join(meanings),
+                    #    ord=-1))
 
-                    k += 1
-                    models.Meaning(
-                        id='%s-%s' % (w.id, k + 1),
-                        name='; '.join(meanings),
-                        gloss='; '.join(meanings),
-                        language=submission.md['metalanguages'][_lang],
-                        word=w)
+                    for meaning in meanings:
+                        k += 1
+                        models.Meaning(
+                            id='%s-%s' % (w.id, k + 1),
+                            name=meaning,
+                            gloss=meaning,
+                            language=submission.md['metalanguages'][_lang],
+                            word=w)
 
                 for index, (key, values) in enumerate(word.data.items()):
                     if key in marker_map:

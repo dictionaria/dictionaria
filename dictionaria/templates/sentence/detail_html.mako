@@ -2,15 +2,6 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "sentences" %>
 
-<%block name="head">
-    <script src="${request.static_url('clld:web/static/audiojs/audio.min.js')}"></script>
-    <script>
-        audiojs.events.ready(function() {
-            var as = audiojs.createAll();
-        });
-    </script>
-</%block>
-
 <%def name="sidebar()">
     <%util:well title="Dictionary">
         <% dictionary = ctx.meaning_assocs[0].meaning.word.dictionary %>
@@ -43,12 +34,16 @@ ${h.rendered_sentence(ctx)|n}
         <span>[${ctx.alt_translation_language}]</span>
     </div>
 % endif
+% if ctx.alt_translation2:
+    <div style="margin-top: -10px;">
+        <span class="translation">${ctx.alt_translation2}</span>
+        <span>[${ctx.alt_translation_language2}]</span>
+    </div>
+% endif
 
 % if getattr(ctx, 'audio'):
 <div style="margin-top: 20px;">
-    <audio controls="controls">
-        <source src="${request.file_url(ctx.audio)}"/>
-    </audio>
+    ${u.cdstar.audio(ctx.audio)}
 </div>
 % endif
 

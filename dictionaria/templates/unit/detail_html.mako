@@ -19,9 +19,15 @@
                     <span>[${a.sentence.alt_translation_language}]</span>
                 </div>
                 % endif
+                    % if a.sentence.alt_translation2:
+                        <div>
+                            <span class="translation">${a.sentence.alt_translation2}</span>
+                            <span>[${a.sentence.alt_translation_language2}]</span>
+                        </div>
+                    % endif
             % if a.sentence.audio:
             <div>
-                <audio src="${request.file_url(a.sentence.audio)}"/>
+                ${u.cdstar.audio(a.sentence.audio)}
             </div>
             % endif
             % if a.sentence.references and fmt == 'long':
@@ -116,7 +122,10 @@
             <strong>${m.name}</strong>
             % if m.language == 'en':
                 % if m.gloss and m.name != m.gloss:
-                [${m.gloss}]
+                    [${m.gloss}]
+                % endif
+                % if m.reverse and m.reverse != m.gloss:
+                    [${m.reverse}]
                 % endif
                 % if m.semantic_domain:
                     (${m.semantic_domain})

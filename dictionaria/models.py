@@ -84,6 +84,7 @@ class Meaning(Base, common.IdNameDescriptionMixin):
     gloss = Column(Unicode)
     language = Column(Unicode, default='en')
     semantic_domain = Column(Unicode)
+    reverse = Column(Unicode)
 
     @declared_attr
     def word(cls):
@@ -121,3 +122,5 @@ class Example(CustomModelMixin, common.Sentence):
     pk = Column(Integer, ForeignKey('sentence.pk'), primary_key=True)
     alt_translation = Column(Unicode)
     alt_translation_language = Column(Unicode)
+    alt_translation2 = Column(Unicode)
+    alt_translation_language2 = Column(Unicode)

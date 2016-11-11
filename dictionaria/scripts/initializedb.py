@@ -11,8 +11,8 @@ from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
-from clldclient.concepticon import Concepticon
 from clld_glottologfamily_plugin.util import load_families
+from pyconcepticon.api import Concepticon
 
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
@@ -47,20 +47,24 @@ def main(args):
 
     print('loading concepts ...')
 
-    concepticon = Concepticon()
-    for i, concept_set in enumerate(concepticon.resources('parameter').members):
-        if args.no_concepts:
-            break
-        concept_set = concepticon.resource(concept_set)
-        cm = ComparisonMeaning(
-            id=concept_set.id,
-            name=concept_set.name.lower(),
-            description=concept_set.description,
-            concepticon_url='%s' % concept_set.uriref)
-        DBSession.add(cm)
-        comparison_meanings[cm.name] = cm
-        for label in concept_set.alt_labels:
-            comparison_meanings_alt_labels.setdefault(label.lower(), cm)
+    concepticon = Concepticon(
+        REPOS.joinpath('..', '..', 'concepticon', 'concepticon-data'))
+    if not args.no_concepts:
+        for conceptset in concepticon.conceptsets.values():
+            cm = data.add(
+                ComparisonMeaning,
+                conceptset.id,
+                id=conceptset.id,
+                name=conceptset.gloss.lower(),
+                description=conceptset.definition,
+                concepticon_url='http://concepticon.clld.org/parameters/%s' % conceptset.id)
+            comparison_meanings[cm.name] = cm
+        for conceptlist in concepticon.conceptlists.values():
+            for concept in conceptlist.concepts.values():
+                if concept.concepticon_id:
+                    comparison_meanings_alt_labels.setdefault(
+                        concept.label.lower(),
+                        data['ComparisonMeaning'][concept.concepticon_id])
 
     DBSession.flush()
 
@@ -86,6 +90,9 @@ def main(args):
         if md is None:
             continue
 
+        if not args.internal and not md.get('published'):
+            continue
+
         id_ = submission.id
         if args.dict and args.dict != id_ and args.dict != 'all':
             continue
@@ -102,7 +109,7 @@ def main(args):
             Dictionary,
             id_,
             id=id_,
-            name=lmd['name'] + ' Dictionary',
+            name=md.get('title', lmd['name'] + ' Dictionary'),
             description=submission.description,
             language=language,
             published=date(*map(int, md['published'].split('-'))),

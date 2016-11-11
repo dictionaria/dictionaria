@@ -1,7 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
 from mimetypes import guess_type
-import subprocess
 
 from clldutils.path import Path, remove, copy, md5
 from clldutils.jsonlib import load
@@ -168,14 +167,21 @@ class Submission(object):
                     gloss=ex.gloss,
                     description=ex.translation,
                     alt_translation=ex.alt_translation,
-                    alt_translation_language=self.md.get('metalanguages', {}).get('gxx'))
+                    alt_translation_language=self.md.get('metalanguages', {}).get('gxx'),
+                    alt_translation2=ex.alt_translation2,
+                    alt_translation_language2=self.md.get('metalanguages', {}).get('gxy'))
                 DBSession.flush()
 
                 if ex.soundfile:
+                    mtype = guess_type(ex.soundfile)[0]
+                    maintype = 'audio'
+                    if mtype and mtype.startswith('image/'):
+                        maintype = 'image'
+
                     self.add_file(
                         args,
-                        'audio',
-                        ex.soundfile.replace('.wav', '.mp3'),
+                        maintype,
+                        ex.soundfile,  # .replace('.wav', '.mp3'),
                         common.Sentence_files,
                         obj,
-                        'audio')
+                        maintype)

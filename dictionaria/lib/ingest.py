@@ -88,6 +88,7 @@ class Example(Entry):
         ('gl', 'gloss'),
         ('ft', 'translation'),
         ('ot', 'alt_translation'),
+        ('ota', 'alt_translation2'),
         ('sf', 'soundfile'),
     ])
     name_to_marker = {v: k for k, v in markers.items()}
@@ -141,6 +142,10 @@ class Example(Entry):
     @property
     def alt_translation(self):
         return self.get('ot')
+
+    @property
+    def alt_translation2(self):
+        return self.get('ota')
 
     @property
     def soundfile(self):

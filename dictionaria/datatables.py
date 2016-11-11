@@ -133,7 +133,7 @@ class Words(datatables.Units):
         if self.contribution:
             for name, var in self.vars.items():
                 query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
-            return query.filter(Word.dictionary_pk == self.contribution.pk)
+            return query.filter(Word.dictionary_pk == self.contribution.pk).distinct()
 
         return query.distinct()
 
