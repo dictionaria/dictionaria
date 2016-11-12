@@ -97,6 +97,7 @@ class Files(object):
                             self.files[type_][nname] = p
                         self.files[type_][p.stem.decode('utf8') + p.suffix.lower()] = p
                         self.files[type_][p.stem.decode('utf8') + p.suffix.upper()] = p
+                        self.files[type_][p.stem.decode('utf8')] = p
         self.missingg = set()
 
     def process(self, type_, content):

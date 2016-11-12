@@ -107,6 +107,11 @@ class Submission(object):
         # - first step: store md5 in DB to later match files in cdstar!
         #
         fpath = self.dir.joinpath('processed', type_, name.encode('utf8'))
+        if not fpath.exists() and self.dir.joinpath('processed', type_).exists():
+            for fname in self.dir.joinpath('processed', type_).iterdir():
+                if fname.stem == name:
+                    fpath = fname
+                    break
         if fpath.exists():
             #
             # 1. compute md5
