@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 from hashlib import md5
 from collections import OrderedDict
-from mimetypes import guess_type
 import re
 
 from clld.db.models import common
@@ -183,36 +182,6 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-class Corpus(object):
-    """
-    ELAN corpus exported using the Toolbox exporter
-
-    http://www.mpi.nl/corpus/html/elan/ch04s03s02.html#Sec_Exporting_a_document_to_Toolbox
-    """
-    def __init__(self, dir_):
-        self.examples = Examples()
-        marker_map = {
-            'utterance_id': 'ref',
-            'utterance': 'tx',
-            'gramm_units': 'mb',
-            'rp_gloss': 'gl',
-        }
-        for path in dir_.glob('*.eaf.sfm'):
-            self.examples.read(path, marker_map=marker_map, entry_sep='\\utterance_id')
-
-    def get(self, key):
-        res = self.examples.get(key)
-        if not res:
-            # We try to correct the lookup key. If a key like 'Abc.34' is used and not
-            # found, we try 'Abc.034' as well.
-            try:
-                prefix, number = key.split('.', 1)
-                res = self.examples.get('%s.%03d' % (prefix, int(number)))
-            except ValueError:
-                pass
-        return res
-
-
 ASSOC_PATTERN = re.compile('associated\s+[a-z]+\s*(\((?P<rel>[^\)]+)\))?')
 
 
@@ -220,40 +189,18 @@ class BaseDictionary(object):
     """
     A dictionary that knows how to load data from a `processed` directory.
     """
-    def __init__(self, filename, **kw):
-        self.filename = filename
-        self.dir = Path(filename).parent
-
-    def stats(self):
-        print(self.filename)
-
-    def process(self, outfile, submission):
-        """extract examples, etc."""
-        assert self.dir.name != 'processed'
-        for t in ['audio', 'image']:
-            _dir = self.dir.joinpath(t)
-            if _dir.exists():
-                for p in _dir.iterdir():
-                    if p.is_file():
-                        submission.process_file(t, p)
-            else:
-                print('no directory %s' % _dir)
+    def __init__(self, d):
+        self.dir = d
 
     def load(
             self,
             submission,
-            did,
-            lid,
+            data,
+            vocab,
+            lang,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map,
-            args):
-        data = Data()
-
-        vocab = models.Dictionary.get(did)
-        lang = models.Variety.get(lid)
-        submission.load_examples(args, data, lang)
-
+            labels):
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])
 
@@ -277,13 +224,13 @@ class BaseDictionary(object):
                 fname = lemma.get(attr)
                 if fname:
                     fname = img_map.get(fname, fname)
-                    submission.add_file(args, type_, fname, common.Unit_files, word, 1)
+                    submission.add_file(type_, fname, common.Unit_files, word, 1)
 
             for index, (key, value) in enumerate(lemma.items()):
-                if key in marker_map:
+                if key in labels:
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk,
-                        key=marker_map[key],
+                        key=labels[key],
                         value=value,
                         ord=index))
 
@@ -297,7 +244,7 @@ class BaseDictionary(object):
                 assoc = ASSOC_PATTERN.match(key)
                 if not assoc:
                     value = lemma[key]
-                    if value and not marker_map:
+                    if value and not labels:
                         DBSession.add(common.Unit_data(key=key, value=value, object_pk=word.pk))
                 else:
                     for lid in split(lemma.get(key, '')):

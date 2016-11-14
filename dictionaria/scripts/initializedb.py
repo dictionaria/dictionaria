@@ -90,30 +90,29 @@ def main(args):
         if md is None:
             continue
 
-        if not args.internal and not md.get('published'):
-            continue
-
         id_ = submission.id
         if args.dict and args.dict != id_ and args.dict != 'all':
             continue
         lmd = md['language']
+        props = md.get('properties', {})
 
         language = data['Variety'].get(lmd['glottocode'])
         if not language:
             language = data.add(
                 Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
 
-        if '-' not in md['published']:
-            md['published'] = md['published'] + '-01-01'
+        md['date_published'] = md['date_published'] or date.today().isoformat()
+        if '-' not in md['date_published']:
+            md['date_published'] = md['date_published'] + '-01-01'
         dictionary = data.add(
             Dictionary,
             id_,
             id=id_,
-            name=md.get('title', lmd['name'] + ' Dictionary'),
+            name=props.get('title', lmd['name'] + ' Dictionary'),
             description=submission.description,
             language=language,
-            published=date(*map(int, md['published'].split('-'))),
-            jsondata=dict(custom_fields=md.get('custom_fields', [])))
+            published=date(*map(int, md['date_published'].split('-'))),
+            jsondata=dict(custom_fields=props.get('custom_fields', [])))
 
         for i, cname in enumerate(md['authors']):
             name = HumanName(cname)
@@ -131,43 +130,21 @@ def main(args):
     transaction.commit()
 
     for did, lid, submission in submissions:
-        try:
-            mod = __import__(
-                'dictionaria.loader.' + submission.id, fromlist=['MARKER_MAP'])
-            _marker_map = mod.MARKER_MAP
-        except ImportError:
-            _marker_map = {}
-
-        marker_map = {}
-        for k, v in submission.md.get('labels', {}).items():
-            marker_map[k] = v
-
-        for k, v in _marker_map.items():
-            if k in marker_map:
-                if isinstance(v, tuple):
-                    marker_map[k] = (marker_map[k], v[1])
-            else:
-                marker_map[k] = v
-
         transaction.begin()
         print('loading %s ...' % submission.id)
-        submission.load(
-            did,
-            lid,
+        dictdata = Data()
+        lang = Variety.get(lid)
+        submission.load_examples(dictdata, lang)
+        submission.dictionary.load(
+            submission,
+            dictdata,
+            Dictionary.get(did),
+            lang,
             comparison_meanings,
             comparison_meanings_alt_labels,
-            marker_map,
-            args)
+            submission.md.get('properties', {}).get('labels', {}))
         transaction.commit()
         print('... done')
-
-        #('hoocak', 'Hooca\u0328k', 43.5, -88.5, [('hartmanniren', 'Iren Hartmann')]),
-        #('yakkha', 'Yakkha', 27.37, 87.93, [('schackowdiana', 'Diana Schackow')]),
-        #('palula', 'Palula', 35.51, 71.84, [('liljegrenhenrik', 'Henrik Liljegren')], {}),
-        #('daakaka', 'Daakaka', -16.27, 168.01, [('vonprincekilu', 'Kilu von Prince')],
-        # {'published': date(2015, 9, 30), 'iso': 'bpa', 'glottocode': 'daka1243'}),
-        #('teop', 'Teop', -5.67, 154.97, [('moselulrike', 'Ulrike Mosel')],
-        # {'published': date(2015, 9, 30), 'iso': 'tio', 'glottocode': 'teop1238', 'encoding': 'latin1'}),
 
     transaction.begin()
     load_families(

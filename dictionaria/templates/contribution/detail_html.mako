@@ -7,14 +7,14 @@
 
 <div class="tabbable">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#tab1" data-toggle="tab">Words</a></li>
-        <li><a href="#tab2" data-toggle="tab">Meta</a></li>
+        <li class="active"><a href="#words" data-toggle="tab">Words</a></li>
+        <li><a href="#about" data-toggle="tab">About</a></li>
     </ul>
     <div class="tab-content">
-        <div id="tab1" class="tab-pane active">
+        <div id="words" class="tab-pane active">
             ${request.get_datatable('units', h.models.Value, contribution=ctx).render()}
         </div>
-        <div id="tab2" class="tab-pane">
+        <div id="about" class="tab-pane">
             ${util.files()}
             ${util.data()}
             ${ctx.description or ''|n}
