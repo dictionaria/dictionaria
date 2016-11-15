@@ -6,7 +6,6 @@ import re
 
 from clld.db.models import common
 from clld.db.meta import DBSession
-from clld.scripts.util import Data
 from clldutils.dsv import reader
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug, UnicodeMixin

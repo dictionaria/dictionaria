@@ -13,16 +13,16 @@
                     <p>${a.description}</p>
                 % endif
                 ${h.rendered_sentence(a.sentence, fmt=fmt)}
-                % if a.sentence.alt_translation:
+                % if a.sentence.alt_translation1:
                 <div>
-                    <span class="translation">${a.sentence.alt_translation}</span>
-                    <span>[${a.sentence.alt_translation_language}]</span>
+                    ${a.sentence.dictionary.metalanguage_label(a.sentence.alt_translation_language1)|n}
+                    <span class="translation">${a.sentence.alt_translation1}</span>
                 </div>
                 % endif
                     % if a.sentence.alt_translation2:
                         <div>
+                            ${a.sentence.dictionary.metalanguage_label(a.sentence.alt_translation_language2)|n}
                             <span class="translation">${a.sentence.alt_translation2}</span>
-                            <span>[${a.sentence.alt_translation_language2}]</span>
                         </div>
                     % endif
             % if a.sentence.audio:
@@ -57,7 +57,7 @@
     % endfor
 </%def>
 
-<h2><span class="lemma">${ctx.name}</span></h2>
+<h2>${ctx.label}</h2>
 
 <p>
     % for file in ctx._files:
@@ -116,24 +116,39 @@
 <ol>
     % for m in ctx.meanings:
         <li>
-            % if m.language != 'en':
-                ${m.language}:
-            % endif
-            <strong>${m.name}</strong>
-            % if m.language == 'en':
-                % if m.gloss and m.name != m.gloss:
-                    [${m.gloss}]
-                % endif
+            <ul class="unstyled">
+                <li>
+                    <strong>${m.name}</strong>
+                    % if m.semantic_domain_list:
+                        <ul class="inline semantic_domains_inline">
+                            % for sd in m.semantic_domain_list:
+                                <li><span class="label">${sd}</span></li>
+                            % endfor
+                        </ul>
+                    % endif
+                ##% if m.gloss and m.name != m.gloss:
+                ##    [${m.gloss}]
+                ##% endif
                 % if m.reverse and m.reverse != m.gloss:
                     [${m.reverse}]
                 % endif
-                % if m.semantic_domain:
-                    (${m.semantic_domain})
-                % endif
-                % if m.sentence_assocs:
-                    ${sentences(m)}
-                % endif
+                    </li>
+            % if m.alt_translation1:
+                <li>
+                    ${ctx.dictionary.metalanguage_label(m.alt_translation_language1)|n}
+                    <strong>${m.alt_translation1}</strong>
+                </li>
             % endif
+            % if m.alt_translation2:
+                <li>
+                    ${ctx.dictionary.metalanguage_label(m.alt_translation_language2)|n}
+                    <strong>${m.alt_translation2}</strong>
+                </li>
+            % endif
+                % if m.sentence_assocs:
+                    <li>${sentences(m)}</li>
+                % endif
+            </ul>
         </li>
     % endfor
 </ol>
@@ -143,10 +158,11 @@
 <ul>
     % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
         <li>
-            <span class="lemma">${h.link(request, w)}</span>
             % if desc:
-            <span>(${desc})</span>
+                <span>${desc}:</span>
             % endif
+            <span style="margin-right: 10px">${h.link(request, w, label=w.label)}</span>
+            <strong>${'; '.join(w.description_list)}</strong>
         </li>
     % endfor
 </ul>

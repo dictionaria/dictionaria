@@ -1,2 +1,3 @@
 span.lemma {font-style: italic;}
 div.sentence div.body {padding-top: 5px !important;}
+ul.semantic_domains_inline:before {content: "Semantic domains: "}

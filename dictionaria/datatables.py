@@ -20,7 +20,7 @@ from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
 from clldmpg.cdstar import MediaCol
 
 from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning, Variety
-from dictionaria.util import concepticon_link
+from dictionaria.util import concepticon_link, split
 
 
 class LanguageIdCol(LinkCol):
@@ -82,13 +82,7 @@ class DictionaryCol(Col):
 
 class WordCol(LinkCol):
     def get_attrs(self, item):
-        attrs = dict(title=item.name)
-        if not item.number:
-            attrs['label'] = HTML.span(item.name, class_='lemma')
-        else:
-            attrs['label'] = HTML.span(
-                item.name, HTML.sup(str(item.number)), class_='lemma')
-        return attrs
+        return dict(title=item.name, label=item.label)
 
     def order(self):
         return Word.name, Word.number
@@ -106,6 +100,21 @@ class CustomCol(Col):
 
     def order(self):
         return self.dt.vars[self.name].value
+
+
+class SemanticDomainCol(Col):
+    __kw__ = dict(bSortable=False)
+
+    def __init__(self, dt, name, sds, **kw):
+        kw['choices'] = sds
+        Col.__init__(self, dt, name, **kw)
+
+    def search(self, qs):
+        return icontains(Word.semantic_domain, qs)
+
+    def format(self, item):
+        return HTML.ul(
+            *[HTML.li(sd) for sd in item.semantic_domain_list], **{'class': 'unstyled'})
 
 
 class Words(datatables.Units):
@@ -147,13 +156,16 @@ class Words(datatables.Units):
                 WordCol(self, 'word', model_col=common.Unit.name),
                 Col(self, 'part_of_speech', model_col=Word.pos, choices=pos),
                 Col(self, 'description', model_col=common.Unit.description),
-                MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
-                MediaCol(self, 'audio', 'audio'),
-                MediaCol(self, 'image', 'image'),
-                #CustomCol(self, 'custom'),
+                #MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
             ]
+            if self.contribution.semantic_domains:
+                res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
+            if self.contribution.count_audio:
+                res.append(MediaCol(self, 'audio', 'audio'))
+            if self.contribution.count_image:
+                res.append(MediaCol(self, 'image', 'image'))
             for name in self.vars:
-                res.append(CustomCol(self, name))
+                res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
             return res
         return [
             WordCol(self, 'word'),

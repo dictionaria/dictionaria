@@ -48,7 +48,7 @@ class Submission(object):
             # 3. Assign metadata to file object's jsondata
             checksum = md5(fpath)
             if checksum in self.cdstar:
-                jsondata = {k: v for k, v in self.md.get(type_, {}).items()}
+                jsondata = {k: v for k, v in self.props.get(type_, {}).items()}
                 jsondata.update(self.cdstar[checksum])
                 f = file_cls(
                     id='%s-%s-%s' % (self.id, obj.id, index),
@@ -66,7 +66,7 @@ class Submission(object):
         if log == 'missing':
             print('{0} file missing: {1}'.format(type_, name))
 
-    def load_examples(self, data, lang):
+    def load_examples(self, dictionary, data, lang):
         for ex in Examples.from_file(self.dir.joinpath('processed', 'examples.sfm')):
             obj = data.add(
                 models.Example,
@@ -74,13 +74,14 @@ class Submission(object):
                 id='%s-%s' % (self.id, ex.id.replace('.', '_')),
                 name=ex.text,
                 language=lang,
+                dictionary=dictionary,
                 analyzed=ex.morphemes,
                 gloss=ex.gloss,
                 description=ex.translation,
-                alt_translation=ex.alt_translation,
-                alt_translation_language=self.md.get('metalanguages', {}).get('gxx'),
+                alt_translation1=ex.alt_translation,
+                alt_translation_language1=self.props.get('metalanguages', {}).get('gxx'),
                 alt_translation2=ex.alt_translation2,
-                alt_translation_language2=self.md.get('metalanguages', {}).get('gxy'))
+                alt_translation_language2=self.props.get('metalanguages', {}).get('gxy'))
             DBSession.flush()
 
             if ex.soundfile:

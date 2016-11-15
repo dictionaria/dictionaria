@@ -14,6 +14,6 @@
 
 <ul>
 % for i, value in enumerate(ctx.values):
-        <li>${h.link(request, value.word, class_='charissil')}: ${value.word.description}</li>
+        <li>${h.link(request, value.word)}: ${value.word.description}</li>
 % endfor
 </ul>

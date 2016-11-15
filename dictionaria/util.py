@@ -5,6 +5,17 @@ from clld.web.util.htmllib import HTML
 from clldmpg import cdstar
 
 
+MULT_VALUE_SEP = ' ; '
+
+
+def split(s):
+    return [ss.strip() for ss in s.split(MULT_VALUE_SEP) if ss.strip()]
+
+
+def join(iterable):
+    return MULT_VALUE_SEP.join(iterable)
+
+
 def concepticon_link(request, meaning):
     return HTML.a(
         HTML.img(

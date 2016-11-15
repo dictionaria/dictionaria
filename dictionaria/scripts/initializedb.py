@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 from datetime import date
-from itertools import groupby
+from itertools import groupby, chain
 import re
 
 import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
-from clldutils.misc import slug
+from clldutils.misc import slug, nfilter
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
@@ -17,6 +17,7 @@ from pyconcepticon.api import Concepticon
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
 from dictionaria.lib.submission import REPOS, Submission
+from dictionaria.util import join
 
 
 def main(args):
@@ -95,6 +96,13 @@ def main(args):
             continue
         lmd = md['language']
         props = md.get('properties', {})
+        props.setdefault('custom_fields', [])
+        props['metalanguage_styles'] = {}
+        for v, s in zip(props.get('metalanguages', {}).values(),
+                        ['success', 'info', 'warning', 'important']):
+            props['metalanguage_styles'][v] = s
+        props['custom_fields'] = ['lang-' + f if f in props['metalanguage_styles'] else f
+                                  for f in props['custom_fields']]
 
         language = data['Variety'].get(lmd['glottocode'])
         if not language:
@@ -112,7 +120,7 @@ def main(args):
             description=submission.description,
             language=language,
             published=date(*map(int, md['date_published'].split('-'))),
-            jsondata=dict(custom_fields=props.get('custom_fields', [])))
+            jsondata=props)
 
         for i, cname in enumerate(md['authors']):
             name = HumanName(cname)
@@ -134,7 +142,7 @@ def main(args):
         print('loading %s ...' % submission.id)
         dictdata = Data()
         lang = Variety.get(lid)
-        submission.load_examples(dictdata, lang)
+        submission.load_examples(Dictionary.get(did), dictdata, lang)
         submission.dictionary.load(
             submission,
             dictdata,
@@ -166,19 +174,37 @@ def prime_cache(cfg):
 
     q = DBSession.query(Word)\
         .order_by(common.Unit.language_pk, common.Unit.name, common.Unit.pk)\
-        .options(joinedload(Word.meanings))
+        .options(joinedload(Word.meanings), joinedload(Word.dictionary))
     for _, words in groupby(q, lambda u: u.name):
         words = list(words)
         for i, word in enumerate(words):
-            word.description = ' / '.join(m.name for m in word.meanings if m.language == 'en')
+            word.description = join(m.name for m in word.meanings)
+            word.semantic_domain = join(nfilter(m.semantic_domain for m in word.meanings))
             word.number = i + 1 if len(words) > 1 else 0
-            DBSession.add(common.Unit_data(
-                object_pk=word.pk,
-                key='Semantic domain',
-                value=' / '.join(m.semantic_domain for m in word.meanings if m.semantic_domain)))
+
+            for suffix in ['1', '2']:
+                alt_t, alt_l = [], []
+                for m in word.meanings:
+                    if getattr(m, 'alt_translation' + suffix):
+                        alt_l.append(getattr(m, 'alt_translation_language' + suffix))
+                        alt_t.append(getattr(m, 'alt_translation' + suffix))
+                if alt_t and len(set(alt_l)) == 1:
+                    DBSession.add(common.Unit_data(
+                        object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
+
+    def count_unit_media_files(contrib, mtype):
+        return DBSession.query(common.Unit_files)\
+            .join(Word, common.Unit_files.object_pk == Word.pk)\
+            .filter(Word.dictionary_pk == contrib.pk)\
+            .filter(common.Unit_files.mime_type.ilike(mtype + '/%'))\
+            .count()
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
         d.count_words = len(d.words)
+        sds = set(chain(*[w.semantic_domain_list for w in d.words]))
+        d.semantic_domains = join(sorted(sds))
+        d.count_audio = count_unit_media_files(d, 'audio')
+        d.count_image = count_unit_media_files(d, 'image')
 
 
 if __name__ == '__main__':

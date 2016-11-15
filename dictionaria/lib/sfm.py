@@ -44,6 +44,8 @@ class Meaning(object):
     def __init__(self):
         self.de = None
         self.ge = None
+        self.gxx = None
+        self.gxy = None
         self.re = None
         self.sd = []
         self.xref = []
@@ -63,7 +65,6 @@ class Word(object):
         self.data = defaultdict(list)  # to store additional marker, value pairs
         self.rel = []
         self.meanings = []
-        self.non_english_meanings = defaultdict(list)
 
     @property
     def ps(self):
@@ -103,15 +104,15 @@ class Entry(sfm.Entry):
     """
     A dictionary entry.
     """
-    def preprocessed(self):
-        for i, (k, v) in enumerate(self[:]):
-            if k == 'ge' and sfm.FIELD_SPLITTER_PATTERN.search(v):
-                ges = sfm.FIELD_SPLITTER_PATTERN.split(v)
-                self[i] = ('zzz', 'zzz')
-                for ge in ges:
-                    self.append(('sn', 'auto'))
-                    self.append(('ge', ge))
-        return self
+    #def preprocessed(self):
+    #    for i, (k, v) in enumerate(self[:]):
+    #        if k == 'ge' and sfm.FIELD_SPLITTER_PATTERN.search(v):
+    #            ges = sfm.FIELD_SPLITTER_PATTERN.split(v)
+    #            self[i] = ('zzz', 'zzz')
+    #            for ge in ges:
+    #                self.append(('sn', 'auto'))
+    #                self.append(('ge', ge))
+    #    return self
 
     def checked_word(self, word, meaning, pos):
         if meaning:
@@ -170,7 +171,7 @@ class Entry(sfm.Entry):
                         word = word.copy()
                     meaning = Meaning()
             # meaning-specific markers:
-            elif k in ['de', 'ge', 're']:
+            elif k in ['de', 'ge', 're', 'gxx', 'gxy']:
                 # FIXME: we must support multiple meanings expressed by
                 # semicolon-separated \ge values, e.g. "jump ; jump at"
                 setattr(meaning, k, v)
@@ -196,16 +197,10 @@ class Entry(sfm.Entry):
                     meaning = Meaning()
             elif k in ['cf', 'mn']:
                 word.rel.extend([(k, vv) for vv in split(v, ',')])
-            elif k in ['gxx', 'gxy']:  # support two meta/target languages
-                word.non_english_meanings[k].extend(sfm.FIELD_SPLITTER_PATTERN.split(v))
             else:
                 word.data[k].append(v)
         if word and word.form:
             yield self.checked_word(word, meaning, pos)
-
-
-def default_value_converter(value, _):
-    return value
 
 
 class Dictionary(BaseDictionary):
@@ -291,6 +286,10 @@ class Dictionary(BaseDictionary):
                         description=meaning.de,
                         gloss=meaning.ge,
                         reverse=meaning.re,
+                        alt_translation1=meaning.gxx,
+                        alt_translation_language1=submission.props.get('metalanguages', {}).get('gxx'),
+                        alt_translation2=meaning.gxy,
+                        alt_translation_language2=submission.props.get('metalanguages', {}).get('gxy'),
                         #ord=k + 1,
                         word=w,
                         semantic_domain=', '.join(meaning.sd))
@@ -335,36 +334,11 @@ class Dictionary(BaseDictionary):
                             valueset=vs,
                             word=w))
 
-                for _lang, meanings in word.non_english_meanings.items():
-                    assert _lang in submission.props['metalanguages']
-
-                    #DBSession.add(common.Unit_data(
-                    #    object_pk=w.pk,
-                    #    key='lang-%s' % submission.md['metalanguages'][_lang],
-                    #    value='; '.join(meanings),
-                    #    ord=-1))
-
-                    for meaning in meanings:
-                        k += 1
-                        models.Meaning(
-                            id='%s-%s' % (w.id, k + 1),
-                            name=meaning,
-                            gloss=meaning,
-                            language=submission.props['metalanguages'][_lang],
-                            word=w)
-
                 for index, (key, values) in enumerate(word.data.items()):
                     if key in labels:
-                        label = labels[key]
-                        converter = default_value_converter
-                        if isinstance(label, (list, tuple)):
-                            label, converter = label
                         for value in values:
                             DBSession.add(common.Unit_data(
-                                object_pk=w.pk,
-                                key=label,
-                                value=converter(value, word.data),
-                                ord=index))
+                                object_pk=w.pk, key=labels[key], value=value, ord=index))
 
         # FIXME: vgroup words by description and add synonym relationships!
 

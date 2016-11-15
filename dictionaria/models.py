@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 from zope.interface import implementer
 from sqlalchemy import (
     Column,
-    String,
     Unicode,
     Integer,
     ForeignKey,
     Date,
+    Boolean,
 )
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declared_attr
@@ -15,7 +15,10 @@ from sqlalchemy.ext.declarative import declared_attr
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
+from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import HasFamilyMixin
+
+from dictionaria.util import split
 
 
 @implementer(interfaces.ILanguage)
@@ -32,6 +35,14 @@ class Dictionary(CustomModelMixin, common.Contribution):
     language = relationship('Language', backref='dictionaries')
     published = Column(Date)
     count_words = Column(Integer)
+    count_audio = Column(Integer)
+    count_image = Column(Integer)
+    semantic_domains = Column(Unicode)
+
+    def metalanguage_label(self, lang):
+        style = self.jsondata['metalanguage_styles'].get(lang)
+        style = "label label-{0}".format(style) if style else lang
+        return HTML.span(lang, class_=style)
 
 
 @implementer(interfaces.IParameter)
@@ -47,6 +58,7 @@ class Word(CustomModelMixin, common.Unit):
     dictionary, i.e. part of a contribution.
     """
     pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
+    semantic_domain = Column(Unicode)
     phonetic = Column(Unicode)
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
@@ -61,12 +73,27 @@ class Word(CustomModelMixin, common.Unit):
     number = Column(Integer, default=0)  # for disambiguation of words with the same name
 
     @property
+    def label(self):
+        args = [self.name]
+        if self.number:
+            args.append(HTML.sup('{0}'.format(self.number)))
+        return HTML.span(*args, **{'class': 'lemma'})
+
+    @property
     def linked_from(self):
         return [(w.source, w.description) for w in self.source_assocs]
 
     @property
     def links_to(self):
         return [(w.target, w.description) for w in self.target_assocs]
+
+    @property
+    def description_list(self):
+        return split(self.description)
+
+    @property
+    def semantic_domain_list(self):
+        return split(self.semantic_domain)
 
 
 class SeeAlso(Base):
@@ -85,10 +112,18 @@ class Meaning(Base, common.IdNameDescriptionMixin):
     language = Column(Unicode, default='en')
     semantic_domain = Column(Unicode)
     reverse = Column(Unicode)
+    alt_translation1 = Column(Unicode)
+    alt_translation_language1 = Column(Unicode)
+    alt_translation2 = Column(Unicode)
+    alt_translation_language2 = Column(Unicode)
 
     @declared_attr
     def word(cls):
         return relationship(Word, backref=backref('meanings', order_by=[cls.ord]))
+
+    @property
+    def semantic_domain_list(self):
+        return split(self.semantic_domain)
 
 
 #
@@ -120,7 +155,9 @@ class Counterpart(CustomModelMixin, common.Value):
 @implementer(interfaces.ISentence)
 class Example(CustomModelMixin, common.Sentence):
     pk = Column(Integer, ForeignKey('sentence.pk'), primary_key=True)
-    alt_translation = Column(Unicode)
-    alt_translation_language = Column(Unicode)
+    alt_translation1 = Column(Unicode)
+    alt_translation_language1 = Column(Unicode)
     alt_translation2 = Column(Unicode)
     alt_translation_language2 = Column(Unicode)
+    dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
+    dictionary = relationship(Dictionary, backref='examples')
