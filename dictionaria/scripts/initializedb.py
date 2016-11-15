@@ -173,7 +173,7 @@ def prime_cache(cfg):
             meaning.active = False
 
     q = DBSession.query(Word)\
-        .order_by(common.Unit.language_pk, common.Unit.name, common.Unit.pk)\
+        .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
         .options(joinedload(Word.meanings), joinedload(Word.dictionary))
     for _, words in groupby(q, lambda u: u.name):
         words = list(words)

@@ -161,7 +161,7 @@
             % if desc:
                 <span>${desc}:</span>
             % endif
-            <span style="margin-right: 10px">${h.link(request, w, label=w.label)}</span>
+            <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
             <strong>${'; '.join(w.description_list)}</strong>
         </li>
     % endfor

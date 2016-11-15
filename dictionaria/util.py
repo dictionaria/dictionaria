@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from clld.web.util.htmllib import HTML
 from clldmpg import cdstar
-
+from clld.web.util.helpers import link
 
 MULT_VALUE_SEP = ' ; '
 
