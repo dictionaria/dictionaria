@@ -179,6 +179,7 @@ def prime_cache(cfg):
         words = list(words)
         for i, word in enumerate(words):
             word.description = join(m.name for m in word.meanings)
+            word.comparison_meanings = join(nfilter(m.reverse for m in word.meanings))
             word.semantic_domain = join(nfilter(m.semantic_domain for m in word.meanings))
             word.number = i + 1 if len(words) > 1 else 0
 

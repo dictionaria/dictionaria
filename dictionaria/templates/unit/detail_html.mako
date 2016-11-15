@@ -30,8 +30,8 @@
                 ${u.cdstar.audio(a.sentence.audio)}
             </div>
             % endif
-            % if a.sentence.references and fmt == 'long':
-            <p>Source: ${h.linked_references(request, a.sentence)|n}</p>
+            % if (a.sentence.references or a.sentence.source) and fmt == 'long':
+            Source: ${h.linked_references(request, a.sentence)|n} <span class="label">${a.sentence.source}</span>
             % endif
                     </blockquote>
             </li>
@@ -129,8 +129,8 @@
                 ##% if m.gloss and m.name != m.gloss:
                 ##    [${m.gloss}]
                 ##% endif
-                % if m.reverse and m.reverse != m.gloss:
-                    [${m.reverse}]
+                % if m.reverse and m.reverse != m.name:
+                    Comparison meaning: <strong>${m.reverse}</strong>
                 % endif
                     </li>
             % if m.alt_translation1:

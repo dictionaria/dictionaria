@@ -73,6 +73,7 @@ class Submission(object):
                 ex.id,
                 id='%s-%s' % (self.id, ex.id.replace('.', '_')),
                 name=ex.text,
+                source=ex.corpus_ref,
                 language=lang,
                 dictionary=dictionary,
                 analyzed=ex.morphemes,

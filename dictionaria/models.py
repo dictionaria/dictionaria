@@ -59,6 +59,7 @@ class Word(CustomModelMixin, common.Unit):
     """
     pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
     semantic_domain = Column(Unicode)
+    comparison_meanings = Column(Unicode)
     phonetic = Column(Unicode)
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
@@ -90,6 +91,10 @@ class Word(CustomModelMixin, common.Unit):
     @property
     def description_list(self):
         return split(self.description)
+
+    @property
+    def comparison_meanings_list(self):
+        return split(self.comparison_meanings)
 
     @property
     def semantic_domain_list(self):

@@ -229,6 +229,7 @@ class Dictionary(BaseDictionary):
             comparison_meanings_alt_labels,
             labels):
         rel = []
+        skipped = []
 
         def meaning_descriptions(s):
             return list(split((s or '').replace('.', ' ').lower()))
@@ -238,9 +239,11 @@ class Dictionary(BaseDictionary):
             headword = None
 
             for j, word in enumerate(words):
-                #if not word.meanings:
-                #    print('skip entry without meaning: %s' % word.form)
-                #    continue
+                if word.form.startswith('\\_'):
+                    continue
+                if not word.meanings:
+                    skipped.append(word)
+                    continue
 
                 if not headword:
                     headword = word.id
@@ -352,3 +355,6 @@ class Dictionary(BaseDictionary):
                 pass
                 # FIXME: better logging!
                 #print('---m---', s if s not in data['Word'] else t)
+
+        if skipped:
+            print('{0} entries with no meaning skipped'.format(len(skipped)))

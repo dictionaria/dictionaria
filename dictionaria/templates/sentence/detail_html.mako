@@ -59,7 +59,7 @@ ${h.rendered_sentence(ctx)|n}
 % if ctx.references or ctx.source:
 <dt>${_('Source')}:</dt>
 % if ctx.source:
-<dd>${ctx.source}</dd>
+<dd><span class="label">${ctx.source}</span></dd>
 % endif
 % if ctx.references:
 <dd>${h.linked_references(request, ctx)|n}</dd>
