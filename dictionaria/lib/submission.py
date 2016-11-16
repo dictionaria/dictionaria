@@ -40,31 +40,22 @@ class Submission(object):
         impl = sfm.Dictionary if d.joinpath('db.sfm').exists() else BaseDictionary
         return impl(d)
 
-    def add_file(self, type_, name, file_cls, obj, index, log='missing'):
-        fpath = self.dir.joinpath(type_, name.encode('utf8'))
-        if fpath.exists():
-            # 1. compute md5
-            # 2. lookup in cdstar catalog
-            # 3. Assign metadata to file object's jsondata
-            checksum = md5(fpath)
-            if checksum in self.cdstar:
-                jsondata = {k: v for k, v in self.props.get(type_, {}).items()}
-                jsondata.update(self.cdstar[checksum])
-                f = file_cls(
-                    id='%s-%s-%s' % (self.id, obj.id, index),
-                    name=name,
-                    object_pk=obj.pk,
-                    mime_type=self.cdstar[checksum]['mimetype'],
-                    jsondata=jsondata)
-                DBSession.add(f)
-                DBSession.flush()
-                DBSession.refresh(f)
-                return
-            print(fpath)
+    def add_file(self, type_, checksum, file_cls, obj):
+        if checksum in self.cdstar:
+            jsondata = {k: v for k, v in self.props.get(type_, {}).items()}
+            jsondata.update(self.cdstar[checksum])
+            f = file_cls(
+                id='%s-%s' % (obj.id, checksum),
+                name=self.cdstar[checksum]['original'],
+                object_pk=obj.pk,
+                mime_type=self.cdstar[checksum]['mimetype'],
+                jsondata=jsondata)
+            DBSession.add(f)
+            DBSession.flush()
+            DBSession.refresh(f)
             return
-
-        if log == 'missing':
-            print('{0} file missing: {1}'.format(type_, name))
+        print('{0} file missing: {1}'.format(type_, checksum))
+        return
 
     def load_examples(self, dictionary, data, lang):
         for ex in Examples.from_file(self.dir.joinpath('processed', 'examples.sfm')):
@@ -86,14 +77,4 @@ class Submission(object):
             DBSession.flush()
 
             if ex.soundfile:
-                maintype = 'audio'
-                mtype = guess_type(ex.soundfile)[0]
-                if mtype and mtype.startswith('image/'):
-                    maintype = 'image'
-
-                self.add_file(
-                    maintype,
-                    ex.soundfile,
-                    common.Sentence_files,
-                    obj,
-                    maintype)
+                self.add_file('audio', ex.soundfile, common.Sentence_files, obj)

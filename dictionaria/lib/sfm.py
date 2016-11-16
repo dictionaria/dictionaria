@@ -266,11 +266,8 @@ class Dictionary(BaseDictionary):
                     language=lang)
                 DBSession.flush()
 
-                submission.add_file(
-                    'image', w.name + '.png', common.Unit_files, w, 1, log='found')
-
-                for index, (fname, type_) in enumerate(entry.files):
-                    submission.add_file(type_, fname, common.Unit_files, w, index)
+                for md5, type_ in set(entry.files):
+                    submission.add_file(type_, md5, common.Unit_files, w)
 
                 concepts = []
 

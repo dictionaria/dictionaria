@@ -38,6 +38,4 @@ setup(
     entry_points="""\
         [paste.app_factory]
         main = dictionaria:main
-        [console_scripts]
-        dictionaria = dictionaria.scripts.cli:main
 """)
