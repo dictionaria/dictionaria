@@ -223,7 +223,7 @@ class BaseDictionary(object):
                 fname = lemma.get(attr)
                 if fname:
                     fname = img_map.get(fname, fname)
-                    submission.add_file(type_, fname, common.Unit_files, word, 1)
+                    submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, value) in enumerate(lemma.items()):
                 if key in labels:

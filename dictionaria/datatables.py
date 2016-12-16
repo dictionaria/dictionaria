@@ -17,7 +17,7 @@ from clld.web.util.helpers import link, linked_contributors, icon
 from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import Family
 from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
-from clldmpg.cdstar import MediaCol
+from clldmpg.cdstar import MediaCol, maintype, bitstream_url
 
 from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning, Variety
 from dictionaria.util import concepticon_link, split
@@ -117,6 +117,17 @@ class SemanticDomainCol(Col):
             *[HTML.li(sd) for sd in item.semantic_domain_list], **{'class': 'unstyled'})
 
 
+class ThumbnailCol(Col):
+    __kw__ = dict(bSearchable=False, bSortable=False)
+
+    def format(self, item):
+        item = self.get_obj(item)
+        for f in item._files:
+            if maintype(f) == 'image':
+                return HTML.img(src=bitstream_url(f, type_='thumbnail'))
+        return ''
+
+
 class Words(datatables.Units):
     __constraints__ = [common.Language, common.Contribution, common.Parameter]
 
@@ -161,9 +172,10 @@ class Words(datatables.Units):
             if self.contribution.semantic_domains:
                 res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
             if self.contribution.count_audio:
-                res.append(MediaCol(self, 'audio', 'audio'))
+                res.append(MediaCol(self, 'audio', 'audio', sTitle=''))
             if self.contribution.count_image:
-                res.append(MediaCol(self, 'image', 'image'))
+                res.append(ThumbnailCol(self, 'image', sTitle=''))
+                #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
                 res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
             return res

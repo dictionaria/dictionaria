@@ -15,14 +15,14 @@
                 ${h.rendered_sentence(a.sentence, fmt=fmt)}
                 % if a.sentence.alt_translation1:
                 <div>
-                    ${a.sentence.dictionary.metalanguage_label(a.sentence.alt_translation_language1)|n}
-                    <span class="translation">${a.sentence.alt_translation1}</span>
+                    <span class="alt-translation translation">${a.sentence.alt_translation1}</span>
+                    <span class="alt-translation">(${a.sentence.alt_translation_language1})</span>
                 </div>
                 % endif
                     % if a.sentence.alt_translation2:
                         <div>
-                            ${a.sentence.dictionary.metalanguage_label(a.sentence.alt_translation_language2)|n}
-                            <span class="translation">${a.sentence.alt_translation2}</span>
+                            <span class="alt-translation translation">${a.sentence.alt_translation2}</span>
+                            <span class="alt-translation">(${a.sentence.alt_translation_language2})</span>
                         </div>
                     % endif
             % if a.sentence.audio:
@@ -45,6 +45,13 @@
         ${h.button('cite', onclick=h.JSModal.show(ctx.dictionary.name, request.resource_url(ctx.dictionary, ext='md.html')))}
     </%util:well>
     % for file in ctx._files:
+        % if file.mime_type.startswith('audio'):
+            <p>
+                ${u.cdstar.audio(file)}
+            </p>
+        % endif
+    % endfor
+    % for file in ctx._files:
         % if file.mime_type.startswith('image'):
             <div class="img-with-caption well">
                 ${u.cdstar.linked_image(file)}
@@ -57,23 +64,14 @@
     % endfor
 </%def>
 
-<h2>${ctx.label}</h2>
+<h2>${ctx.label}: <span class="meanings-in-title">${' / '.join(u.split(m.name)[0] for m in ctx.meanings)}</span></h2>
 
-<p>
-    % for file in ctx._files:
-        % if file.mime_type.startswith('audio'):
-            ${u.cdstar.audio(file)}
-        ##<audio src="${request.file_url(file)}"/>
-        % endif
-    % endfor
-</p>
-
-<table class="table table-nonfluid">
+<table class="table table-condensed table-nonfluid borderless">
     % if ctx.pos:
     <tr>
-        <td>Part of speech</td>
+        <td>part of speech</td>
     <td>
-        ${ctx.pos}
+        <span class="vocabulary">${ctx.pos}</span>
     </td>
     </tr>
     % endif
@@ -112,20 +110,12 @@
 % endfor
 </table>
 
-<h4>Meanings</h4>
-<ol>
+${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
     % for m in ctx.meanings:
         <li>
             <ul class="unstyled">
                 <li>
                     <strong>${m.name}</strong>
-                    % if m.semantic_domain_list:
-                        <ul class="inline semantic_domains_inline">
-                            % for sd in m.semantic_domain_list:
-                                <li><span class="label">${sd}</span></li>
-                            % endfor
-                        </ul>
-                    % endif
                 ##% if m.gloss and m.name != m.gloss:
                 ##    [${m.gloss}]
                 ##% endif
@@ -135,14 +125,21 @@
                     </li>
             % if m.alt_translation1:
                 <li>
-                    ${ctx.dictionary.metalanguage_label(m.alt_translation_language1)|n}
-                    <strong>${m.alt_translation1}</strong>
+                    <span class="alt-translation">${m.alt_translation1} (${m.alt_translation_language1})</span>
                 </li>
             % endif
             % if m.alt_translation2:
                 <li>
-                    ${ctx.dictionary.metalanguage_label(m.alt_translation_language2)|n}
-                    <strong>${m.alt_translation2}</strong>
+                    <span class="alt-translation">${m.alt_translation2} (${m.alt_translation_language2})</span>
+                </li>
+            % endif
+            % if m.semantic_domain_list:
+                <li>
+                    <ul class="inline semantic_domains_inline">
+                        % for sd in m.semantic_domain_list:
+                            <li><span class="vocabulary">${sd}</span></li>
+                        % endfor
+                    </ul>
                 </li>
             % endif
                 % if m.sentence_assocs:
@@ -151,10 +148,10 @@
             </ul>
         </li>
     % endfor
-</ol>
+${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 
 % if ctx.linked_from or ctx.links_to:
-<h4>Related</h4>
+<h3>Related entries</h3>
 <ul>
     % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
         <li>

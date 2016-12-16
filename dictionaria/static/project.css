@@ -1,3 +1,9 @@
 span.lemma {font-style: italic;}
 div.sentence div.body {padding-top: 5px !important;}
-ul.semantic_domains_inline:before {content: "Semantic domains: "}
+ul.semantic_domains_inline:before {content: "semantic domain: "}
+span.alt-translation {color: gray}
+span.vocabulary {font-variant: all-small-caps}
+span.meanings-in-title {font-weight: normal !important; font-size: smaller;}
+span.meanings-in-title:before { content: "\2018"; }
+span.meanings-in-title:after { content: "\2019"; }
+.borderless td, .borderless th {border: none;}
