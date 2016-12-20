@@ -64,7 +64,7 @@
     % endfor
 </%def>
 
-<h2>${ctx.label}: <span class="meanings-in-title">${' / '.join(u.split(m.name)[0] for m in ctx.meanings)}</span></h2>
+<h2>${ctx.label} <span class="meanings-in-title">${' / '.join(u.split(m.name)[0] for m in ctx.meanings)}</span></h2>
 
 <table class="table table-condensed table-nonfluid borderless">
     % if ctx.pos:
