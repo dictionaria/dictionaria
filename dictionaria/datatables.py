@@ -114,7 +114,8 @@ class SemanticDomainCol(Col):
 
     def format(self, item):
         return HTML.ul(
-            *[HTML.li(sd) for sd in item.semantic_domain_list], **{'class': 'unstyled'})
+            *[HTML.li(HTML.span(sd, class_='vocabulary'))
+              for sd in item.semantic_domain_list], **{'class': 'unstyled'})
 
 
 class ThumbnailCol(Col):
@@ -165,7 +166,11 @@ class Words(datatables.Units):
                          .distinct() if c))
             res = [
                 WordCol(self, 'word', model_col=common.Unit.name),
-                Col(self, 'part_of_speech', model_col=Word.pos, choices=pos),
+                Col(self,
+                    'part_of_speech',
+                    model_col=Word.pos,
+                    choices=pos,
+                    format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
                 Col(self, 'description', model_col=common.Unit.description),
                 #MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
             ]

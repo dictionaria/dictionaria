@@ -16,13 +16,13 @@
                 % if a.sentence.alt_translation1:
                 <div>
                     <span class="alt-translation translation">${a.sentence.alt_translation1}</span>
-                    <span class="alt-translation">(${a.sentence.alt_translation_language1})</span>
+                    <span class="alt-translation">[${a.sentence.alt_translation_language1}]</span>
                 </div>
                 % endif
                     % if a.sentence.alt_translation2:
                         <div>
                             <span class="alt-translation translation">${a.sentence.alt_translation2}</span>
-                            <span class="alt-translation">(${a.sentence.alt_translation_language2})</span>
+                            <span class="alt-translation">[${a.sentence.alt_translation_language2}]</span>
                         </div>
                     % endif
             % if a.sentence.audio:
@@ -69,7 +69,7 @@
 <table class="table table-condensed table-nonfluid borderless">
     % if ctx.pos:
     <tr>
-        <td>part of speech</td>
+        <td><small>part of speech</small></td>
     <td>
         <span class="vocabulary">${ctx.pos}</span>
     </td>
@@ -77,7 +77,7 @@
     % endif
     % if ctx.counterparts:
         <tr>
-            <td>comparison meanings</td>
+            <td><small>comparison meanings</small></td>
             <td>
                 <ul class="unstyled">
                 % for c in ctx.counterparts:
@@ -93,17 +93,19 @@
     <tr>
         <td>${h.link(request, value.unitparameter)}</td>
         <td>
-            ${value}
-            % if value.name:
-                (${value.name})
-            % endif
+            <small>
+                ${value}
+                % if value.name:
+                    (${value.name})
+                % endif
+            </small>
         </td>
     </tr>
     % endfor
 % for _d in ctx.data:
     % if not _d.key.startswith('lang-'):
     <tr>
-        <td>${_d.key}</td>
+        <td><small>${_d.key}</small></td>
         <td>${_d.value}</td>
     </tr>
     % endif
@@ -125,12 +127,12 @@ ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
                     </li>
             % if m.alt_translation1:
                 <li>
-                    <span class="alt-translation">${m.alt_translation1} (${m.alt_translation_language1})</span>
+                    <span class="alt-translation">${m.alt_translation1} [${m.alt_translation_language1}]</span>
                 </li>
             % endif
             % if m.alt_translation2:
                 <li>
-                    <span class="alt-translation">${m.alt_translation2} (${m.alt_translation_language2})</span>
+                    <span class="alt-translation">${m.alt_translation2} [${m.alt_translation_language2}]</span>
                 </li>
             % endif
             % if m.semantic_domain_list:
@@ -151,7 +153,7 @@ ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
 ${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 
 % if ctx.linked_from or ctx.links_to:
-<h3>Related entries</h3>
+<h4>Related entries</h4>
 <ul>
     % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
         <li>
