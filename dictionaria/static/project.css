@@ -7,3 +7,9 @@ span.meanings-in-title {font-weight: normal !important; font-size: smaller;}
 span.meanings-in-title:before { content: "\2018"; }
 span.meanings-in-title:after { content: "\2019"; }
 .borderless td, .borderless th {border: none;}
+ol.nested { counter-reset: item }
+ol.nested li { display: block }
+ol.nested li:before { content: counters(item, ".") " "; counter-increment: item }
+div.toc li {font-weight: bold}
+figure {float: right; margin-left: 20px; max-width: 310px;}
+figcaption {  font-style: italic; text-align: center; }

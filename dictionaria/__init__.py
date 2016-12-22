@@ -1,6 +1,7 @@
 from pyramid.config import Configurator
 
 from clld.interfaces import ILinkAttrs, IUnitValue, IValue, IValueSet, IMapMarker
+
 from clld_glottologfamily_plugin.util import LanguageByFamilyMapMarker
 
 # we must make sure custom models are known at database initialization!
@@ -10,6 +11,12 @@ from dictionaria import models
 _ = lambda s: s
 _('Parameter')
 _('Parameters')
+_('Sentence')
+_('Sentences')
+_('Contributor')
+_('Contributors')
+_('Contribution')
+_('Contributions')
 
 
 def link_attrs(req, obj, **kw):
@@ -35,4 +42,6 @@ def main(global_config, **settings):
     config.include('clldmpg')
     config.include('clld_glottologfamily_plugin')
     config.registry.registerUtility(MyMapMarker(), IMapMarker)
+    config.add_page('submit')
+    config.add_settings(home_comp=['submit'] + config.get_settings()['home_comp'])
     return config.make_wsgi_app()
