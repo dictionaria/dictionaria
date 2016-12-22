@@ -27,17 +27,24 @@ def main(args):
         id=dictionaria.__name__,
         name="Dictionaria",
         description="The Dictionary Journal",
-        published=date(2015, 10, 1),
-        contact='dictionaria@eva.mpg.de',
+        published=date(2017, 1, 1),
+        contact='dictionary.journal@uni-leipzig.de',
         domain='dictionaria.clld.org',
+        publisher_name="Max Planck Institute for the Science of Human History",
+        publisher_place="Jena",
+        publisher_url="http://shh.mpg.de",
         license="http://creativecommons.org/licenses/by/4.0/",
         jsondata={
             'license_icon': 'cc-by.png',
             'license_name': 'Creative Commons Attribution 4.0 International License'})
 
-    ed = data.add(
-        common.Contributor, 'hartmanniren', id='hartmanniren', name='Iren Hartmann')
-    common.Editor(dataset=dataset, contributor=ed)
+    for i, (id_, name) in enumerate([
+        ('haspelmathmartin', 'Martin Haspelmath'),
+        ('moselulrike', 'Ulrike Mosel'),
+        ('stiebelsbarbara', 'Barbara Stiebels')
+    ]):
+        ed = data.add(common.Contributor, id_, id=id_, name=name)
+        common.Editor(dataset=dataset, contributor=ed, ord=i + 1)
     DBSession.add(dataset)
 
     for id_, name in LGR_ABBRS.items():
@@ -116,7 +123,8 @@ def main(args):
             Dictionary,
             id_,
             id=id_,
-            name=props.get('title', lmd['name'] + ' Dictionary'),
+            number=md.get('number'),
+            name=props.get('title', lmd['name'] + ' dictionary'),
             description=submission.description,
             language=language,
             published=date(*map(int, md['date_published'].split('-'))),

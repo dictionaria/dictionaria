@@ -307,12 +307,13 @@ class YearCol(Col):
 class Dictionaries(datatables.Contributions):
     def get_options(self):
         opts = super(Dictionaries, self).get_options()
-        opts['aaSorting'] = [[0, 'desc']]
+        opts['aaSorting'] = [[0, 'asc']]
         return opts
 
     def col_defs(self):
         from clld.web.datatables.contribution import ContributorsCol, CitationCol
         return [
+            Col(self, 'Number', model_col=Dictionary.number, input_size='mini'),
             LinkCol(self, 'dictionary'),
             ContributorsCol(self, name='author'),
             Col(self, 'entries', sClass='right', model_col=Dictionary.count_words),
