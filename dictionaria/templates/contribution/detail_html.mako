@@ -8,7 +8,7 @@
 <div class="tabbable">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#words" data-toggle="tab">Words</a></li>
-        <li><a href="#about" data-toggle="tab">About</a></li>
+        <li><a href="#about" data-toggle="tab">Dictionary information</a></li>
     </ul>
     <div class="tab-content">
         <div id="words" class="tab-pane active">
