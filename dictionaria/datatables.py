@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from sqlalchemy import and_
+from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import joinedload_all, joinedload, aliased
 
 from clld.web import datatables
@@ -12,7 +12,7 @@ from clld.web.datatables.language import Languages
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
-from clld.db.util import icontains, get_distinct_values
+from clld.db.util import icontains, get_distinct_values, collkey
 from clld.web.util.helpers import link, linked_contributors, icon
 from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import Family
@@ -88,7 +88,9 @@ class WordCol(LinkCol):
         return Word.name, Word.number
 
     def search(self, qs):
-        return icontains(Word.name, qs)
+        return or_(
+            icontains(Word.name, qs),
+            func.unaccent(Word.name).contains(func.unaccent(qs)))
 
 
 class CustomCol(Col):
