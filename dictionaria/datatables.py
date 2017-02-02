@@ -173,7 +173,7 @@ class Words(datatables.Units):
                     model_col=Word.pos,
                     choices=pos,
                     format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-                Col(self, 'description', model_col=common.Unit.description),
+                Col(self, 'description', sTitle='Meaning description', model_col=common.Unit.description),
                 #MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
             ]
             if self.contribution.semantic_domains:
