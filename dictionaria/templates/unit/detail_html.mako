@@ -153,10 +153,11 @@ ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
     % endfor
 ${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 
-% if ctx.linked_from or ctx.links_to:
+<% rels = list(chain(ctx.linked_from, ctx.links_to)) %>
+% if rels:
 <h4>Related entries</h4>
 <ul>
-    % for desc, words in chain(ctx.linked_from, ctx.links_to):
+    % for desc, words in rels:
         <li>
             % if desc:
                 <span>${desc}:</span>
