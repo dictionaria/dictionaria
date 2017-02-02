@@ -9,7 +9,7 @@
         % for a in obj.sentence_assocs:
             <li>
                 <blockquote style="margin-top: 5px;">
-                ${h.link(request, a.sentence, label='%s %s:' % (_('Sentence'), a.sentence.id))}<br>
+                ${h.link(request, a.sentence, label='%s %s:' % (_('Sentence'), a.sentence.number))}<br>
                 % if a.description and fmt == 'long':
                     <p>${a.description}</p>
                 % endif

@@ -176,6 +176,7 @@ class Counterpart(CustomModelMixin, common.Value):
 @implementer(interfaces.ISentence)
 class Example(CustomModelMixin, common.Sentence):
     pk = Column(Integer, ForeignKey('sentence.pk'), primary_key=True)
+    number = Column(Integer)
     alt_translation1 = Column(Unicode)
     alt_translation_language1 = Column(Unicode)
     alt_translation2 = Column(Unicode)

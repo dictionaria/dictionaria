@@ -10,11 +10,11 @@
     </%util:well>
 </%def>
 
-<h2>${_('Sentence')} ${ctx.id}</h2>
+<h2>${ctx.dictionary.name}: ${_('Sentence')} ${ctx.number}</h2>
 <dl>
-    <dt>Language:</dt>
-    <dd>${h.link(request, ctx.language)}</dd>
-    <dt>Meanings:</dt>
+    <dt>Dictionary:</dt>
+    <dd>${h.link(request, ctx.dictionary)}</dd>
+    <dt>Words:</dt>
     <dd>
         <ul>
             % for wa in ctx.meaning_assocs:
@@ -59,7 +59,7 @@ ${h.rendered_sentence(ctx)|n}
 % if ctx.references or ctx.source:
 <dt>${_('Source')}:</dt>
 % if ctx.source:
-<dd><span class="label">${ctx.source}</span></dd>
+<dd><span class="muted">${ctx.source}</span></dd>
 % endif
 % if ctx.references:
 <dd>${h.linked_references(request, ctx)|n}</dd>

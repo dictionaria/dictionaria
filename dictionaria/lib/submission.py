@@ -58,12 +58,14 @@ class Submission(object):
         return
 
     def load_examples(self, dictionary, data, lang):
-        for ex in Examples.from_file(self.dir.joinpath('processed', 'examples.sfm')):
+        for i, ex in enumerate(
+                Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):
             obj = data.add(
                 models.Example,
                 ex.id,
                 id='%s-%s' % (self.id, ex.id.replace('.', '_')),
                 name=ex.text,
+                number='{0}'.format(i + 1),
                 source=ex.corpus_ref,
                 language=lang,
                 dictionary=dictionary,
