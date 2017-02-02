@@ -21,6 +21,8 @@ from dictionaria.util import join
 
 
 def main(args):
+    DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
+
     data = Data()
 
     dataset = common.Dataset(

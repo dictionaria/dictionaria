@@ -6,7 +6,7 @@ requires = [
     'clld-glottologfamily-plugin',
     'clldutils>=0.7.1',
     'transliterate',
-    'pyconcepticon',
+    'pyconcepticon>=1.1.0',
 ]
 
 tests_require = [

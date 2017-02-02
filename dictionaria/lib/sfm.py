@@ -100,6 +100,14 @@ class Word(object):
         return self.form + (self.hm or '')
 
 
+RELATION_MAP = {
+    'cf': 'see',
+    'mn': 'main entry',
+    'an': 'antonym',
+    'sy': 'synonym',
+}
+
+
 class Entry(sfm.Entry):
     """
     A dictionary entry.
@@ -195,8 +203,8 @@ class Entry(sfm.Entry):
                         word = word.copy()
                         word.ps = v
                     meaning = Meaning()
-            elif k in ['cf', 'mn']:
-                word.rel.extend([(k, vv) for vv in split(v, ',')])
+            elif k in RELATION_MAP:
+                word.rel.extend([(RELATION_MAP[k], vv) for vv in split(v, ',')])
             else:
                 word.data[k].append(v)
         if word and word.form:
@@ -248,7 +256,7 @@ class Dictionary(BaseDictionary):
                 if not headword:
                     headword = word.id
                 else:
-                    rel.append((word.id, 'sub', headword))
+                    rel.append((word.id, 'main entry', headword))
 
                 for tw in word.rel:
                     rel.append((word.id, tw[0], tw[1]))
@@ -341,13 +349,27 @@ class Dictionary(BaseDictionary):
                                 object_pk=w.pk, key=labels[key], value=value, ord=index))
 
         # FIXME: vgroup words by description and add synonym relationships!
+        for word in data['Word'].keys()[:]:
+            if '-' in word:
+                alt = word.replace('-', '')
+                if alt not in data['Word']:
+                    data['Word'][alt] = data['Word'][word]
 
-        for s, d, t in rel:
-            if s in data['Word'] and t in data['Word']:
-                DBSession.add(models.SeeAlso(
-                    source_pk=data['Word'][s].pk,
-                    target_pk=data['Word'][t].pk,
-                    description=d))
+        for i, (wid, d, target) in enumerate(rel):
+            if wid in data['Word']:
+                targets = []
+                if target in data['Word']:
+                    targets = [target]
+                else:
+                    for t in target.split():
+                        if t in data['Word']:
+                            targets.append(t)
+                for t in targets:
+                    DBSession.add(models.SeeAlso(
+                        source_pk=data['Word'][wid].pk,
+                        target_pk=data['Word'][t].pk,
+                        description=d,
+                        ord=i))
             else:
                 pass
                 # FIXME: better logging!

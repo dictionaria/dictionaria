@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from itertools import groupby
 
 from zope.interface import implementer
 from sqlalchemy import (
@@ -83,11 +84,17 @@ class Word(CustomModelMixin, common.Unit):
 
     @property
     def linked_from(self):
-        return [(w.source, w.description) for w in self.source_assocs]
+        for desc, assocs in groupby(
+                sorted(self.source_assocs, key=lambda a: a.ord),
+                lambda s: s.description):
+            yield RELATIONS.get(desc, desc), [a.source for a in assocs]
 
     @property
     def links_to(self):
-        return [(w.target, w.description) for w in self.target_assocs]
+        for desc, assocs in groupby(
+                sorted(self.target_assocs, key=lambda a: a.ord),
+                lambda s: s.description):
+            yield desc, [a.target for a in assocs]
 
     @property
     def description_list(self):
@@ -102,10 +109,18 @@ class Word(CustomModelMixin, common.Unit):
         return split(self.semantic_domain)
 
 
+RELATIONS = {
+    'main entry': 'subentry',
+    'synonym': '(part of) synonym (for)',
+    'antonym': '(part of) antonym (for)',
+}
+
+
 class SeeAlso(Base):
     source_pk = Column(Integer, ForeignKey('word.pk'))
     target_pk = Column(Integer, ForeignKey('word.pk'))
     description = Column(Unicode())
+    ord = Column(Integer, default=1)
 
     source = relationship(Word, foreign_keys=[source_pk], backref='target_assocs')
     target = relationship(Word, foreign_keys=[target_pk], backref='source_assocs')

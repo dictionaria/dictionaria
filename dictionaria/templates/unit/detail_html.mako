@@ -1,6 +1,7 @@
 <%inherit file="../${context.get('request').registry.settings.get('clld.app_template', 'app.mako')}"/>
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "units" %>
+<%! from itertools import chain %>
 
 <%def name="sentences(obj=None, fmt='long')">
     <% obj = obj or ctx %>
@@ -31,7 +32,7 @@
             </div>
             % endif
             % if (a.sentence.references or a.sentence.source) and fmt == 'long':
-            Source: ${h.linked_references(request, a.sentence)|n} <span class="label">${a.sentence.source}</span>
+            Source: ${h.linked_references(request, a.sentence)|n} <span class="muted">${a.sentence.source}</span>
             % endif
                     </blockquote>
             </li>
@@ -155,13 +156,19 @@ ${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 % if ctx.linked_from or ctx.links_to:
 <h4>Related entries</h4>
 <ul>
-    % for w, desc in set(list(ctx.linked_from) + list(ctx.links_to)):
+    % for desc, words in chain(ctx.linked_from, ctx.links_to):
         <li>
             % if desc:
                 <span>${desc}:</span>
             % endif
-            <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
-            <strong>${'; '.join(w.description_list)}</strong>
+            <ul class="inline">
+            % for w in words:
+                <li>
+                    <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
+                    <strong>${'; '.join(w.description_list)}</strong>
+                </li>
+            % endfor
+            </ul>
         </li>
     % endfor
 </ul>
