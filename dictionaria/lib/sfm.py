@@ -204,7 +204,7 @@ class Entry(sfm.Entry):
                         word.ps = v
                     meaning = Meaning()
             elif k in RELATION_MAP:
-                word.rel.extend([(RELATION_MAP[k], vv) for vv in split(v, ',')])
+                word.rel.extend([(RELATION_MAP[k], vv.strip()) for vv in split(v, ',')])
             else:
                 word.data[k].append(v)
         if word and word.form:
@@ -238,6 +238,7 @@ class Dictionary(BaseDictionary):
             labels):
         rel = []
         skipped = []
+        words_by_lemma = defaultdict(list)
 
         def meaning_descriptions(s):
             return list(split((s or '').replace('.', ' ').lower()))
@@ -253,14 +254,6 @@ class Dictionary(BaseDictionary):
                     skipped.append(word)
                     continue
 
-                if not headword:
-                    headword = word.id
-                else:
-                    rel.append((word.id, 'main entry', headword))
-
-                for tw in word.rel:
-                    rel.append((word.id, tw[0], tw[1]))
-
                 w = data.add(
                     models.Word,
                     word.id,
@@ -272,6 +265,18 @@ class Dictionary(BaseDictionary):
                     #original='%s' % entry
                     dictionary=vocab,
                     language=lang)
+
+                if not headword:
+                    headword = word.id
+                else:
+                    rel.append((w, 'main entry', headword))
+
+                for tw in word.rel:
+                    rel.append((w, tw[0], tw[1]))
+
+                words_by_lemma[word.form].append(w)
+                if word.hm:
+                    words_by_lemma['{0} {1}'.format(word.form, word.hm)].append(w)
                 DBSession.flush()
 
                 for md5, type_ in set(entry.files):
@@ -355,25 +360,10 @@ class Dictionary(BaseDictionary):
                 if alt not in data['Word']:
                     data['Word'][alt] = data['Word'][word]
 
-        for i, (wid, d, target) in enumerate(rel):
-            if wid in data['Word']:
-                targets = []
-                if target in data['Word']:
-                    targets = [target]
-                else:
-                    for t in target.split():
-                        if t in data['Word']:
-                            targets.append(t)
-                for t in targets:
-                    DBSession.add(models.SeeAlso(
-                        source_pk=data['Word'][wid].pk,
-                        target_pk=data['Word'][t].pk,
-                        description=d,
-                        ord=i))
-            else:
-                pass
-                # FIXME: better logging!
-                #print('---m---', s if s not in data['Word'] else t)
+        for i, (w, d, target) in enumerate(rel):
+            for t in words_by_lemma.get(target, []):
+                DBSession.add(models.SeeAlso(
+                    source_pk=w.pk, target_pk=t.pk, description=d, ord=i))
 
         if skipped:
             print('{0} entries with no meaning skipped'.format(len(skipped)))
