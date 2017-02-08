@@ -16,6 +16,8 @@ from clldutils.misc import cached_property
 from dictionaria.lib.ingest import MeaningDescription, split, BaseDictionary
 from dictionaria import models
 
+sfm.MARKER_PATTERN = re.compile('\\\\(?P<marker>([A-Za-z1-3][A-Za-z_]*|zcom2))(\s+|$)')
+
 
 class Concepticon(object):
     def __init__(self):
@@ -101,7 +103,7 @@ class Word(object):
 
 
 RELATION_MAP = {
-    'cf': 'see',
+    'cf': 'see also',
     'mn': 'main entry',
     'an': 'antonym',
     'sy': 'synonym',
@@ -112,16 +114,6 @@ class Entry(sfm.Entry):
     """
     A dictionary entry.
     """
-    #def preprocessed(self):
-    #    for i, (k, v) in enumerate(self[:]):
-    #        if k == 'ge' and sfm.FIELD_SPLITTER_PATTERN.search(v):
-    #            ges = sfm.FIELD_SPLITTER_PATTERN.split(v)
-    #            self[i] = ('zzz', 'zzz')
-    #            for ge in ges:
-    #                self.append(('sn', 'auto'))
-    #                self.append(('ge', ge))
-    #    return self
-
     def checked_word(self, word, meaning, pos):
         if meaning:
             if meaning.de or meaning.ge:
@@ -234,14 +226,13 @@ class Dictionary(BaseDictionary):
             vocab,
             lang,
             comparison_meanings,
-            comparison_meanings_alt_labels,
             labels):
         rel = []
         skipped = []
         words_by_lemma = defaultdict(list)
 
         def meaning_descriptions(s):
-            return list(split((s or '').replace('.', ' ').lower()))
+            return split((s or '').replace('.', ' ').lower())
 
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
@@ -314,38 +305,28 @@ class Dictionary(BaseDictionary):
                         else:
                             models.MeaningSentence(meaning=m, sentence=s)
 
-                    #
-                    # Lookup comparison meanings.
-                    #
-                    concept, key = None, None
-                    for key in meaning_descriptions(meaning.re) + \
-                            meaning_descriptions(meaning.de) + \
-                            meaning_descriptions(meaning.ge):
-                        if key in comparison_meanings:
-                            concept = comparison_meanings[key]
-                        elif key in comparison_meanings_alt_labels:
-                            concept = comparison_meanings_alt_labels[key]
-                        if concept:
-                            break
+                #
+                # Lookup comparison meanings.
+                #
+                for m in re.finditer('\[(?P<id>[0-9]+)\]', entry.get('zcom2', '')):
+                    cid = m.group('id')
+                    vsid = '%s-%s' % (submission.id, cid),
+                    if vsid in data['ValueSet']:
+                        vs = data['ValueSet'][vsid]
+                    else:
+                        vs = data.add(
+                            common.ValueSet,
+                            vsid,
+                            id=vsid,
+                            language=lang,
+                            contribution=vocab,
+                            parameter_pk=comparison_meanings[cid])
 
-                    if concept and key and concept not in concepts:
-                        concepts.append(concept)
-                        vsid = '%s-%s' % (key, submission.id),
-                        if vsid in data['ValueSet']:
-                            vs = data['ValueSet'][vsid]
-                        else:
-                            vs = data.add(
-                                common.ValueSet, vsid,
-                                id='%s-%s' % (submission.id, m.id),
-                                language=lang,
-                                contribution=vocab,
-                                parameter_pk=concept)
-
-                        DBSession.add(models.Counterpart(
-                            id='%s-%s' % (w.id, k + 1),
-                            name=w.name,
-                            valueset=vs,
-                            word=w))
+                    DBSession.add(models.Counterpart(
+                        id='%s-%s' % (vsid, w.id),
+                        name=w.name,
+                        valueset=vs,
+                        word=w))
 
                 for index, (key, values) in enumerate(word.data.items()):
                     if key in labels:

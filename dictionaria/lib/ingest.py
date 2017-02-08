@@ -11,17 +11,14 @@ from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug, UnicodeMixin
 from clldutils.path import Path
 from clldutils.jsonlib import load
+from clldutils.text import split_text
 
 import dictionaria
 from dictionaria import models
 
 
 def split(s, sep=';'):
-    for p in s.split(sep):
-        p = p.strip()
-        if p:
-            yield p
-
+    return split_text(s, separators=sep, brackets={}, strip=True)
 
 _concepticon = None
 
@@ -99,7 +96,7 @@ class Example(Entry):
         """
         if morphemes_or_gloss:
             return '\t'.join(
-                [p for p in morphemes_or_gloss.split() if not p.startswith('#')])
+                p for p in morphemes_or_gloss.split() if not p.startswith('#'))
 
     @property
     def id(self):
@@ -123,7 +120,7 @@ class Example(Entry):
 
     @property
     def lemmas(self):
-        return [l.strip() for l in self.get('lemma', '').split(';') if l.strip()]
+        return split(self.get('lemma', ''))
 
     @property
     def corpus_ref(self):
@@ -198,16 +195,9 @@ class BaseDictionary(object):
             vocab,
             lang,
             comparison_meanings,
-            comparison_meanings_alt_labels,
             labels):
         def id_(obj):
             return '%s-%s' % (submission.id, obj['ID'])
-
-        img_map = {
-            'nan-ke-öm.jpg': 'nan_ke-öm.jpg',
-            'nan-ki-geigei.jpg': 'nan_ki-geigei.jpg',
-            'nan_ki-nde': 'nan_ki-nde.jpg',
-        }
 
         for lemma in reader(self.dir.joinpath('entries.csv'), dicts=True):
             word = data.add(
@@ -222,7 +212,6 @@ class BaseDictionary(object):
             for attr, type_ in [('picture', 'image'), ('sound', 'audio')]:
                 fname = lemma.get(attr)
                 if fname:
-                    fname = img_map.get(fname, fname)
                     submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, value) in enumerate(lemma.items()):
@@ -265,8 +254,6 @@ class BaseDictionary(object):
                 key = md.lower()
                 if key in comparison_meanings:
                     concept = comparison_meanings[key]
-                elif key in comparison_meanings_alt_labels:
-                    concept = comparison_meanings_alt_labels[key]
                 else:
                     continue
 

@@ -4,7 +4,7 @@ requires = [
     'clld>=2.1.1',
     'clldmpg>=2.3.3',
     'clld-glottologfamily-plugin',
-    'clldutils>=1.7.1',
+    'clldutils>=1.7.4',
     'transliterate',
     'pyconcepticon>=1.1.0',
 ]

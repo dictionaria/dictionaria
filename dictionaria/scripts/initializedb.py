@@ -53,7 +53,6 @@ def main(args):
         DBSession.add(common.GlossAbbreviation(id=id_, name=name))
 
     comparison_meanings = {}
-    comparison_meanings_alt_labels = {}
 
     print('loading concepts ...')
 
@@ -68,22 +67,13 @@ def main(args):
                 name=conceptset.gloss.lower(),
                 description=conceptset.definition,
                 concepticon_url='http://concepticon.clld.org/parameters/%s' % conceptset.id)
-            comparison_meanings[cm.name] = cm
-        for conceptlist in concepticon.conceptlists.values():
-            for concept in conceptlist.concepts.values():
-                if concept.concepticon_id:
-                    comparison_meanings_alt_labels.setdefault(
-                        concept.label.lower(),
-                        data['ComparisonMeaning'][concept.concepticon_id])
+            comparison_meanings[cm.id] = cm
 
     DBSession.flush()
 
     print('... done')
 
     comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
-    comparison_meanings_alt_labels = {
-        k: v.pk for k, v in comparison_meanings_alt_labels.items()}
-
     submissions = []
 
     for submission in REPOS.joinpath(
@@ -159,7 +149,6 @@ def main(args):
             Dictionary.get(did),
             lang,
             comparison_meanings,
-            comparison_meanings_alt_labels,
             submission.md.get('properties', {}).get('labels', {}))
         transaction.commit()
         print('... done')
