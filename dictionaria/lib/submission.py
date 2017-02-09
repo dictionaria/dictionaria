@@ -1,6 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
-from mimetypes import guess_type
+import re
 
 from clldutils.path import Path, md5
 from clldutils.jsonlib import load
@@ -58,6 +58,7 @@ class Submission(object):
         return
 
     def load_examples(self, dictionary, data, lang):
+        abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*)')
         for i, ex in enumerate(
                 Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):
             obj = data.add(
@@ -70,7 +71,7 @@ class Submission(object):
                 language=lang,
                 dictionary=dictionary,
                 analyzed=ex.morphemes,
-                gloss=ex.gloss,
+                gloss=abbr_p.sub(lambda m: m.group('abbr').upper(), ex.gloss) if ex.gloss else ex.gloss,
                 description=ex.translation,
                 alt_translation1=ex.alt_translation,
                 alt_translation_language1=self.props.get('metalanguages', {}).get('gxx'),

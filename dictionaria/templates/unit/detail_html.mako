@@ -76,7 +76,7 @@
     </td>
     </tr>
     % endif
-    % if ctx.counterparts:
+    % if ctx.counterparts or [m for m in ctx.meanings if m.reverse]:
         <tr>
             <td><small>comparison meanings</small></td>
             <td>
@@ -85,6 +85,11 @@
                     <li>
                         ${h.link(request, c.valueset.parameter)}
                     </li>
+                % endfor
+                % for m in ctx.meanings:
+                    % if m.reverse:
+                        <li>${m.reverse}</li>
+                    % endif
                 % endfor
                 </ul>
             </td>
@@ -122,9 +127,6 @@ ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
                 ##% if m.gloss and m.name != m.gloss:
                 ##    [${m.gloss}]
                 ##% endif
-                % if m.reverse and m.reverse != m.name:
-                    Comparison meaning: <strong>${m.reverse}</strong>
-                % endif
                     </li>
             % if m.alt_translation1:
                 <li>
