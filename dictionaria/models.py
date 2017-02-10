@@ -143,6 +143,10 @@ class Meaning(Base, common.IdNameDescriptionMixin):
         return relationship(Word, backref=backref('meanings', order_by=[cls.ord]))
 
     @property
+    def reverse_list(self):
+        return split(self.reverse)
+
+    @property
     def semantic_domain_list(self):
         return split(self.semantic_domain)
 

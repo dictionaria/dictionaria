@@ -87,9 +87,11 @@
                     </li>
                 % endfor
                 % for m in ctx.meanings:
-                    % if m.reverse:
-                        <li>${m.reverse}</li>
-                    % endif
+                    % for re in m.reverse_list:
+                        % if re not in [c.valueset.parameter.name for c in ctx.counterparts]:
+                        <li>${re}</li>
+                        % endif
+                    % endfor
                 % endfor
                 </ul>
             </td>
