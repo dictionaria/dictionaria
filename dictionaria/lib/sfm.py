@@ -310,7 +310,7 @@ class Dictionary(BaseDictionary):
                 #
                 for m in re.finditer('\[(?P<id>[0-9]+)\]', entry.get('zcom2', '')):
                     cid = m.group('id')
-                    vsid = '%s-%s' % (submission.id, cid),
+                    vsid = '%s-%s' % (submission.id, cid)
                     if vsid in data['ValueSet']:
                         vs = data['ValueSet'][vsid]
                     else:
@@ -322,11 +322,15 @@ class Dictionary(BaseDictionary):
                             contribution=vocab,
                             parameter_pk=comparison_meanings[cid])
 
-                    DBSession.add(models.Counterpart(
-                        id='%s-%s' % (vsid, w.id),
-                        name=w.name,
-                        valueset=vs,
-                        word=w))
+                    vid = '%s-%s' % (vsid, w.id)
+                    if vid not in data['Counterpart']:
+                        data.add(
+                            models.Counterpart,
+                            vid,
+                            id=vid,
+                            name=w.name,
+                            valueset=vs,
+                            word=w)
 
                 for index, (key, values) in enumerate(word.data.items()):
                     if key in labels:

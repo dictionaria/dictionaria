@@ -144,7 +144,7 @@ class Meaning(Base, common.IdNameDescriptionMixin):
 
     @property
     def reverse_list(self):
-        return split(self.reverse)
+        return split(self.reverse or '')
 
     @property
     def semantic_domain_list(self):
