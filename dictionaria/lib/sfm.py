@@ -16,8 +16,6 @@ from clldutils.misc import cached_property
 from dictionaria.lib.ingest import MeaningDescription, split, BaseDictionary
 from dictionaria import models
 
-sfm.MARKER_PATTERN = re.compile('\\\\(?P<marker>([A-Za-z1-3][A-Za-z_]*|zcom2))(\s+|$)')
-
 
 class Concepticon(object):
     def __init__(self):
