@@ -4,6 +4,9 @@ from collections import OrderedDict
 
 from clld.web.util.htmllib import HTML
 from bs4 import BeautifulSoup
+from clldmpg import cdstar
+from clld.web.util.helpers import link
+assert cdstar and link
 
 MULT_VALUE_SEP = ' ; '
 
@@ -39,6 +42,16 @@ def toc(s):
         a.string = '⇫'
         return a
 
+    def permalink(html, id_):
+        a = html.new_tag(
+            'a',
+            **{
+                'href': '#{0}'.format(id_),
+                'title': 'Permalink to this headline',
+                'class': "headerlink"})
+        a.string = '¶'
+        return a
+
     toc_, count = [], 0
     text = BeautifulSoup(s)
     for d in text.descendants:
@@ -48,6 +61,7 @@ def toc(s):
             toc_.append((id_, int(d.name[1:]), d.get_text()))
             d.insert(0, text.new_tag('a', id=id_))
             d.append(toplink(text))
+            d.append(permalink(text, id_))
 
     if toc_:
         top_level = min(t[1] for t in toc_)

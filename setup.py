@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 requires = [
-    'webassets>=0.11.1',
+    'pathlib2>=2.2.1',
     'clld>=3.2.2',
     'clldmpg>=2.3.3',
     'clld-glottologfamily-plugin>=2.0.0',
