@@ -30,6 +30,9 @@ def concepticon_link(request, meaning):
 
 
 def toc(s):
+    if not s:
+        return '', ''
+
     def link(id_, label):
         return HTML.a(label, href='#{0}'.format(id_))
 
