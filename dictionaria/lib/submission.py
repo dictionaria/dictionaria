@@ -58,7 +58,7 @@ class Submission(object):
         return
 
     def load_examples(self, dictionary, data, lang):
-        abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*)')
+        abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
         for i, ex in enumerate(
                 Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):
             obj = data.add(

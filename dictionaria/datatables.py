@@ -9,6 +9,7 @@ from clld.web.datatables.base import (
 )
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
+from clld.web.datatables.sentence import Sentences, TsvCol
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -20,7 +21,9 @@ from clld_glottologfamily_plugin.models import Family
 from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
 from clldmpg.cdstar import MediaCol, maintype, bitstream_url
 
-from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning, Variety
+from dictionaria.models import (
+    Word, Counterpart, Dictionary, ComparisonMeaning, Variety, Example,
+)
 from dictionaria.util import concepticon_link, split
 
 
@@ -366,7 +369,52 @@ class DictionaryContributors(DataTable):
         ]
 
 
+class Examples(Sentences):
+    __constraints__ = [Dictionary]
+
+    def base_query(self, query):
+        from clld.db.models.sentence import Sentence_files
+        query = query \
+            .outerjoin(
+                Sentence_files,
+                and_(
+                    Sentence_files.object_pk == common.Sentence.pk,
+                    Sentence_files.mime_type.contains('audio/'))) \
+            .options(joinedload(common.Sentence._files))
+
+        if self.dictionary:
+            query = query.filter(Example.dictionary_pk == self.dictionary.pk)
+        else:
+            query = query.join(Dictionary).options(joinedload(Example.dictionary))
+
+        return query
+
+    def col_defs(self):
+        res = [
+            LinkCol(self, 'name', sTitle='Primary text', sClass="object-language"),
+            TsvCol(self, 'analyzed', sTitle='Analyzed text'),
+            TsvCol(self, 'gloss', sClass="gloss"),
+            Col(self,
+                'description',
+                sTitle=self.req.translate('Translation'),
+                sClass="translation"),
+            DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT'),
+        ]
+        if not self.dictionary:
+            res.insert(-1, LinkCol(
+                self,
+                'dictionary',
+                model_col=Dictionary.name,
+                get_obj=lambda i: i.dictionary,
+                choices=get_distinct_values(Dictionary.name)))
+        return res
+
+    def get_options(self):
+        return {'aaSorting': []}
+
+
 def includeme(config):
+    config.register_datatable('sentences', Examples)
     config.register_datatable('units', Words)
     config.register_datatable('values', Values)
     config.register_datatable('unitvalues', Unitvalues)

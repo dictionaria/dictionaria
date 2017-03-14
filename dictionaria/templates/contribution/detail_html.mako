@@ -9,6 +9,7 @@
     <ul class="nav nav-tabs">
         <li class="active"><a href="#about" data-toggle="tab">Dictionary information</a></li>
         <li><a href="#words" data-toggle="tab">Words</a></li>
+        <li><a href="#examples" data-toggle="tab">Examples</a></li>
     </ul>
     <div class="tab-content">
         <div id="about" class="tab-pane active">
@@ -26,6 +27,9 @@
         </div>
         <div id="words" class="tab-pane">
             ${request.get_datatable('units', h.models.Value, contribution=ctx).render()}
+        </div>
+        <div id="examples" class="tab-pane">
+            ${request.get_datatable('sentences', h.models.Sentence, dictionary=ctx).render()}
         </div>
     </div>
     <script>
