@@ -253,7 +253,7 @@ class Dictionary(BaseDictionary):
                     phonetic=word.ph,
                     pos=word.ps,
                     fts=tsvector(entry),
-                    #original='%s' % entry
+                    raw='{0}'.format(entry),
                     dictionary=vocab,
                     language=lang)
 
@@ -332,9 +332,9 @@ class Dictionary(BaseDictionary):
                             valueset=vs,
                             word=w)
 
-                for index, (key, values) in enumerate(word.data.items()):
-                    if key in labels:
-                        for value in values:
+                for index, (key, label) in enumerate(labels.items()):
+                    if key in word.data:
+                        for value in word.data[key]:
                             DBSession.add(common.Unit_data(
                                 object_pk=w.pk, key=labels[key], value=value, ord=index))
 

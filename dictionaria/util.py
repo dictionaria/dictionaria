@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from collections import OrderedDict
 
+from clldutils.text import truncate_with_ellipsis
 from clld.web.util.htmllib import HTML
 from bs4 import BeautifulSoup
 from clldmpg import cdstar
@@ -9,6 +10,10 @@ from clld.web.util.helpers import link
 assert cdstar and link
 
 MULT_VALUE_SEP = ' ; '
+
+
+def truncate(s):
+    return truncate_with_ellipsis(s, width=70)
 
 
 def split(s):

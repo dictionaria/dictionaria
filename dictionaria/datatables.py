@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload_all, joinedload, aliased
 
 from clld.web import datatables
 from clld.web.datatables.base import (
-    DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number,
+    DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number, DetailsRowLinkCol,
 )
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
@@ -135,11 +135,8 @@ class ThumbnailCol(Col):
         return ''
 
 
-class FtsCol(Col):
-    __kw__ = dict(bSortable=False)
-
-    def format(self, item):
-        return '+'
+class FtsCol(DetailsRowLinkCol):
+    __kw__ = dict(bSortable=False, sType='html', button_text='raw')
 
     def search(self, qs):
         return fts.search(self.model_col, qs)

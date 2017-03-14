@@ -68,6 +68,7 @@ class Word(CustomModelMixin, common.Unit):
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
     fts = Column(TSVECTOR)
+    raw = Column(Unicode)
 
     # original ...?
 

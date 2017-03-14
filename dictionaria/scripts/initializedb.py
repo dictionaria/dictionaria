@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from datetime import date
 from itertools import groupby, chain
+from collections import OrderedDict
 import re
 
 import transaction
@@ -156,7 +157,7 @@ def main(args):
             Dictionary.get(did),
             lang,
             comparison_meanings,
-            submission.md.get('properties', {}).get('labels', {}))
+            OrderedDict(submission.md.get('properties', {}).get('labels', [])))
         transaction.commit()
         print('... done')
 
