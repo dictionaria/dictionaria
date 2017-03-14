@@ -2,22 +2,10 @@
 from __future__ import unicode_literals, print_function, division
 from unittest import TestCase
 
-from dictionaria.lib.sfm import Entry, move_marker
+from dictionaria.lib.sfm import Entry
 
 
 class Tests(TestCase):
-    def test_move_marker(self):
-        e = Entry.from_string(r"""
-\lx a
-\x b
-\y c
-\z d
-""")
-        markers = frozenset(e)
-        assert e.index(('z', 'd')) == 3
-        move_marker(e, 'z', 'x')
-        assert e.index(('z', 'd')) == 1 and markers == frozenset(e)
-
     def test_Entry(self):
         e = Entry.from_string(r"""
 \lx ap

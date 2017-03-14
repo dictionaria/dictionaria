@@ -10,3 +10,10 @@ class Tests(TestWithApp):
 
     def test_home(self):
         res = self.app.get('/', status=200)
+
+    def test_misc(self):
+        self.app.get_dt('/sentences')
+        self.app.get_dt('/contributors')
+        self.app.get_dt('/contributions')
+        self.app.get_dt('/units')
+        self.app.get_html('/contributions/daakaka')

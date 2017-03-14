@@ -61,7 +61,7 @@ def toc(s):
         return a
 
     toc_, count = [], 0
-    text = BeautifulSoup(s)
+    text = BeautifulSoup(s, 'html5lib')
     for d in text.descendants:
         if d.name in ['h1', 'h2', 'h3', 'h4', 'h5']:
             count += 1
