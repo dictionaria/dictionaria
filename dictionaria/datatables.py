@@ -150,12 +150,25 @@ class Words(datatables.Units):
 
     def __init__(self, req, model, **kw):
         datatables.Units.__init__(self, req, model, **kw)
+        self.second_tab = kw.pop('second_tab', req.params.get('second_tab', False))
+        if self.second_tab:
+            if not self.contribution:
+                raise ValueError
+            self.eid = 'second_tab'
         self.vars = OrderedDict()
         if self.contribution:
-            for name in self.contribution.jsondata.get('custom_fields', []):
+            for name in self.contribution.jsondata.get(
+                    'second_tab' if self.second_tab else 'custom_fields', []):
                 self.vars[name] = aliased(common.Unit_data, name=name)
 
     def base_query(self, query):
+        if self.second_tab:
+            query = query.filter(Word.dictionary_pk == self.contribution.pk) \
+                .options(joinedload(common.Unit.data))
+            for name, var in self.vars.items():
+                query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
+            return query.distinct()
+
         query = query.join(Dictionary)\
             .outerjoin(common.Unit_data, and_(
                 Word.pk == common.Unit_data.object_pk, common.Unit_data.key == 'ph'))\
@@ -187,10 +200,13 @@ class Words(datatables.Units):
                     model_col=Word.pos,
                     choices=pos,
                     format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-                Col(self, 'description', sTitle='Meaning description', model_col=common.Unit.description),
-                FtsCol(self, 'fts', model_col=Word.fts),
-                #MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
+                Col(self, 'description', sTitle='Meaning description', model_col=common.Unit.description)
             ]
+            if self.second_tab:
+                for name in self.vars:
+                    res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+                return res
+            res.append(FtsCol(self, 'fts', model_col=Word.fts))
             if self.contribution.semantic_domains:
                 res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
             if self.contribution.count_audio:
@@ -209,24 +225,6 @@ class Words(datatables.Units):
             DictionaryCol(self, 'dictionary'),
         ]
 
-        #if self.contribution:
-        #    return [
-        #        WordCol(self, 'word'),
-        #        Col(self, 'description')
-        #        MeaningsCol(self, 'meaning')]
-        #
-        #if self.parameter:
-        #    return [
-        #        WordCol(self, 'word'),
-        #        WowLanguageCol(self, 'language'),
-        #        DictionaryCol(self, 'dictionary'),
-        #    ]
-        #
-        #return [
-        #    WordCol(self, 'word'),
-        #    Col(self, 'description'),
-        #    MeaningsCol(self, 'meaning')]
-
     def toolbar(self):
         return ''
 
@@ -235,8 +233,10 @@ class Words(datatables.Units):
 
         for attr in ['parameter', 'contribution', 'language']:
             if getattr(self, attr):
-                opts['sAjaxSource'] = self.req.route_url(
-                    'units', _query={attr: getattr(self, attr).id})
+                q = {attr: getattr(self, attr).id}
+                if attr == 'contribution' and self.second_tab:
+                    q['second_tab'] = '1'
+                opts['sAjaxSource'] = self.req.route_url('units', _query=q)
 
         return opts
 

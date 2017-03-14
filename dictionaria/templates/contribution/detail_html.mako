@@ -9,6 +9,9 @@
     <ul class="nav nav-tabs">
         <li class="active"><a href="#about" data-toggle="tab">Dictionary information</a></li>
         <li><a href="#words" data-toggle="tab">Words</a></li>
+        % if ctx.jsondata.get('second_tab'):
+            <li><a href="#words2" data-toggle="tab">Words extra</a></li>
+        % endif
         <li><a href="#examples" data-toggle="tab">Examples</a></li>
     </ul>
     <div class="tab-content">
@@ -28,6 +31,11 @@
         <div id="words" class="tab-pane">
             ${request.get_datatable('units', h.models.Value, contribution=ctx).render()}
         </div>
+        % if ctx.jsondata.get('second_tab'):
+            <div id="words2" class="tab-pane">
+                ${request.get_datatable('units', h.models.Value, contribution=ctx, second_tab=True).render()}
+            </div>
+        % endif
         <div id="examples" class="tab-pane">
             ${request.get_datatable('sentences', h.models.Sentence, dictionary=ctx).render()}
         </div>
