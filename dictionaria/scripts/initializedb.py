@@ -11,6 +11,7 @@ from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
+from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
 
@@ -21,6 +22,7 @@ from dictionaria.util import join
 
 
 def main(args):
+    fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
 
     data = Data()
@@ -122,12 +124,17 @@ def main(args):
             published=date(*map(int, md['date_published'].split('-'))),
             jsondata=props)
 
-        for i, cname in enumerate(md['authors']):
+        for i, spec in enumerate(md['authors']):
+            if not isinstance(spec, dict):
+                cname, address = spec, None
+            else:
+                cname, address = spec['name'], spec.get('affiliation')
             name = HumanName(cname)
             cid = slug('%s%s' % (name.last, name.first))
             contrib = data['Contributor'].get(cid)
             if not contrib:
-                contrib = data.add(common.Contributor, cid, id=cid, name=cname)
+                contrib = data.add(
+                    common.Contributor, cid, id=cid, name=cname, address=address)
             DBSession.add(common.ContributionContributor(
                 ord=i + 1,
                 primary=True,
@@ -156,7 +163,8 @@ def main(args):
     transaction.begin()
     load_families(
         Data(),
-        [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)])
+        [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)],
+        glottolog_repos='../../glottolog3/glottolog')
 
 
 def prime_cache(cfg):

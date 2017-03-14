@@ -8,6 +8,7 @@ import re
 from copy import copy
 
 from clld.db.models import common
+from clld.db.fts import tsvector
 from clld.db.meta import DBSession
 
 from clldutils import sfm
@@ -251,6 +252,7 @@ class Dictionary(BaseDictionary):
                     number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
                     pos=word.ps,
+                    fts=tsvector(entry),
                     #original='%s' % entry
                     dictionary=vocab,
                     language=lang)

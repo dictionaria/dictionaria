@@ -9,9 +9,11 @@ from sqlalchemy import (
     ForeignKey,
     Date,
     Boolean,
+    func,
 )
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.dialects.postgresql import TSVECTOR
 
 from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
@@ -65,6 +67,7 @@ class Word(CustomModelMixin, common.Unit):
     phonetic = Column(Unicode)
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
+    fts = Column(TSVECTOR)
 
     # original ...?
 

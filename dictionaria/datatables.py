@@ -7,13 +7,14 @@ from clld.web import datatables
 from clld.web.datatables.base import (
     DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number,
 )
-from clld.web.datatables.contributor import Contributors
+from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.db.util import icontains, get_distinct_values, collkey
-from clld.web.util.helpers import link, linked_contributors, icon
+from clld.db import fts
+from clld.web.util.helpers import link, external_link
 from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import Family
 from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
@@ -23,9 +24,12 @@ from dictionaria.models import Word, Counterpart, Dictionary, ComparisonMeaning,
 from dictionaria.util import concepticon_link, split
 
 
-class LanguageIdCol(LinkCol):
-    def get_attrs(self, item):
-        return dict(label=item.id)
+class GlottocodeCol(Col):
+    def format(self, item):
+        return external_link(
+            'http://glottolog.org/resource/languoid/id/' + item.id,
+            label=item.id,
+            title='Language information at Glottolog')
 
 
 class Varieties(Languages):
@@ -34,8 +38,8 @@ class Varieties(Languages):
 
     def col_defs(self):
         return [
-            LanguageIdCol(self, 'id'),
             LinkCol(self, 'name'),
+            GlottocodeCol(self, 'id', sTitle='Glottocode'),
             LinkToMapCol(self, 'm'),
             Col(self,
                 'latitude',
@@ -131,6 +135,16 @@ class ThumbnailCol(Col):
         return ''
 
 
+class FtsCol(Col):
+    __kw__ = dict(bSortable=False)
+
+    def format(self, item):
+        return '+'
+
+    def search(self, qs):
+        return fts.search(self.model_col, qs)
+
+
 class Words(datatables.Units):
     __constraints__ = [common.Language, common.Contribution, common.Parameter]
 
@@ -174,6 +188,7 @@ class Words(datatables.Units):
                     choices=pos,
                     format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
                 Col(self, 'description', sTitle='Meaning description', model_col=common.Unit.description),
+                FtsCol(self, 'fts', model_col=Word.fts),
                 #MeaningsCol(self, 'meaning', sTitle='Comparison meaning'),
             ]
             if self.contribution.semantic_domains:
@@ -340,11 +355,18 @@ class Unitvalues(unitvalue.Unitvalues):
         ]
 
 
-class DictionaryContributors(Contributors):
+class DictionaryContributors(DataTable):
     def base_query(self, query):
         return DBSession.query(common.Contributor) \
             .join(common.ContributionContributor) \
             .join(common.Contribution)
+
+    def col_defs(self):
+        return [
+            NameCol(self, 'name'),
+            ContributionsCol(self, 'Contributions'),
+            AddressCol(self, 'address', sTitle='Affiliation'),
+        ]
 
 
 def includeme(config):

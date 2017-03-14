@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 requires = [
-    'clld>=2.1.1',
+    'clld>=3.2.2',
     'clldmpg>=2.3.3',
-    'clld-glottologfamily-plugin',
+    'clld-glottologfamily-plugin>=2.0.0',
     'clldutils>=1.9.0',
     'transliterate',
     'pyconcepticon>=1.1.0',
