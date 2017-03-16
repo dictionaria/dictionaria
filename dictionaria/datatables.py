@@ -206,7 +206,6 @@ class Words(datatables.Units):
                 for name in self.vars:
                     res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
                 return res
-            res.append(FtsCol(self, 'fts', model_col=Word.fts))
             if self.contribution.semantic_domains:
                 res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
             if self.contribution.count_audio:
@@ -216,6 +215,7 @@ class Words(datatables.Units):
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
                 res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+            res.append(FtsCol(self, 'fts', model_col=Word.fts))
             return res
         return [
             WordCol(self, 'word'),

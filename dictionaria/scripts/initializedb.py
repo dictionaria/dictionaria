@@ -32,12 +32,12 @@ def main(args):
         id=dictionaria.__name__,
         name="Dictionaria",
         description="The Dictionary Journal",
-        published=date(2017, 1, 1),
+        published=date(2017, 3, 30),
         contact='dictionary.journal@uni-leipzig.de',
         domain='dictionaria.clld.org',
         publisher_name="Max Planck Institute for the Science of Human History",
         publisher_place="Jena",
-        publisher_url="http://shh.mpg.de",
+        publisher_url="https://shh.mpg.de",
         license="http://creativecommons.org/licenses/by/4.0/",
         jsondata={
             'license_icon': 'cc-by.png',
@@ -186,9 +186,9 @@ def prime_cache(cfg):
     for _, words in groupby(q, lambda u: u.name):
         words = list(words)
         for i, word in enumerate(words):
-            word.description = join(m.name for m in word.meanings)
-            word.comparison_meanings = join(nfilter(m.reverse for m in word.meanings))
-            word.semantic_domain = join(nfilter(m.semantic_domain for m in word.meanings))
+            word.description = ' / '.join(m.name for m in word.meanings)
+            word.comparison_meanings = ' / '.join(nfilter(m.reverse for m in word.meanings))
+            word.semantic_domain = ' / '.join(nfilter(m.semantic_domain for m in word.meanings))
             word.number = i + 1 if len(words) > 1 else 0
 
             for suffix in ['1', '2']:
