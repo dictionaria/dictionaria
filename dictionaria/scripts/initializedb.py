@@ -93,6 +93,9 @@ def main(args):
         if md is None:
             continue
 
+        if not args.internal and not md['date_published']:
+            continue
+
         id_ = submission.id
         if args.dict and args.dict != id_ and args.dict != 'all':
             continue
@@ -128,6 +131,7 @@ def main(args):
         for i, spec in enumerate(md['authors']):
             if not isinstance(spec, dict):
                 cname, address = spec, None
+                spec = {}
             else:
                 cname, address = spec['name'], spec.get('affiliation')
             name = HumanName(cname)
@@ -135,7 +139,13 @@ def main(args):
             contrib = data['Contributor'].get(cid)
             if not contrib:
                 contrib = data.add(
-                    common.Contributor, cid, id=cid, name=cname, address=address)
+                    common.Contributor,
+                    cid,
+                    id=cid,
+                    name=cname,
+                    address=address,
+                    url=spec.get('url'),
+                    email=spec.get('email'))
             DBSession.add(common.ContributionContributor(
                 ord=i + 1,
                 primary=True,
