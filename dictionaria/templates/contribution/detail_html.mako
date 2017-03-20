@@ -2,8 +2,11 @@
 <%namespace name="util" file="../util.mako"/>
 <%! active_menu_item = "contributions" %>
 
+${util.codes(ctx.language)}
 
 <h2>${ctx.name} ${h.cite_button(request, ctx)}</h2>
+
+<p>by ${h.linked_contributors(request, ctx)}</p>
 
 <div class="tabbable">
     <ul class="nav nav-tabs">
