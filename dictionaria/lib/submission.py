@@ -69,6 +69,7 @@ class Submission(object):
                 number='{0}'.format(i + 1),
                 source=ex.corpus_ref,
                 language=lang,
+                serialized='{0}'.format(ex),
                 dictionary=dictionary,
                 analyzed=ex.morphemes,
                 gloss=abbr_p.sub(lambda m: m.group('abbr').upper(), ex.gloss) if ex.gloss else ex.gloss,

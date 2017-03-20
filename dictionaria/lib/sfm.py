@@ -244,6 +244,13 @@ class Dictionary(BaseDictionary):
                     skipped.append(word)
                     continue
 
+                examples = []
+                for meaning in word.meanings:
+                    for xref in meaning.xref:
+                        if xref in data['Example']:
+                            examples.append(data['Example'][xref].serialized)
+
+                fullentry = '{0}\n{1}'.format(entry, '\n'.join(examples))
                 w = data.add(
                     models.Word,
                     word.id,
@@ -252,8 +259,8 @@ class Dictionary(BaseDictionary):
                     number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
                     pos=word.ps,
-                    fts=tsvector(entry),
-                    raw='{0}'.format(entry),
+                    fts=tsvector(fullentry),
+                    serialized=fullentry,
                     dictionary=vocab,
                     language=lang)
 
@@ -272,8 +279,6 @@ class Dictionary(BaseDictionary):
 
                 for md5, type_ in set(entry.files):
                     submission.add_file(type_, md5, common.Unit_files, w)
-
-                concepts = []
 
                 for k, meaning in enumerate(word.meanings):
                     if not (meaning.ge or meaning.de):

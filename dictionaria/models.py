@@ -68,7 +68,7 @@ class Word(CustomModelMixin, common.Unit):
     #script = Column(Unicode)
     #borrowed = Column(Unicode)
     fts = Column(TSVECTOR)
-    raw = Column(Unicode)
+    serialized = Column(Unicode)
 
     # original ...?
 
@@ -189,5 +189,6 @@ class Example(CustomModelMixin, common.Sentence):
     alt_translation_language1 = Column(Unicode)
     alt_translation2 = Column(Unicode)
     alt_translation_language2 = Column(Unicode)
+    serialized = Column(Unicode)
     dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
     dictionary = relationship(Dictionary, backref='examples')
