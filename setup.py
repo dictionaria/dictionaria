@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 requires = [
     'pathlib2>=2.2.1',
-    'clld>=3.2.2',
+    'clld>=3.2.4',
     'clldmpg>=2.3.3',
     'clld-glottologfamily-plugin>=2.0.0',
     'clldutils>=1.9.0',

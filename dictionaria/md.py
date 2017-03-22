@@ -28,7 +28,7 @@ class MetadataFromRec(Base):
             'article',
             '{0}-{1}'.format(req.dataset.id, ctx.id),
             author=[
-                c.name for c in
+                c.last_first() for c in
                 chain(ctx.primary_contributors, ctx.secondary_contributors)],
             title=getattr(ctx, 'citation_name', ctx.__unicode__()),
             url=req.resource_url(ctx),
