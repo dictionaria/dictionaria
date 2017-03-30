@@ -159,6 +159,8 @@ class Words(datatables.Units):
         if self.contribution:
             for name in self.contribution.jsondata.get(
                     'second_tab' if self.second_tab else 'custom_fields', []):
+                if name in self.contribution.jsondata.get('metalanguages', {}).values():
+                    name = 'lang-{0}'.format(name)
                 self.vars[name] = aliased(common.Unit_data, name=name)
 
     def base_query(self, query):
