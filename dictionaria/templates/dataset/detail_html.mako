@@ -15,7 +15,7 @@
     </div>
 </%def>
 
-<h2>Welcome to <em>Dictionaria</em></h2>
+<h2>Welcome to <em>Dictionaria</em> (beta)</h2>
 
 <p class="lead">
     <em>Dictionaria</em> is an open-access journal that publishes high-quality dictionaries of languages
