@@ -93,7 +93,7 @@ def main(args):
         if md is None:
             continue
 
-        if not args.internal and not md['date_published']:
+        if not md['date_published']:
             continue
 
         id_ = submission.id
