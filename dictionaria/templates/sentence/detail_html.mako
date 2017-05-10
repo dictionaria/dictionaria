@@ -20,7 +20,7 @@
             % for wa in ctx.meaning_assocs:
                 <li>
                     ${h.link(request, wa.meaning.word, label=wa.meaning.name)}
-                    <span class="lemma">${wa.meaning.word.name}]</span>
+                    <span class="lemma">${wa.meaning.word.name}</span>
                 </li>
             % endfor
         </ul>
