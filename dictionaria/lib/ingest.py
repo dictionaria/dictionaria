@@ -178,7 +178,7 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-ASSOC_PATTERN = re.compile('associated\s+[a-z]+\s*(\((?P<rel>[^\)]+)\))?')
+ASSOC_PATTERN = re.compile('rel_(?P<rel>[a-z]+)')
 
 
 class BaseDictionary(object):
@@ -188,6 +188,11 @@ class BaseDictionary(object):
     def __init__(self, d):
         self.dir = d
 
+    def iteritems(self, fname):
+        for item in reader(
+                self.dir.joinpath(fname), dicts=True, doublequote=False, escapechar='\\'):
+            yield item
+
     def load(
             self,
             submission,
@@ -196,45 +201,40 @@ class BaseDictionary(object):
             lang,
             comparison_meanings,
             labels):
-        def id_(obj):
-            return '%s-%s' % (submission.id, obj['ID'])
 
-        for lemma in reader(self.dir.joinpath('entries.csv'), dicts=True):
+        def id_(obj, oid=None):
+            return '%s-%s' % (submission.id, obj.get('ID', oid))
+
+        for lemma in self.iteritems('entries.csv'):
+            oid = lemma.pop('ID')
             word = data.add(
                 models.Word,
-                lemma['ID'],
-                id=id_(lemma),
-                name=lemma['headword'],
-                pos=lemma['part-of-speech'],
+                oid,
+                id=id_(lemma, oid=oid),
+                name=lemma.pop('headword'),
+                pos=lemma.pop('part_of_speech'),
                 dictionary=vocab,
                 language=lang)
             DBSession.flush()
             for attr, type_ in [('picture', 'image'), ('sound', 'audio')]:
-                fname = lemma.get(attr)
+                fname = lemma.pop(attr, None)
                 if fname:
                     submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, value) in enumerate(lemma.items()):
-                if key in labels:
-                    DBSession.add(common.Unit_data(
-                        object_pk=word.pk,
-                        key=labels[key],
-                        value=value,
-                        ord=index))
+                DBSession.add(common.Unit_data(
+                    object_pk=word.pk,
+                    key=labels.get(key, key),
+                    value=value,
+                    ord=index))
 
         DBSession.flush()
 
-        for lemma in reader(self.dir.joinpath('entries.csv'), dicts=True):
+        for lemma in self.iteritems('entries.csv'):
             word = data['Word'][lemma['ID']]
             for key in lemma:
-                if key in ['ID', 'headword', 'part-of-speech', 'picture']:
-                    continue
                 assoc = ASSOC_PATTERN.match(key)
-                if not assoc:
-                    value = lemma[key]
-                    if value and not labels:
-                        DBSession.add(common.Unit_data(key=key, value=value, object_pk=word.pk))
-                else:
+                if assoc:
                     for lid in split(lemma.get(key, '')):
                         # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
                         lid = lid.replace(' ', '').lower()
@@ -243,12 +243,14 @@ class BaseDictionary(object):
                             target_pk=data['Word'][lid].pk,
                             description=assoc.group('rel')))
 
-        for sense in reader(self.dir.joinpath('senses.csv'), dicts=True):
-            w = data['Word'][sense['entry ID']]
-            m = models.Meaning(id=id_(sense), name=sense['description'], word=w)
-
-            for exid in split(sense.get('example ID', '')):
-                models.MeaningSentence(meaning=m, sentence=data['Example'][exid])
+        for sense in self.iteritems('senses.csv'):
+            w = data['Word'][sense['entry_ID']]
+            m = data.add(
+                models.Meaning,
+                sense['ID'],
+                id=id_(sense),
+                name=sense['description'],
+                word=w)
 
             for i, md in enumerate(split(sense['description'])):
                 key = md.lower()
@@ -269,3 +271,8 @@ class BaseDictionary(object):
 
                 DBSession.add(models.Counterpart(
                     id=vsid, name=w.name, valueset=vs, word=w))
+
+        for ex in self.iteritems('examples.csv'):
+            for mid in split(ex.get('sense_ID', '')):
+                models.MeaningSentence(
+                    meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])

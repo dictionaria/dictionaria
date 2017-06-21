@@ -156,6 +156,8 @@ def main(args):
     transaction.commit()
 
     for did, lid, submission in submissions:
+        #if submission.id != 'sidaama':
+        #    continue
         transaction.begin()
         print('loading %s ...' % submission.id)
         dictdata = Data()

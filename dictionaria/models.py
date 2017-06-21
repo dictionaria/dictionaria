@@ -152,7 +152,9 @@ class Meaning(Base, common.IdNameDescriptionMixin):
 
     @property
     def semantic_domain_list(self):
-        return split(self.semantic_domain)
+        if self.semantic_domain:
+            return split(self.semantic_domain)
+        return []
 
 
 #
