@@ -11,21 +11,16 @@
 </%def>
 
 <h2>${ctx.dictionary.name}: ${_('Sentence')} ${ctx.number}</h2>
-<dl>
-    <dt>Dictionary:</dt>
-    <dd>${h.link(request, ctx.dictionary)}</dd>
-    <dt>Words:</dt>
-    <dd>
-        <ul>
-            % for wa in ctx.meaning_assocs:
-                <li>
-                    ${h.link(request, wa.meaning.word, label=wa.meaning.name)}
-                    <span class="lemma">${wa.meaning.word.name}</span>
-                </li>
-            % endfor
-        </ul>
-    </dd>
-</dl>
+<h4>Word senses:</h4>
+<ul>
+    % for wa in ctx.meaning_assocs:
+        <li>
+            <span class="lemma">${wa.meaning.word.name}</span>
+            &nbsp;
+            <span class="translation">${h.link(request, wa.meaning.word, label=wa.meaning.name)}</span>
+        </li>
+    % endfor
+</ul>
 
 ${h.rendered_sentence(ctx)|n}
 % if ctx.alt_translation1:
