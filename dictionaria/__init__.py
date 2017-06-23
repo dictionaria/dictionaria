@@ -1,7 +1,9 @@
+from functools import partial
+
 from pyramid.config import Configurator
 
 from clld import interfaces
-
+from clld.web.app import menu_item
 from clld_glottologfamily_plugin.util import LanguageByFamilyMapMarker
 
 # we must make sure custom models are known at database initialization!
@@ -42,7 +44,19 @@ def main(global_config, **settings):
     config.include('clldmpg')
     config.include('clld_glottologfamily_plugin')
     config.registry.registerUtility(MyMapMarker(), interfaces.IMapMarker)
+
     config.add_page('submit')
+    config.add_page('help')
+    config.register_menu(
+        ('dataset', partial(menu_item, 'dataset', label='Home')),
+        ('contributions', partial(menu_item, 'contributions')),
+        ('parameters', partial(menu_item, 'parameters')),
+        ('languages', partial(menu_item, 'languages')),
+        ('contributors', partial(menu_item, 'contributors')),
+        ('sentences', partial(menu_item, 'sentences')),
+        ('help', lambda ctx, rq: (rq.route_url('help'), u'Help')),
+    )
+
     config.add_settings(home_comp=['submit'] + config.get_settings()['home_comp'])
 
     for cls in [md.BibTex, md.ReferenceManager]:
