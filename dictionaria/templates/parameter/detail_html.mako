@@ -8,12 +8,12 @@
     ${u.concepticon_link(request, ctx)}
 </h2>
 
-% if ctx.description:
-<div class="alert alert-info">
-    <button type="button" class="close" data-dismiss="alert">&times;</button>
-    ${ctx.description}
-</div>
-% endif
+##% if ctx.description:
+##<div class="alert alert-info">
+##    <button type="button" class="close" data-dismiss="alert">&times;</button>
+##    ${ctx.description}
+##</div>
+##% endif
 
 % if map_ or request.map:
 ${(map_ or request.map).render()}
