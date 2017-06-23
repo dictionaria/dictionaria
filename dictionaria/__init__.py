@@ -51,13 +51,13 @@ def main(global_config, **settings):
         ('dataset', partial(menu_item, 'dataset', label='Home')),
         ('contributions', partial(menu_item, 'contributions')),
         ('parameters', partial(menu_item, 'parameters')),
-        ('languages', partial(menu_item, 'languages')),
-        ('contributors', partial(menu_item, 'contributors')),
         ('sentences', partial(menu_item, 'sentences')),
         ('help', lambda ctx, rq: (rq.route_url('help'), u'Help')),
     )
 
-    config.add_settings(home_comp=['submit'] + config.get_settings()['home_comp'])
+    config.add_settings(
+        home_comp=['submit', 'contributors', 'languages'] +
+        config.get_settings()['home_comp'])
 
     for cls in [md.BibTex, md.ReferenceManager]:
         for if_ in [interfaces.IRepresentation, interfaces.IMetadata]:
