@@ -196,6 +196,7 @@ class Words(datatables.Units):
                          .filter(Word.dictionary_pk == self.contribution.pk)
                          .distinct() if c))
             res = [
+                DetailsRowLinkCol(self, '#'),
                 WordCol(self, 'word', model_col=common.Unit.name),
                 Col(self,
                     'part_of_speech',
@@ -217,7 +218,7 @@ class Words(datatables.Units):
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
                 res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
-            res.append(FtsCol(self, 'fts', model_col=Word.fts))
+            #res.append(FtsCol(self, 'fts', model_col=Word.fts))
             return res
         return [
             WordCol(self, 'word'),
