@@ -227,9 +227,6 @@ class Words(datatables.Units):
             DictionaryCol(self, 'dictionary'),
         ]
 
-    def toolbar(self):
-        return ''
-
     def get_options(self):
         opts = DataTable.get_options(self)
 
