@@ -233,6 +233,7 @@ class Dictionary(BaseDictionary):
         def meaning_descriptions(s):
             return split((s or '').replace('.', ' ').lower())
 
+        wids = set()
         for i, entry in enumerate(self.sfm):
             words = list(entry.get_words())
             headword = None
@@ -250,11 +251,20 @@ class Dictionary(BaseDictionary):
                         if xref in data['Example']:
                             examples.append(data['Example'][xref].serialized)
 
+                wid = '%s-%s-%s' % (submission.id, i + 1, j + 1)
+                if entry.get('lxid'):
+                    if len(words) == 1:
+                        _wid = '%s-%s' % (submission.id, entry.get('lxid'))
+                        if _wid not in wids:
+                            wids.add(_wid)
+                            wid = _wid
+                    #else:
+                    #    print(submission.id, entry.get('lxid'))
                 fullentry = '{0}\n{1}'.format(entry, '\n'.join(examples))
                 w = data.add(
                     models.Word,
                     word.id,
-                    id='%s-%s-%s' % (submission.id, i + 1, j + 1),
+                    id=wid,
                     name=word.form,
                     number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
@@ -275,6 +285,8 @@ class Dictionary(BaseDictionary):
                 words_by_lemma[word.form].append(w)
                 if word.hm:
                     words_by_lemma['{0} {1}'.format(word.form, word.hm)].append(w)
+                if wid not in words_by_lemma:
+                    words_by_lemma[wid].append(w)
                 DBSession.flush()
 
                 for md5, type_ in set(entry.files):

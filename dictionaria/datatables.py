@@ -139,7 +139,7 @@ class ThumbnailCol(Col):
 
 
 class FtsCol(DetailsRowLinkCol):
-    __kw__ = dict(bSortable=False, sType='html', button_text='raw')
+    __kw__ = dict(bSortable=False, sType='html', button_text='more')
 
     def search(self, qs):
         return fts.search(self.model_col, qs)
@@ -196,7 +196,7 @@ class Words(datatables.Units):
                          .filter(Word.dictionary_pk == self.contribution.pk)
                          .distinct() if c))
             res = [
-                DetailsRowLinkCol(self, '#'),
+                FtsCol(self, 'fts', model_col=Word.fts),
                 WordCol(self, 'word', model_col=common.Unit.name),
                 Col(self,
                     'part_of_speech',
@@ -218,7 +218,6 @@ class Words(datatables.Units):
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
                 res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
-            #res.append(FtsCol(self, 'fts', model_col=Word.fts))
             return res
         return [
             WordCol(self, 'word'),

@@ -1,11 +1,12 @@
 # coding: utf8
 from __future__ import unicode_literals
 from hashlib import md5
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import re
 
 from clld.db.models import common
 from clld.db.meta import DBSession
+from clld.db.fts import tsvector
 from clldutils.dsv import reader
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug, UnicodeMixin
@@ -222,15 +223,18 @@ class BaseDictionary(object):
                     submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, value) in enumerate(lemma.items()):
-                DBSession.add(common.Unit_data(
-                    object_pk=word.pk,
-                    key=labels.get(key, key),
-                    value=value,
-                    ord=index))
+                if value:
+                    DBSession.add(common.Unit_data(
+                        object_pk=word.pk,
+                        key=labels.get(key, key),
+                        value=value,
+                        ord=index))
 
         DBSession.flush()
 
+        fullentries = defaultdict(list)
         for lemma in self.iteritems('entries.csv'):
+            fullentries[lemma['ID']].extend(list(lemma.items()))
             word = data['Word'][lemma['ID']]
             for key in lemma:
                 assoc = ASSOC_PATTERN.match(key)
@@ -243,7 +247,10 @@ class BaseDictionary(object):
                             target_pk=data['Word'][lid].pk,
                             description=assoc.group('rel')))
 
+        sense2word = {}
         for sense in self.iteritems('senses.csv'):
+            fullentries[sense['entry_ID']].extend(list(sense.items()))
+            sense2word[sense['ID']] = sense['entry_ID']
             w = data['Word'][sense['entry_ID']]
             m = data.add(
                 models.Meaning,
@@ -274,5 +281,10 @@ class BaseDictionary(object):
 
         for ex in self.iteritems('examples.csv'):
             for mid in split(ex.get('sense_ID', '')):
+                fullentries[sense2word[mid]].extend(list(ex.items()))
                 models.MeaningSentence(
                     meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])
+
+        for wid, d in fullentries.items():
+            data['Word'][wid].fts = tsvector(
+                '; '.join('{0}: {1}'.format(k, v) for k, v in d if v))
