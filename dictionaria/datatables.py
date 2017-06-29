@@ -217,7 +217,10 @@ class Words(datatables.Units):
                 res.append(ThumbnailCol(self, 'image', sTitle=''))
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
-                res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+                col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
+                if name in self.contribution.jsondata['choices']:
+                    col.choices = self.contribution.jsondata['choices'][name]
+                res.append(col)
             return res
         return [
             WordCol(self, 'word'),

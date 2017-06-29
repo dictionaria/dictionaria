@@ -59,10 +59,14 @@ def main(args):
 
     print('loading concepts ...')
 
+    glosses = set()
     concepticon = Concepticon(
         REPOS.joinpath('..', '..', 'concepticon', 'concepticon-data'))
     if not args.no_concepts:
         for conceptset in concepticon.conceptsets.values():
+            if conceptset.gloss in glosses:
+                continue
+            glosses.add(conceptset.gloss)
             cm = data.add(
                 ComparisonMeaning,
                 conceptset.id,
@@ -226,6 +230,18 @@ def prime_cache(cfg):
         d.semantic_domains = join(sorted(sds))
         d.count_audio = count_unit_media_files(d, 'audio')
         d.count_image = count_unit_media_files(d, 'image')
+
+        word_pks = [w.pk for w in d.words]
+        choices = {}
+        for col in d.jsondata.get('custom_fields', []):
+            values = [
+                r[0] for r in DBSession.query(common.Unit_data.value)
+                .filter(common.Unit_data.object_pk.in_(word_pks))
+                .filter(common.Unit_data.key == col)
+                .distinct()]
+            if len(values) < 40:
+                choices[col] = sorted(values)
+        d.update_jsondata(choices=choices)
 
 
 if __name__ == '__main__':
