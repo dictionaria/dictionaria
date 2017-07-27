@@ -24,13 +24,13 @@
 
 ${h.rendered_sentence(ctx)|n}
 % if ctx.alt_translation1:
-    <div style="margin-top: -10px;">
+    <div class="alt_translation">
         <span class="translation">${ctx.alt_translation1}</span>
         <span>[${ctx.alt_translation_language1}]</span>
     </div>
 % endif
 % if ctx.alt_translation2:
-    <div style="margin-top: -10px;">
+    <div class="alt_translation">
         <span class="translation">${ctx.alt_translation2}</span>
         <span>[${ctx.alt_translation_language2}]</span>
     </div>

@@ -1,5 +1,18 @@
+div.sentence-wrapper {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  width: 100%;
+}
+div.sentence-wrapper:after, div.table:after {
+    content: '';
+    display: block;
+    clear: both;
+}
+div.sentence, div.sentence-number {
+    float: left;
+}
+
 span.lemma {font-style: italic;}
-div.sentence div.body {padding-top: 5px !important;}
 ul.semantic_domains_inline:before {content: "semantic domain: "}
 span.alt-translation {color: gray}
 span.vocabulary {font-variant: all-small-caps}

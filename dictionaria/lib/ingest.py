@@ -281,9 +281,12 @@ class BaseDictionary(object):
 
         for ex in self.iteritems('examples.csv'):
             for mid in split(ex.get('sense_ID', '')):
-                fullentries[sense2word[mid]].extend(list(ex.items()))
-                models.MeaningSentence(
-                    meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])
+                if mid in sense2word:
+                    fullentries[sense2word[mid]].extend(list(ex.items()))
+                    models.MeaningSentence(
+                        meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])
+                else:
+                    print('missing sense: {0}'.format(mid))
 
         for wid, d in fullentries.items():
             data['Word'][wid].fts = tsvector(
