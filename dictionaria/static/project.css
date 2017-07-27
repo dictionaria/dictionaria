@@ -10,6 +10,7 @@ div.sentence-wrapper:after, div.table:after {
 }
 div.sentence, div.sentence-number {
     float: left;
+    margin-left: 5px;
 }
 
 span.lemma {font-style: italic;}
