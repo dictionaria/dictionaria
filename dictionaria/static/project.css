@@ -12,7 +12,9 @@ div.sentence, div.sentence-number {
     float: left;
     margin-left: 5px;
 }
-
+table caption {
+    caption-side: bottom;
+}
 span.lemma {font-style: italic;}
 ul.semantic_domains_inline:before {content: "semantic domain: "}
 span.alt-translation {color: gray}

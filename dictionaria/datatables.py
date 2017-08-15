@@ -112,7 +112,7 @@ class CustomCol(Col):
 
 
 class SemanticDomainCol(Col):
-    __kw__ = dict(bSortable=False)
+    __kw__ = dict(bSortable=False, sTitle='semantic domain')
 
     def __init__(self, dt, name, sds, **kw):
         kw['choices'] = sds
@@ -196,14 +196,18 @@ class Words(datatables.Units):
                          .filter(Word.dictionary_pk == self.contribution.pk)
                          .distinct() if c))
             res = [
-                FtsCol(self, 'fts', model_col=Word.fts),
-                WordCol(self, 'word', model_col=common.Unit.name),
+                FtsCol(self, 'fts', sTitle='full entry', model_col=Word.fts),
+                WordCol(self, 'word', sTitle='headword', model_col=common.Unit.name),
                 Col(self,
                     'part_of_speech',
+                    sTitle='part of speech',
                     model_col=Word.pos,
                     choices=pos,
                     format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-                Col(self, 'description', sTitle='Meaning description', model_col=common.Unit.description)
+                Col(self,
+                    'description',
+                    sTitle='meaning description',
+                    model_col=common.Unit.description)
             ]
             if self.second_tab:
                 for name in self.vars:
@@ -281,10 +285,11 @@ class Meanings(datatables.Parameters):
         return [
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
-            MeaningDescriptionCol(self, 'name', sTitle='Comparison meaning'),
-            Col(self, 'description'),
+            MeaningDescriptionCol(self, 'name', sTitle='comparison meaning'),
+            Col(self, 'description', sTitle='description'),
             ConcepticonLinkCol(self, 'concepticon', sTitle=''),
-            RepresentationCol(self, 'representation', sClass='right')]
+            RepresentationCol(
+                self, 'representation', sTitle='representation', sClass='right')]
 
 # Values --------------------------------------------------------------------------------
 
@@ -332,12 +337,31 @@ class Dictionaries(datatables.Contributions):
     def col_defs(self):
         from clld.web.datatables.contribution import ContributorsCol, CitationCol
         return [
-            Col(self, 'Number', model_col=Dictionary.number, input_size='mini'),
-            LinkCol(self, 'dictionary'),
-            ContributorsCol(self, name='author'),
-            Col(self, 'entries', sClass='right', model_col=Dictionary.count_words),
-            YearCol(self, 'year', bSearchable=False, model_col=Dictionary.published),
-            CitationCol(self, 'cite'),
+            Col(self,
+                'number',
+                sTitle='number',
+                model_col=Dictionary.number,
+                input_size='mini'),
+            LinkCol(
+                self,
+                'dictionary',
+                sTitle='dictionary'),
+            ContributorsCol(
+                self,
+                name='author',
+                sTitle='author'),
+            Col(self,
+                'entries',
+                sTitle='entries',
+                sClass='right',
+                model_col=Dictionary.count_words),
+            YearCol(
+                self,
+                'year',
+                bSearchable=False,
+                sTitle='year',
+                model_col=Dictionary.published),
+            CitationCol(self, 'cite', sTitle='cite'),
         ]
 
 
@@ -365,9 +389,9 @@ class DictionaryContributors(DataTable):
 
     def col_defs(self):
         return [
-            NameCol(self, 'name'),
-            ContributionsCol(self, 'Contributions'),
-            AddressCol(self, 'address', sTitle='Affiliation'),
+            NameCol(self, 'name', sTitle='name'),
+            ContributionsCol(self, 'Contributions', sTitle='contributions'),
+            AddressCol(self, 'address', sTitle='affiliation'),
         ]
 
 
@@ -393,12 +417,12 @@ class Examples(Sentences):
 
     def col_defs(self):
         res = [
-            LinkCol(self, 'name', sTitle='Primary text', sClass="object-language"),
-            TsvCol(self, 'analyzed', sTitle='Analyzed text'),
-            TsvCol(self, 'gloss', sClass="gloss"),
+            LinkCol(self, 'name', sTitle='primary text', sClass="object-language"),
+            TsvCol(self, 'analyzed', sTitle='analyzed text'),
+            TsvCol(self, 'gloss', sTitle='gloss', sClass="gloss"),
             Col(self,
                 'description',
-                sTitle=self.req.translate('Translation'),
+                sTitle=self.req.translate('translation'),
                 sClass="translation"),
             DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT'),
         ]
