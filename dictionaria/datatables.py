@@ -286,10 +286,11 @@ class Meanings(datatables.Parameters):
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
             MeaningDescriptionCol(self, 'name', sTitle='comparison meaning'),
-            Col(self, 'description', sTitle='description'),
-            ConcepticonLinkCol(self, 'concepticon', sTitle=''),
+            #Col(self, 'description', sTitle='description'),
             RepresentationCol(
-                self, 'representation', sTitle='representation', sClass='right')]
+                self, 'representation', sTitle='representation', sClass='right'),
+            ConcepticonLinkCol(self, 'concepticon', sTitle=''),
+        ]
 
 # Values --------------------------------------------------------------------------------
 
