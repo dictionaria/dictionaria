@@ -78,6 +78,7 @@ class Word(CustomModelMixin, common.Unit):
     dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
     dictionary = relationship(Dictionary, backref='words')
     number = Column(Integer, default=0)  # for disambiguation of words with the same name
+    example_count = Column(Integer, default=0)
 
     @property
     def label(self):

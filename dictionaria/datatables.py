@@ -207,7 +207,11 @@ class Words(datatables.Units):
                 Col(self,
                     'description',
                     sTitle='meaning description',
-                    model_col=common.Unit.description)
+                    model_col=common.Unit.description),
+                Col(self,
+                    'examples',
+                    input_size='mini',
+                    model_col=Word.example_count),
             ]
             if self.second_tab:
                 for name in self.vars:

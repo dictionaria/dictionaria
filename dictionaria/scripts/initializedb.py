@@ -243,6 +243,18 @@ def prime_cache(cfg):
                 choices[col] = sorted(values)
         d.update_jsondata(choices=choices)
 
+    DBSession.execute("""
+    UPDATE word
+      SET example_count = s.c 
+      FROM (
+        SELECT m.word_pk AS wpk, count(ms.sentence_pk) AS c
+        FROM meaning AS m, meaningsentence AS ms
+        WHERE m.pk = ms.meaning_pk
+        GROUP BY m.word_pk
+      ) AS s
+      WHERE word.pk = s.wpk
+    """)
+
 
 if __name__ == '__main__':
     initializedb(
