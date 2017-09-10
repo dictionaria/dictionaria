@@ -1,9 +1,15 @@
-div.sentence-wrapper {
+div.sentence-wrapper, figure.img {
   margin-top: 1em;
   margin-bottom: 1em;
   width: 100%;
 }
-div.sentence-wrapper:after, div.table:after {
+figure.img {
+  text-align: center;
+  float: none;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+}
+div.sentence-wrapper:after, div.table:after, figure.img:after {
     content: '';
     display: block;
     clear: both;
