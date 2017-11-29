@@ -166,6 +166,7 @@ def main(args):
         print('loading %s ...' % submission.id)
         dictdata = Data()
         lang = Variety.get(lid)
+        submission.load_sources(Dictionary.get(did), dictdata)
         submission.load_examples(Dictionary.get(did), dictdata, lang)
         submission.dictionary.load(
             submission,

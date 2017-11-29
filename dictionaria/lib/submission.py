@@ -6,6 +6,8 @@ from clldutils.path import Path, md5
 from clldutils.jsonlib import load
 from clld.db.meta import DBSession
 from clld.db.models import common
+from clld.lib import bibtex
+from clld.scripts.util import bibtex2source
 
 from dictionaria.lib import sfm
 from dictionaria.lib.ingest import Examples, BaseDictionary
@@ -33,6 +35,8 @@ class Submission(object):
         md = self.dir.joinpath('md.json')
         self.md = load(md) if md.exists() else None
         self.props = self.md.get('properties', {}) if self.md else {}
+        bib = self.dir.joinpath('sources.bib')
+        self.bib = bibtex.Database.from_file(bib) if bib.exists() else None
 
     @property
     def dictionary(self):
@@ -56,6 +60,14 @@ class Submission(object):
             return
         print('{0} file missing: {1}'.format(type_, checksum))
         return
+
+    def load_sources(self, dictionary, data):
+        if self.bib:
+            for rec in self.bib.records:
+                src = bibtex2source(rec, models.DictionarySource)
+                src.dictionary = dictionary
+                src.id = '%s-%s' % (self.id, src.id)
+                data.add(models.DictionarySource, rec.id, _obj=bibtex2source(rec))
 
     def load_examples(self, dictionary, data, lang):
         abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')

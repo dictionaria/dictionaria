@@ -274,6 +274,22 @@ class Dictionary(BaseDictionary):
                     dictionary=vocab,
                     language=lang)
 
+                seen = set()
+                for bibref in entry.getall('bibref'):
+                    key, context = bibref, None
+                    if '[' in key:
+                        key, _, context = key.partition('[')
+                        context = context.replace(']', '').strip()
+
+                    if (key, context) in seen:
+                        continue
+                    seen.add((key, context))
+                    if key in data['DictionarySource']:
+                        DBSession.add(models.WordReference(
+                            source=data['DictionarySource'][key],
+                            word=w,
+                            description=labels.get(context, context)))
+
                 if not headword:
                     headword = word.id
                 else:

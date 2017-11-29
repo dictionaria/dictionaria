@@ -114,6 +114,11 @@ class Word(CustomModelMixin, common.Unit):
         return split(self.semantic_domain)
 
 
+class WordReference(Base, common.HasSourceMixin):
+    word_pk = Column(Integer, ForeignKey('word.pk'))
+    word = relationship(Word, backref="references")
+
+
 RELATIONS = {
     'main entry': 'subentry',
     'synonym': '(part of) synonym (for)',
@@ -195,3 +200,10 @@ class Example(CustomModelMixin, common.Sentence):
     serialized = Column(Unicode)
     dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
     dictionary = relationship(Dictionary, backref='examples')
+
+
+@implementer(interfaces.ISource)
+class DictionarySource(CustomModelMixin, common.Source):
+    pk = Column(Integer, ForeignKey('source.pk'), primary_key=True)
+    dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
+    dictionary = relationship(Dictionary, backref='sources')

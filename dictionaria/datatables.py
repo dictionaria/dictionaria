@@ -10,6 +10,7 @@ from clld.web.datatables.base import (
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
 from clld.web.datatables.sentence import Sentences, TsvCol
+from clld.web.datatables.source import Sources
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -23,6 +24,7 @@ from clldmpg.cdstar import MediaCol, maintype, bitstream_url
 
 from dictionaria.models import (
     Word, Counterpart, Dictionary, ComparisonMeaning, Variety, Example,
+    DictionarySource,
 )
 from dictionaria.util import concepticon_link, split
 
@@ -400,6 +402,18 @@ class DictionaryContributors(DataTable):
         ]
 
 
+class DictionarySources(Sources):
+    __constraints__ = [Dictionary]
+
+    def base_query(self, query):
+        if self.dictionary:
+            query = query.filter(DictionarySource.dictionary_pk == self.dictionary.pk)
+        else:
+            query = query.join(Dictionary).options(joinedload(DictionarySource.dictionary))
+
+        return query
+
+
 class Examples(Sentences):
     __constraints__ = [Dictionary]
 
@@ -452,4 +466,5 @@ def includeme(config):
     config.register_datatable('languages', Varieties)
     config.register_datatable('parameters', Meanings)
     config.register_datatable('contributions', Dictionaries)
+    config.register_datatable('sources', DictionarySources)
     config.register_datatable('contributors', DictionaryContributors)

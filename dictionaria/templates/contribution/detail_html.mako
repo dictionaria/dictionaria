@@ -16,6 +16,7 @@ ${util.codes(ctx.language)}
             <li><a href="#words2" data-toggle="tab">Words extra</a></li>
         % endif
         <li><a href="#examples" data-toggle="tab">Examples</a></li>
+        <li><a href="#sources" data-toggle="tab">Sources</a></li>
     </ul>
     <div class="tab-content">
         <div id="about" class="tab-pane active">
@@ -41,6 +42,9 @@ ${util.codes(ctx.language)}
         % endif
         <div id="examples" class="tab-pane">
             ${request.get_datatable('sentences', h.models.Sentence, dictionary=ctx).render()}
+        </div>
+        <div id="sources" class="tab-pane">
+            ${request.get_datatable('sources', h.models.Source, dictionary=ctx).render()}
         </div>
     </div>
     <script>

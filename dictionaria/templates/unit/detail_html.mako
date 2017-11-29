@@ -8,6 +8,20 @@
         ${h.link(request, ctx.dictionary)} by ${h.linked_contributors(request, ctx.dictionary)}
         ${h.button('cite', onclick=h.JSModal.show(ctx.dictionary.name, request.resource_url(ctx.dictionary, ext='md.html')))}
     </%util:well>
+        % if ctx.references:
+            <%util:well title="Sources">
+                <ul class="unstyled">
+                    % for ref in ctx.references:
+                        <li>
+                            ${h.link(request, ref.source)}
+                            % if ref.description:
+                                (${ref.description})
+                            % endif
+                        </li>
+                    % endfor
+                </ul>
+            </%util:well>
+        % endif
     % for file in ctx._files:
         % if file.mime_type.startswith('audio'):
             <p>
