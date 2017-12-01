@@ -276,7 +276,7 @@ class RepresentationCol(Col):
         return ComparisonMeaning.representation
 
     def search(self, qs):
-        return filter_number(ComparisonMeaning.representation)
+        return filter_number(ComparisonMeaning.representation, qs)
 
 
 class ConcepticonLinkCol(Col):
