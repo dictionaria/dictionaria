@@ -1,13 +1,13 @@
 from __future__ import unicode_literals
 from datetime import date
 from itertools import groupby, chain
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import re
 
 import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
-from clldutils.misc import slug, nfilter
+from clldutils.misc import slug, nfilter, UnicodeMixin
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
@@ -19,7 +19,7 @@ from pyconcepticon.api import Concepticon
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
 from dictionaria.lib.submission import REPOS, Submission
-from dictionaria.util import join
+from dictionaria.util import join, Link
 
 
 def main(args):
@@ -185,11 +185,31 @@ def main(args):
         glottolog_repos='../../glottolog3/glottolog')
 
 
+def add_links(sid, ids, desc, type_):
+    if not desc:
+        return
+    p = re.compile(
+        '(?<=\W)(?P<id>{0})(?=\W)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
+        flags=re.MULTILINE)
+    return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
+
+
 def prime_cache(cfg):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
     it will have to be run periodically whenever data has been updated.
     """
+    labels = {}
+    for type_, cls in [('source', common.Source), ('unit', common.Unit)]:
+        labels[type_] = defaultdict(set)
+        for r in DBSession.query(cls.id):
+            sid, _, lid = r[0].partition('-')
+            labels[type_][sid].add(lid)
+
+    for d in DBSession.query(Dictionary):
+        for type_ in ['source', 'unit']:
+            d.description = add_links(d.id, labels[type_][d.id], d.description, type_)
+
     for meaning in DBSession.query(ComparisonMeaning).options(
         joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
     ):

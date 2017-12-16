@@ -1,9 +1,13 @@
 # coding: utf8
 from __future__ import unicode_literals
 from collections import OrderedDict
+import re
 
 from clldutils.text import truncate_with_ellipsis
+from clldutils.misc import UnicodeMixin
 from clld.web.util.htmllib import HTML
+from clld.db.models import common
+from clld.db.meta import DBSession
 from bs4 import BeautifulSoup
 from clldmpg import cdstar
 from clld.web.util.helpers import link
@@ -32,6 +36,34 @@ def concepticon_link(request, meaning):
             width=30),
         title='corresponding concept set at Concepticon',
         href=meaning.concepticon_url)
+
+
+class Link(UnicodeMixin):
+    def __init__(self, id, type):
+        self.id = id
+        self.type = type
+
+    def __unicode__(self):
+        return '**{0.type}:{0.id}**'.format(self)
+
+    def sub(self, s, req, labels=None):
+        if not labels:
+            cls = getattr(common, self.type.capitalize())
+            labels = {r[0]: r[1] for r in DBSession.query(cls.id, cls.name)}
+
+        def _repl(m):
+            if m.group('id') in labels:
+                return '<a href="{0}">{1}</a>'.format(
+                    req.route_url(self.type, id=m.group('id')), labels[m.group('id')])
+            return m.string
+
+        return re.sub('\*\*{0}:(?P<id>[^*]+)\*\*'.format(self.type), _repl, s)
+
+
+def add_links(req, s):
+    for type_ in ['source', 'unit']:
+        s = Link(None, type_).sub(s, req)
+    return s
 
 
 def toc(s):

@@ -252,6 +252,7 @@ class Dictionary(BaseDictionary):
                             examples.append(data['Example'][xref].serialized)
 
                 wid = '%s-%s-%s' % (submission.id, i + 1, j + 1)
+                # Recognize and keep \lxid as local entry ID
                 if entry.get('lxid'):
                     if len(words) == 1:
                         _wid = '%s-%s' % (submission.id, entry.get('lxid'))

@@ -24,7 +24,7 @@ ${util.codes(ctx.language)}
             <div class="span8">
                 ${util.files()}
                 ${util.data()}
-                ${html|n}
+                ${u.add_links(request, html)|n}
             </div>
             <div class="span4">
                 <div class="well well-small">
