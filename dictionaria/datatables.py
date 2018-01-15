@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from collections import OrderedDict
 
 from sqlalchemy import and_, or_, func
@@ -176,14 +178,13 @@ class Words(datatables.Units):
         query = query.join(Dictionary)\
             .outerjoin(common.Unit_data, and_(
                 Word.pk == common.Unit_data.object_pk, common.Unit_data.key == 'ph'))\
-            .outerjoin(Counterpart, Word.pk == Counterpart.word_pk)\
+            .join(Counterpart, Word.pk == Counterpart.word_pk)\
             .outerjoin(common.ValueSet)\
             .outerjoin(common.Parameter)\
             .options(
-                joinedload_all(
-                    Word.counterparts, common.Value.valueset, common.ValueSet.parameter),
                 joinedload(common.Unit.data),
-                joinedload(common.Unit._files))
+                joinedload(common.Unit._files),
+            )
         if self.contribution:
             for name, var in self.vars.items():
                 query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))

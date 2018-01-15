@@ -188,6 +188,8 @@ def main(args):
 def add_links(sid, ids, desc, type_):
     if not desc:
         return
+    if not ids:
+        return desc
     p = re.compile(
         '(?<=\W)(?P<id>{0})(?=\W)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
         flags=re.MULTILINE)

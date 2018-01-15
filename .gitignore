@@ -1,6 +1,6 @@
+.cache
 data
 
-development.ini
 *.py[cod]
 *.komodoproject
 */static/download

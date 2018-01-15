@@ -1,20 +1,5 @@
 from setuptools import setup, find_packages
 
-requires = [
-    'pathlib2>=2.2.1',
-    'clld>=3.3.3',
-    'clldmpg>=2.3.3',
-    'clld-glottologfamily-plugin>=2.0.0',
-    'clldutils>=1.13.6',
-    'transliterate',
-    'pyconcepticon>=1.1.0',
-    'beautifulsoup4==4.6.0',
-]
-
-tests_require = [
-    'WebTest >= 1.3.1',  # py3 compat
-    'mock',
-]
 
 setup(
     name='dictionaria',
@@ -34,8 +19,28 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=requires,
-    tests_require=tests_require,
+    install_requires=[
+        'clldmpg~=3.1',
+        'clld-glottologfamily-plugin>=2.0.0',
+        'transliterate',
+        'pyconcepticon>=1.1.0',
+        'beautifulsoup4==4.6.0',
+    ],
+    extras_require={
+        'dev': ['flake8', 'waitress'],
+        'test': [
+            'psycopg2',
+            'tox',
+            'mock',
+            'pytest>=3.1',
+            'pytest-clld',
+            'pytest-mock',
+            'pytest-cov',
+            'coverage>=4.2',
+            'selenium',
+            'zope.component>=3.11.0',
+        ],
+    },
     test_suite="dictionaria",
     entry_points="""\
         [paste.app_factory]
