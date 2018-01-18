@@ -25,6 +25,7 @@ setup(
         'transliterate',
         'pyconcepticon>=1.1.0',
         'beautifulsoup4==4.6.0',
+        'html5lib',
     ],
     extras_require={
         'dev': ['flake8', 'waitress'],
