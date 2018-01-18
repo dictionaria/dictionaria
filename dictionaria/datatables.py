@@ -178,7 +178,7 @@ class Words(datatables.Units):
         query = query.join(Dictionary)\
             .outerjoin(common.Unit_data, and_(
                 Word.pk == common.Unit_data.object_pk, common.Unit_data.key == 'ph'))\
-            .join(Counterpart, Word.pk == Counterpart.word_pk)\
+            .outerjoin(Counterpart, Word.pk == Counterpart.word_pk)\
             .outerjoin(common.ValueSet)\
             .outerjoin(common.Parameter)\
             .options(
