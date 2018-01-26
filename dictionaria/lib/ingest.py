@@ -6,7 +6,6 @@ import re
 
 from clld.db.models import common
 from clld.db.meta import DBSession
-from clld.db.fts import tsvector
 from clldutils.dsv import reader
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import cached_property, slug, UnicodeMixin
@@ -179,20 +178,12 @@ class Examples(SFM):
         return self._map.get(item)
 
 
-ASSOC_PATTERN = re.compile('rel_(?P<rel>[a-z]+)')
-
-
 class BaseDictionary(object):
     """
     A dictionary that knows how to load data from a `processed` directory.
     """
     def __init__(self, d):
         self.dir = d
-
-    def iteritems(self, fname):
-        for item in reader(
-                self.dir.joinpath(fname), dicts=True, doublequote=False, escapechar='\\'):
-            yield item
 
     def load(
             self,
@@ -202,92 +193,4 @@ class BaseDictionary(object):
             lang,
             comparison_meanings,
             labels):
-
-        def id_(obj, oid=None):
-            return '%s-%s' % (submission.id, obj.get('ID', oid))
-
-        for lemma in self.iteritems('entries.csv'):
-            oid = lemma.pop('ID')
-            word = data.add(
-                models.Word,
-                oid,
-                id=id_(lemma, oid=oid),
-                name=lemma.pop('headword'),
-                pos=lemma.pop('part_of_speech'),
-                dictionary=vocab,
-                language=lang)
-            DBSession.flush()
-            for attr, type_ in [('picture', 'image'), ('sound', 'audio')]:
-                fname = lemma.pop(attr, None)
-                if fname:
-                    submission.add_file(type_, fname, common.Unit_files, word)
-
-            for index, (key, value) in enumerate(lemma.items()):
-                if value:
-                    DBSession.add(common.Unit_data(
-                        object_pk=word.pk,
-                        key=labels.get(key, key),
-                        value=value,
-                        ord=index))
-
-        DBSession.flush()
-
-        fullentries = defaultdict(list)
-        for lemma in self.iteritems('entries.csv'):
-            fullentries[lemma['ID']].extend(list(lemma.items()))
-            word = data['Word'][lemma['ID']]
-            for key in lemma:
-                assoc = ASSOC_PATTERN.match(key)
-                if assoc:
-                    for lid in split(lemma.get(key, '')):
-                        # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
-                        lid = lid.replace(' ', '').lower()
-                        DBSession.add(models.SeeAlso(
-                            source_pk=word.pk,
-                            target_pk=data['Word'][lid].pk,
-                            description=assoc.group('rel')))
-
-        sense2word = {}
-        for sense in self.iteritems('senses.csv'):
-            fullentries[sense['entry_ID']].extend(list(sense.items()))
-            sense2word[sense['ID']] = sense['entry_ID']
-            w = data['Word'][sense['entry_ID']]
-            m = data.add(
-                models.Meaning,
-                sense['ID'],
-                id=id_(sense),
-                name=sense['description'],
-                word=w)
-
-            for i, md in enumerate(split(sense['description'])):
-                key = md.lower()
-                if key in comparison_meanings:
-                    concept = comparison_meanings[key]
-                else:
-                    continue
-
-                vsid = '%s-%s' % (m.id, i)
-                vs = data['ValueSet'].get(vsid)
-                if not vs:
-                    vs = data.add(
-                        common.ValueSet, vsid,
-                        id=vsid,
-                        language=lang,
-                        contribution=vocab,
-                        parameter_pk=concept)
-
-                DBSession.add(models.Counterpart(
-                    id=vsid, name=w.name, valueset=vs, word=w))
-
-        for ex in self.iteritems('examples.csv'):
-            for mid in split(ex.get('sense_ID', '')):
-                if mid in sense2word:
-                    fullentries[sense2word[mid]].extend(list(ex.items()))
-                    models.MeaningSentence(
-                        meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])
-                else:
-                    print('missing sense: {0}'.format(mid))
-
-        for wid, d in fullentries.items():
-            data['Word'][wid].fts = tsvector(
-                '; '.join('{0}: {1}'.format(k, v) for k, v in d if v))
+        raise NotImplementedError

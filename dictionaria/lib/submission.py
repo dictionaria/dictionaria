@@ -10,7 +10,8 @@ from clld.lib import bibtex
 from clld.scripts.util import bibtex2source
 
 from dictionaria.lib import sfm
-from dictionaria.lib.ingest import Examples, BaseDictionary
+from dictionaria.lib import cldf
+from dictionaria.lib.ingest import Examples
 from dictionaria import models
 import dictionaria
 
@@ -41,7 +42,7 @@ class Submission(object):
     @property
     def dictionary(self):
         d = self.dir.joinpath('processed')
-        impl = sfm.Dictionary if d.joinpath('db.sfm').exists() else BaseDictionary
+        impl = sfm.Dictionary if d.joinpath('db.sfm').exists() else cldf.Dictionary
         return impl(d)
 
     def add_file(self, type_, checksum, file_cls, obj):

@@ -80,6 +80,13 @@ class Word(CustomModelMixin, common.Unit):
     number = Column(Integer, default=0)  # for disambiguation of words with the same name
     example_count = Column(Integer, default=0)
 
+    def iterfiles(self):
+        for file in self._files:
+            yield file
+        for meaning in self.meanings:
+            for file in meaning._files:
+                yield file
+
     @property
     def label(self):
         args = [self.name]
@@ -136,7 +143,11 @@ class SeeAlso(Base):
     target = relationship(Word, foreign_keys=[target_pk], backref='source_assocs')
 
 
-class Meaning(Base, common.IdNameDescriptionMixin):
+class Meaning_files(Base, common.FilesMixin):
+    pass
+
+
+class Meaning(Base, common.HasFilesMixin, common.IdNameDescriptionMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
     ord = Column(Integer, default=1)
     gloss = Column(Unicode)

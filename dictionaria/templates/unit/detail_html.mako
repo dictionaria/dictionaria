@@ -29,7 +29,7 @@
             </p>
         % endif
     % endfor
-    % for file in ctx._files:
+    % for file in ctx.iterfiles():
         % if file.mime_type.startswith('image'):
             <div class="img-with-caption well">
                 ${u.cdstar.linked_image(file)}
