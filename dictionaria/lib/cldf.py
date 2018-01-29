@@ -31,6 +31,7 @@ class Dictionary(BaseDictionary):
         def id_(oid):
             return '%s-%s' % (submission.id, oid)
 
+        metalanguages = submission.props.get('metalanguages', {})
         colmap = {k: self.cldf['EntryTable', k].name
                   for k in ['id', 'headword', 'partOfSpeech']}
         for lemma in self.cldf['EntryTable']:
@@ -85,12 +86,14 @@ class Dictionary(BaseDictionary):
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
             sense2word[sense[colmap['id']]] = sense[colmap['entryReference']]
             w = data['Word'][sense[colmap['entryReference']]]
-            m = data.add(
-                models.Meaning,
-                sense[colmap['id']],
+            kw = dict(
                 id=id_(sense[colmap['id']]),
                 name='; '.join(nfilter(sense[colmap['description']])),
                 word=w)
+            if 'alt_translation1' in sense and metalanguages.get('gxx'):
+                kw['alt_translation1'] = sense['alt_translation1']
+                kw['alt_translation_language1'] = metalanguages.get('gxx')
+            m = data.add(models.Meaning, sense[colmap['id']], **kw)
 
             for i, md in enumerate(nfilter(sense[colmap['description']])):
                 key = md.lower()
@@ -123,14 +126,17 @@ class Dictionary(BaseDictionary):
                     for fname in set(fnames):
                         submission.add_file(type_, fname, models.Meaning_files, m)
 
-        #for ex in self.iteritems('examples.csv'):
-        #    for mid in split(ex.get('sense_ID', '')):
-        #        if mid in sense2word:
-        #            fullentries[sense2word[mid]].extend(list(ex.items()))
-        #            models.MeaningSentence(
-        #                meaning=data['Meaning'][mid], sentence=data['Example'][ex['ID']])
-        #        else:
-        #            print('missing sense: {0}'.format(mid))
+        colmap = {k: self.cldf['ExampleTable', k].name
+                  for k in ['id', 'primaryText', 'translatedText']}
+        for ex in self.cldf['ExampleTable']:
+            for mid in ex['Senses']:
+                if mid in sense2word:
+                    fullentries[sense2word[mid]].extend(list(ex.items()))
+                    models.MeaningSentence(
+                        meaning=data['Meaning'][mid],
+                        sentence=data['Example'][ex[colmap['id']]])
+                else:
+                    print('missing sense: {0}'.format(mid))
 
         for wid, d in fullentries.items():
             data['Word'][wid].fts = tsvector(

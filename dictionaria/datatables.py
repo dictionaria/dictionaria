@@ -149,6 +149,11 @@ class FtsCol(DetailsRowLinkCol):
         return fts.search(self.model_col, qs)
 
 
+class MeaningDescriptionCol2(Col):
+    def format(self, item):
+        return HTML.p(Col.format(self, item))
+
+
 class Words(datatables.Units):
     __constraints__ = [common.Language, common.Contribution, common.Parameter]
 
@@ -207,7 +212,7 @@ class Words(datatables.Units):
                     model_col=Word.pos,
                     choices=pos,
                     format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-                Col(self,
+                MeaningDescriptionCol2(self,
                     'description',
                     sTitle='meaning description',
                     model_col=common.Unit.description),
