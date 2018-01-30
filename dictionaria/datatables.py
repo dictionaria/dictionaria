@@ -136,7 +136,7 @@ class ThumbnailCol(Col):
 
     def format(self, item):
         item = self.get_obj(item)
-        for f in item._files:
+        for f in item.iterfiles():
             if maintype(f) == 'image':
                 return HTML.img(src=bitstream_url(f, type_='thumbnail'))
         return ''

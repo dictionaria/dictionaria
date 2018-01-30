@@ -17,7 +17,7 @@ from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
 
 import dictionaria
-from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety
+from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning
 from dictionaria.lib.submission import REPOS, Submission
 from dictionaria.util import join, Link
 
@@ -245,6 +245,12 @@ def prime_cache(cfg):
             .join(Word, common.Unit_files.object_pk == Word.pk)\
             .filter(Word.dictionary_pk == contrib.pk)\
             .filter(common.Unit_files.mime_type.ilike(mtype + '/%'))\
+            .count() + \
+            DBSession.query(Meaning_files)\
+            .join(Meaning, Meaning_files.object_pk == Meaning.pk)\
+            .join(Word, Meaning.word_pk == Word.pk)\
+            .filter(Word.dictionary_pk == contrib.pk)\
+            .filter(Meaning_files.mime_type.ilike(mtype + '/%'))\
             .count()
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
