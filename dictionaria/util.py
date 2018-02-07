@@ -1,6 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import re
 
 from clldutils.text import truncate_with_ellipsis
@@ -14,6 +14,38 @@ from clld.web.util.helpers import link
 assert cdstar and link
 
 MULT_VALUE_SEP = ' ; '
+
+
+def add_links2(sid, ids, desc, type_):
+    if not desc:
+        return
+    if not ids:
+        return desc
+    p = re.compile(
+        '(?<=\W)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
+        flags=re.MULTILINE)
+    return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
+
+
+def unit_detail_html(request=None, context=None, **kw):
+    labels = {}
+    for type_, cls in [('source', common.Source), ('unit', common.Unit)]:
+        labels[type_] = defaultdict(set)
+        for r in DBSession.query(cls.id):
+            sid, _, lid = r[0].partition('-')
+            labels[type_][sid].add(lid)
+
+    ec = context.entry_comment
+    if ec:
+        ec = ec.replace('<', '&lt;').replace('>', '&gt;')
+    if ec:
+        for type_ in ['source', 'unit']:
+            ec = add_links2(
+                context.dictionary.id, labels[type_][context.dictionary.id], ec, type_)
+        ec = add_links(request, ec)
+    return {
+        'entry_comment': ec
+    }
 
 
 def truncate(s):

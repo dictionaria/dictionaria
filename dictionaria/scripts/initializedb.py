@@ -185,22 +185,13 @@ def main(args):
         glottolog_repos='../../glottolog3/glottolog')
 
 
-def add_links(sid, ids, desc, type_):
-    if not desc:
-        return
-    if not ids:
-        return desc
-    p = re.compile(
-        '(?<=\W)(?P<id>{0})(?=\W)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
-        flags=re.MULTILINE)
-    return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
-
-
 def prime_cache(cfg):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
     it will have to be run periodically whenever data has been updated.
     """
+    from dictionaria.util import add_links2
+
     labels = {}
     for type_, cls in [('source', common.Source), ('unit', common.Unit)]:
         labels[type_] = defaultdict(set)
@@ -210,7 +201,7 @@ def prime_cache(cfg):
 
     for d in DBSession.query(Dictionary):
         for type_ in ['source', 'unit']:
-            d.description = add_links(d.id, labels[type_][d.id], d.description, type_)
+            d.description = add_links2(d.id, labels[type_][d.id], d.description, type_)
 
     for meaning in DBSession.query(ComparisonMeaning).options(
         joinedload_all(common.Parameter.valuesets, common.ValueSet.values)

@@ -267,6 +267,7 @@ class Dictionary(BaseDictionary):
                     word.id,
                     id=wid,
                     name=word.form,
+                    entry_comment=word.data.get('links', [None]).pop(),
                     number=int(word.hm) if word.hm and word.hm != '-' else 0,
                     phonetic=word.ph,
                     pos=word.ps,

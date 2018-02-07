@@ -62,6 +62,7 @@ class Word(CustomModelMixin, common.Unit):
     dictionary, i.e. part of a contribution.
     """
     pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
+    entry_comment = Column(Unicode)
     semantic_domain = Column(Unicode)
     comparison_meanings = Column(Unicode)
     phonetic = Column(Unicode)
