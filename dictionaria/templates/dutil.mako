@@ -44,6 +44,9 @@
                 <td><small>part of speech</small></td>
                 <td>
                     <span class="vocabulary">${ctx.pos}</span>
+                    % if links and 'pos' in links:
+                        <small>${links['pos']|n}</small>
+                    % endif
                 </td>
             </tr>
         % endif
@@ -82,16 +85,26 @@
             </tr>
         % endfor
         % for _d in ctx.data:
-            % if not _d.key.startswith('lang-'):
+            % if not _d.key.startswith('lang-') and not _d.key.endswith('_links'):
                 <tr>
                     <td><small>${_d.key}</small></td>
-                    <td>${_d.value}</td>
+                    <td>
+                        ${_d.value}
+                        % if links and _d.key in links:
+                            <small>${links[_d.key]|n}</small>
+                        % endif
+                    </td>
                 </tr>
             % endif
         % endfor
     </table>
 
     ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
+        % if links and 'de' in links:
+            <li>
+                <small>${links['de']|n}</small>
+            </li>
+        % endif
     % for m in ctx.meanings:
         <li>
             <ul class="unstyled">

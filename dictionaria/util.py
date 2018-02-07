@@ -22,7 +22,7 @@ def add_links2(sid, ids, desc, type_):
     if not ids:
         return desc
     p = re.compile(
-        '(?<=\W)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
+        '((?<=\W)|^)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
         flags=re.MULTILINE)
     return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
 
@@ -35,17 +35,15 @@ def unit_detail_html(request=None, context=None, **kw):
             sid, _, lid = r[0].partition('-')
             labels[type_][sid].add(lid)
 
-    ec = context.entry_comment
-    if ec:
-        ec = ec.replace('<', '&lt;').replace('>', '&gt;')
-    if ec:
-        for type_ in ['source', 'unit']:
-            ec = add_links2(
-                context.dictionary.id, labels[type_][context.dictionary.id], ec, type_)
-        ec = add_links(request, ec)
-    return {
-        'entry_comment': ec
-    }
+    res = {}
+    for k, v in context.datadict().items():
+        if k.endswith('_links'):
+            v = v.replace('<', '&lt;').replace('>', '&gt;')
+            for type_ in ['source', 'unit']:
+                v = add_links2(
+                    context.dictionary.id, labels[type_][context.dictionary.id], v, type_)
+            res[k.replace('_links', '')] = add_links(request, v)
+    return dict(links=res)
 
 
 def truncate(s):

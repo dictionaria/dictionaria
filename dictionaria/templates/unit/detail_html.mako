@@ -44,11 +44,5 @@
 
 <h2>${ctx.label} <span class="meanings-in-title">${u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings))}</span></h2>
 
-% if entry_comment:
-    <div class="alert alert-success">
-        ${entry_comment|n}
-    </div>
-% endif
-
 ${dutil.word_details()}
 

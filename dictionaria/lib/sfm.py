@@ -373,6 +373,16 @@ class Dictionary(BaseDictionary):
                             DBSession.add(common.Unit_data(
                                 object_pk=w.pk, key=labels[key], value=value, ord=index))
 
+                for key, value in word.data.items():
+                    if key.endswith('_links'):
+                        nkey = key.replace('_links', '')
+                        for i, value in enumerate(word.data[key]):
+                            DBSession.add(common.Unit_data(
+                                object_pk=w.pk,
+                                key=(labels[nkey] + '_links') if nkey in labels else key,
+                                value=value,
+                                ord=i + 1))
+
         # FIXME: vgroup words by description and add synonym relationships!
         for word in data['Word'].keys()[:]:
             if '-' in word:
