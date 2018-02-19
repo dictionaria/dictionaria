@@ -4,7 +4,7 @@
 
 <%def name="sidebar()">
     <%util:well title="Dictionary">
-        <% dictionary = ctx.meaning_assocs[0].meaning.word.dictionary %>
+        <% dictionary = ctx.dictionary %>
         ${h.link(request, dictionary)} by ${h.linked_contributors(request, dictionary)}
         ${h.button('cite', onclick=h.JSModal.show(dictionary.name, request.resource_url(dictionary, ext='md.html')))}
     </%util:well>
