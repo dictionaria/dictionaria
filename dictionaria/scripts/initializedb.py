@@ -210,6 +210,9 @@ def prime_cache(cfg):
         if meaning.representation == 0:
             meaning.active = False
 
+    def joined(iterable):
+        return ' / '.join(sorted(nfilter(set(iterable))))
+
     q = DBSession.query(Word)\
         .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
         .options(joinedload(Word.meanings), joinedload(Word.dictionary))
@@ -217,8 +220,8 @@ def prime_cache(cfg):
         words = list(words)
         for i, word in enumerate(words):
             word.description = ' / '.join(m.name for m in word.meanings)
-            word.comparison_meanings = ' / '.join(nfilter(m.reverse for m in word.meanings))
-            word.semantic_domain = ' / '.join(nfilter(m.semantic_domain for m in word.meanings))
+            word.comparison_meanings = joined(m.reverse for m in word.meanings)
+            word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
             word.number = i + 1 if len(words) > 1 else 0
 
             for suffix in ['1', '2']:
