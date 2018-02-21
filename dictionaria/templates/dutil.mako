@@ -13,14 +13,14 @@
                     ${h.rendered_sentence(a.sentence, fmt=fmt)}
                     % if a.sentence.alt_translation1:
                         <div class="alt_translation">
-                            <span class="alt-translation translation">${a.sentence.alt_translation1}</span>
-                            <span class="alt-translation">[${a.sentence.alt_translation_language1}]</span>
+                            <span class="alt-translation alt-translation1 translation">${a.sentence.alt_translation1}</span>
+                            <span class="alt-translation alt-translation1">[${a.sentence.alt_translation_language1}]</span>
                         </div>
                     % endif
                     % if a.sentence.alt_translation2:
                         <div class="alt_translation">
-                            <span class="alt-translation translation">${a.sentence.alt_translation2}</span>
-                            <span class="alt-translation">[${a.sentence.alt_translation_language2}]</span>
+                            <span class="alt-translation alt-translation2 translation">${a.sentence.alt_translation2}</span>
+                            <span class="alt-translation alt-translation2">[${a.sentence.alt_translation_language2}]</span>
                         </div>
                     % endif
                     % if a.sentence.audio:
@@ -111,12 +111,12 @@
                     </li>
                 % if m.alt_translation1:
                     <li>
-                        <span class="alt-translation">${m.alt_translation1} [${m.alt_translation_language1}]</span>
+                        <span class="alt-translation alt-translation1">${m.alt_translation1} [${m.alt_translation_language1}]</span>
                     </li>
                 % endif
                 % if m.alt_translation2:
                     <li>
-                        <span class="alt-translation">${m.alt_translation2} [${m.alt_translation_language2}]</span>
+                        <span class="alt-translation alt-translation2">${m.alt_translation2} [${m.alt_translation_language2}]</span>
                     </li>
                 % endif
                 % if m.semantic_domain_list:

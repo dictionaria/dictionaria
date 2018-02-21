@@ -27,7 +27,9 @@ table caption {
 }
 span.lemma {font-style: italic;}
 ul.semantic_domains_inline:before {content: "semantic domain: "}
-span.alt-translation {color: gray}
+span.alt-translation {}
+span.alt-translation1 {color: darkslateblue}
+span.alt-translation2 {color: darkgreen}
 span.vocabulary {font-variant: all-small-caps}
 span.meanings-in-title {font-weight: normal !important; font-size: smaller;}
 span.meanings-in-title:before { content: "\2018"; }
