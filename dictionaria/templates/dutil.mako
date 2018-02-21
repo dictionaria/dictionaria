@@ -50,16 +50,11 @@
                 </td>
             </tr>
         % endif
-        % if ctx.counterparts or [m for m in ctx.meanings if m.reverse]:
+        % if [m for m in ctx.meanings if m.reverse]:
             <tr>
                 <td><small>comparison meanings</small></td>
                 <td>
                     <ul class="unstyled">
-                        % for c in ctx.counterparts:
-                            <li>
-                                ${h.link(request, c.valueset.parameter)}
-                            </li>
-                        % endfor
                         % for m in ctx.meanings:
                             % for re in m.reverse_list:
                                 % if re not in [c.valueset.parameter.name for c in ctx.counterparts]:
