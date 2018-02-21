@@ -1,7 +1,10 @@
 div.sentence-wrapper, figure.img {
   margin-top: 1em;
-  margin-bottom: 1em;
+  margin-bottom: 0;
   width: 100%;
+}
+div.alt_translation {
+    margin-left: 5px;
 }
 figure.img {
   text-align: center;

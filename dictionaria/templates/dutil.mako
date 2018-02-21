@@ -12,13 +12,13 @@
                     % endif
                     ${h.rendered_sentence(a.sentence, fmt=fmt)}
                     % if a.sentence.alt_translation1:
-                        <div>
+                        <div class="alt_translation">
                             <span class="alt-translation translation">${a.sentence.alt_translation1}</span>
                             <span class="alt-translation">[${a.sentence.alt_translation_language1}]</span>
                         </div>
                     % endif
                     % if a.sentence.alt_translation2:
-                        <div>
+                        <div class="alt_translation">
                             <span class="alt-translation translation">${a.sentence.alt_translation2}</span>
                             <span class="alt-translation">[${a.sentence.alt_translation_language2}]</span>
                         </div>
