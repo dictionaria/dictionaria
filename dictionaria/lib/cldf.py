@@ -34,7 +34,11 @@ class Dictionary(BaseDictionary):
         metalanguages = submission.props.get('metalanguages', {})
         colmap = {k: self.cldf['EntryTable', k].name
                   for k in ['id', 'headword', 'partOfSpeech']}
+        elabels = labels.get('EntryTable', {})
         for lemma in self.cldf['EntryTable']:
+            #
+            # FIXME: handle Sources!
+            #
             oid = lemma.pop(colmap['id'])
             word = data.add(
                 models.Word,
@@ -55,7 +59,7 @@ class Dictionary(BaseDictionary):
                         submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, value) in enumerate(lemma.items()):
-                if value:
+                if value and key in elabels:
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk,
                         key=labels.get(key, key),
@@ -83,12 +87,14 @@ class Dictionary(BaseDictionary):
         colmap = {k: self.cldf['SenseTable', k].name
                   for k in ['id', 'entryReference', 'description']}
         for sense in self.cldf['SenseTable']:
+            slabels = labels.get('SenseTable', {})
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
             sense2word[sense[colmap['id']]] = sense[colmap['entryReference']]
             w = data['Word'][sense[colmap['entryReference']]]
             kw = dict(
                 id=id_(sense[colmap['id']]),
                 name='; '.join(nfilter(sense[colmap['description']])),
+                jsondata={slabels[k]: v for k, v in sense.items() if v and k in slabels},
                 word=w)
             if 'alt_translation1' in sense and metalanguages.get('gxx'):
                 kw['alt_translation1'] = sense['alt_translation1']

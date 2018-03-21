@@ -128,6 +128,12 @@
                         </ul>
                     </li>
                 % endif
+                <dl>
+                % for k, v in m.jsondatadict.items():
+                    <dt>${k}</dt>
+                    <dd>${';'.join(v) if isinstance(v, list) else v}</dd>
+                % endfor
+                </dl>
                 % if m.sentence_assocs:
                     <li>${sentences(m)}</li>
                 % endif
