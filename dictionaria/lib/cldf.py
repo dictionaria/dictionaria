@@ -99,6 +99,9 @@ class Dictionary(BaseDictionary):
             if 'alt_translation1' in sense and metalanguages.get('gxx'):
                 kw['alt_translation1'] = sense['alt_translation1']
                 kw['alt_translation_language1'] = metalanguages.get('gxx')
+            if 'alt_translation2' in sense and metalanguages.get('gxy'):
+                kw['alt_translation2'] = sense['alt_translation2']
+                kw['alt_translation_language2'] = metalanguages.get('gxy')
             m = data.add(models.Meaning, sense[colmap['id']], **kw)
 
             for i, md in enumerate(nfilter(sense[colmap['description']])):
