@@ -248,6 +248,7 @@ class Words(datatables.Units):
 
     def get_options(self):
         opts = DataTable.get_options(self)
+        opts['aaSorting'] = [[1, 'asc']]
 
         for attr in ['parameter', 'contribution', 'language']:
             if getattr(self, attr):

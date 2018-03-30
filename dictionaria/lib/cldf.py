@@ -62,7 +62,7 @@ class Dictionary(BaseDictionary):
                 if value and key in elabels:
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk,
-                        key=labels.get(key, key),
+                        key=elabels[key],
                         value=value,
                         ord=index))
 
