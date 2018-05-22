@@ -20,18 +20,23 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clldmpg~=3.1',
+        'clld>=4.2.2',
+        'clldmpg>=3.3.1',
         'clld-glottologfamily-plugin>=2.0.0',
         'transliterate',
         'pyconcepticon>=1.1.0',
         'beautifulsoup4==4.6.0',
         'html5lib',
+        'sqlalchemy',
+        'waitress',
     ],
     extras_require={
-        'dev': ['flake8', 'waitress'],
+        'dev': [
+            'flake8',
+            'tox'
+        ],
         'test': [
             'psycopg2',
-            'tox',
             'mock',
             'pytest>=3.1',
             'pytest-clld',
