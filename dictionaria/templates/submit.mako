@@ -15,39 +15,61 @@
                 <a href="#overview">Overview: The five parts of the content structure</a>
                 [<a href="#toolbox1">Toolbox help</a>]
             </li>
+            <ol class="nested">
+               
+                <li>
+                    <a href="#introductory"><strong>The introductory text</strong></a>
+                    <ol class="nested">
+                        <li><a href="#language">The language and its speakers</a></li>
+                        <li><a href="#source">Source of the data </a></li>
+                        <li><a href="#orthography">The orthography used in the dictionary </a>
+                        </li>
+                        <li><a href="#types">Types of special information </a></li>
+                        <li><a href="#additional">Additional sections</a></li>
+                    </ol>
+                </li>
+                <li>
+                    <a href="#entry">The entry table</a>
+                    [<a href="#toolbox3">Toolbox help</a>]
+                </li>
+                <li>
+                    <a href="#sense">The sense table</a>
+                    [<a href="#toolbox4">Toolbox help</a>]
+                </li>
+                <li>
+                    <a href="#example">The example table</a>
+                    [<a href="#toolbox5">Toolbox help</a>]
+                </li>
+                <li>
+                    <a href="#references">The references table</a>
+                    [<a href="#toolbox6">Toolbox help</a>]
+                </li>
+            </ol>
             <li>
-                <a href="#introductory"><strong>The introductory text</strong></a>
-                <ol class="nested">
-                    <li><a href="#language">The language and its speakers</a></li>
-                    <li><a href="#source">Source of the data </a></li>
-                    <li><a href="#orthography">The orthography used in the dictionary </a>
-                    </li>
-                    <li><a href="#types">Types of special information </a></li>
-                    <li><a href="#additional">Additional sections</a></li>
-                </ol>
+                <a href="#best-practice">Best practice recommendations for dictionary entries</a>
             </li>
-            <li>
-                <a href="#entry">The entry table</a>
-                [<a href="#toolbox3">Toolbox help</a>]
-            </li>
-            <li>
-                <a href="#sense">The sense table</a>
-                [<a href="#toolbox4">Toolbox help</a>]
-            </li>
-            <li>
-                <a href="#example">The example table</a>
-                [<a href="#toolbox5">Toolbox help</a>]
-            </li>
-            <li>
-                <a href="#references">The references table</a>
-                [<a href="#toolbox6">Toolbox help</a>]
-            </li>
-        </ol>
-    </div>
+            <ol class="nested">    
+                <li>
+                    <a href="#definition-headwords">Headwords</a>
+                </li>
+                <li>
+                    <a href="#parts-of-speech">Parts-of-speech in Dictionaria</a>
+                </li>
+                <li>
+                    <a href="#descriptors">Meaning descriptions</a>
+                </li>
+                <li>
+                    <a href="#examples">Examples</a>
+                </li>
+                <li>
+                    <a href="semantic-domains-fields">Semantic domains /semantic fields (optional)</a>
+                </li>
+            </ol>
+        </ol>    
 </%def>
 
 
-<h2>General <em>Dictionaria</em> Submission Guidelines</h2>
+<h2>General <em>Dictionaria</em> Submission Guidelines and Best Practice Recommendations for Dictionary Entries</h2>
 
 <p><b>version of 9-1-2016</b></p>
 
@@ -102,7 +124,7 @@
     </ul>
 
     <dl>
-        <dt>Part 1: The introductory prose text (<a href="#introductory">details in §2</a>)
+        <dt>Part 1: The introductory prose text (<a href="#introductory">details in §1.1</a>)
         </dt>
         <dd>
             <p>This text must consist of at least of the following sections:</p>
@@ -122,7 +144,7 @@
                 </li>
             </ul>
         </dd>
-        <dt>Part 2: The entry table (<a href="#entry">details in §3</a>)</dt>
+        <dt>Part 2: The entry table (<a href="#entry">details in §1.2</a>)</dt>
         <dd>
             <figure class="well well-small">
                 <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot2.png">
@@ -153,7 +175,7 @@
                 below).</p>
         </dd>
         <dt style="clear: right">Part 3: The sense table (<a href="#sense">details in
-            §4</a>)
+            §1.3</a>)
         </dt>
         <dd>
             <figure class="well well-small">
@@ -186,12 +208,12 @@
                 containing the examples (Part 4 below).</p>
             <p>In addition, a sense may contain multimedia content, the field “semantic
                 domain” and
-                association fields relating to meaning (see §4 below), as well as comments
+                association fields relating to meaning (see §1.3 below), as well as comments
                 and
                 references fields.</p>
         </dd>
         <dt style="clear: right">Part 4: The example table (<a href="#example">details in
-            §5</a>)
+            §1.4</a>)
         </dt>
         <dd>
             <figure class="well well-small">
@@ -227,10 +249,10 @@
                 source”, and
                 optionally also “analyzed text” (with morpheme-by-morpheme segmentations).
                 There may
-                also be other fields (see §5 below).</p>
+                also be other fields (see §1.4 below).</p>
         </dd>
         <dt style="clear: right">Part 5: The references table (<a href="#references">details
-            in §6</a>)
+            in §1.5</a>)
         </dt>
         <dd>
             <figure class="well well-small">
@@ -257,10 +279,10 @@
 
 <%util:section title="The introductory text" id="introductory">
     <p>
-        As noted in §1, the introductory text, giving background information on the
+        As noted in §1.1, the introductory text, giving background information on the
         language and the dictionary, must consist of at least four standard sections,
         discussed
-        further in §2.1-4 below. Further sections may be added (see §2.5).
+        further in §1.1.1.-1.3 below. Further sections may be added (see §1.1.5.).
     </p>
 
     <h4><a name="language"></a>The language and its speakers</h4>
@@ -369,7 +391,7 @@
 
 <%util:section title="The entry table" id="entry">
     <p>
-        As noted in §1, each entry in the entry table must contain information in the
+        As noted in §1.1, each entry in the entry table must contain information in the
         following three fields:
     </p>
     <ul>
@@ -495,7 +517,7 @@
 
 <%util:section title="The sense table" id="sense">
     <p>
-        As noted in §1, each sense must minimally contain information in the following
+        As noted in §1.1, each sense must minimally contain information in the following
         three fields:
     </p>
     <ul>
@@ -619,7 +641,7 @@
 </%util:section>
 
 <h3><i>Dictionaria </i> Submission Guidelines Commentary for Toolbox Users</h3>
-<p><i>version of 10/23/2016</i></p>
+<p><b>version of 10/23/2016</b></p>
 <p>
     If you are planning to submit a Toolbox database to <i>Dictionaria</i>, you will find
     these hints helpful. We strongly encourage you to first read our general submission
@@ -638,7 +660,7 @@
 </p>
 <p>
     In addition to your Toolbox files, we ask you to also send us a prose description as
-    described in §2 in the general guidelines.
+    described in §1.1 in the general guidelines.
 </p>
 
 <%util:section title="Re: Overview: The five parts of the content structure" id="toolbox1" level="4">
@@ -917,4 +939,342 @@
     we will try to help you the best we can to fit it into our data model. Don’t let “tech
     talk” discourage you</b>
     <p><b><i>✉ dictionary.journal@uni-leipzig.de</i></b></p>
+</div>
+
+    <h2><a name="best-practice"></a>Best practice recommendations for dictionary entries</h2>
+<p><b>version of 5-4-2018</b></p>
+
+<%util:section title="Headwords" id="headwords">
+
+    <h4><a name="definition-headwords"></a>Definition</h4>
+    <p>
+        A headword is the heading of a lexical entry. It either consists of an orthographical word, a sequence of orthographical words, so-called Multi-Word-Expressions (MWEs), a clitic, or an affix. 
+    </p>
+    
+    <h4><a name="conventions"></a>Conventions in Dictionaria</h4>
+    <p>
+        The dictionaries published in Dictionaria do not have subentries and, consequently, no sub-headwords. Therefore, we suggest to include different types of headwords:
+    </p>
+    <ol>
+        <li>The most user-friendly form of the headword is the conventional <b>citation form</b> used by the speech community, rather than a stem form or <a href="#" data-toggle="tooltip" title="Renown lexicographers of indigenous American languages report that the use of roots or stems hasn't been accepted by the speech communities.  Cf. Pulte & Feeling 2002; Hinton & Weigel 2002; Munro 2002">a root,</a>,
+ therefore it should be included at any rate.</li>
+        <li><b>Roots</b> or <b>stems</b> can additionally be included as headwords, if their entries have association fields linking the entry to the relevant derived or inflected forms
+ used as the conventional citation form as stated in (1).
+        <li>In addition to the citation form, any <b>irregularly inflected forms</b> are also useful to have as headwords.</li>
+        <li>The headword field itself should not contain <b>variants</b>. Rather, the variants should be treated as separate headwords and cross-referenced.
+ Alternatively you may include a field in your micro-structure listing variants, but then these variants cannot be searched for as easily.</li>
+        <li><b>Affixes</b> and <b>clitics</b> can be distinguished by ‘-’  and ‘=’, respectively, e.g. =m (short form of am in English; -ed  1. past-tense suffix, 2.
+ past participle suffix. We recommend that each dictionary contain all inflectional and derivational morphemes known in the language as headwords.</li>
+        <li>If the headword is a <b>multi-word expression</b>, the component words should, if possible, be headwords as well. 
+For example, if the dictionary has the headword light year, it also should have the headwords light and year. Ideally, the entry would then also show the glossing of the multi-word expression.</li>
+    </ol>
+
+</%util:section>
+
+<%util:section title="Parts-of-speech in Dictionaria" id="parts-of-speech">
+
+    <h4><a name="drop-down"></a>The drop-down box</h4>
+    <p>
+         In the main Dictionaria “Words” tab view, parts-of-speech can be accessed via a drop-down box, which requires a user-friendly size of the inventory of parts-of-speech,
+         depending on the intended type of users.
+    </p>
+
+    <h4><a name="single-word"></a>Single-word headwords </h4>
+    <p>
+        We recommend using the part-of-speech field for major word classes of content and functional words, and use standard abbreviations, such as e.g.
+    </p>
+
+    <ul>
+        <li><b>ADJ</b>:	adjective</li>
+        <li><b>ADV</b>:	adverb</li>
+        <li><b>DEM</b>:	demonstrative</li>
+        <li><b>N</b>:	noun</li>
+        <li><b>PREP</b>:	preposition</li>
+        <li><b>PRON</b>:	pronoun</li>
+        <li><b>V</b>:	verb</li>
+    </ul>
+
+    <p>
+<i>Subclasses</i> such as simple noun or valency classes can be indicated by a single additional letter or numeral, for example:
+    </p>
+
+    <ul>
+        <li><b>N.F, N.M, N.N</b>:	for feminine, masculine and neuter nouns</li>
+        <li><b>N.1, N.2, N.3, ...</b>:	for numbered noun classes</li>
+        <li><b>V.I, V.T, V.D</b>:	for intransitive, transitive, and ditransitive verbs.</li>
+     </ul>
+
+    <p>
+Class and subclass information should be separated by a period.
+    </p>
+
+     <p>
+<i>Irregulary inflected</i> forms can then be assigned to the same category as their citation form. Their specific meaning can be explained in the meaning description, cf. the German past tense form of <i>gehen</i>	‘to go’:
+    </p>
+
+    <ul>
+        <li><i>ging</i>	v.i	went; irregular past tense form. See: gehen ‘go’.</li>
+    </ul>
+
+    <h4><a name="mwe"></a>Multi-word expressions (MWEs) used as headwords</h4>
+    <p>
+        If it is impractical to classify MWEs on the basis of grammatical criteria, simply use the abbreviation MWE in the part-of-speech field. 
+Otherwise, use transparent abbreviations for the type of MWE, for example:
+    </p>
+
+    <ul>
+        <li><b>adj.constr</b>	adjectival construction, i.e. a construction that can substitute an adjective in the formation of a clause.</li>
+        <li><b>n.constr</b>		nominal construction, i.e. a construction that can substitute a noun in the formation of a clause.</li>
+        <li><b>v.constr</b>		verbal construction, i.e a construction that can substitute a verb  in the formation of a clause.</li>
+    </ul>
+
+    <p> Details of the composition of the construction can be given in an adjacent "structure" field, see Table 1. </p>
+
+        <div style="clear: both;"></div>
+<figure>
+  <figcaption>Table 1: MWEs in Teop</figcaption>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>headword</th>
+        <th>part-of-speech</th>
+        <th>structure</th>
+        <th>meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>benoo beera</td>
+        <td>adj.constr</td>
+        <td>n - adj</td>
+        <td>having a lot of meat</td>
+      </tr>
+      <tr>
+        <td>kapa kikis</td>
+        <td>adj.constr</td>
+        <td>n - adj</td>
+        <td>having a strong skin</td>
+      </tr>
+      <tr>
+        <td>hua hiava</td>
+        <td>vi.constr</td>
+        <td>vi - vi</td>
+        <td>paddle to the deep sea</td>
+      </tr>
+      <tr>
+        <th>hua hiava ni</th>
+        <th>vt.constr</th>
+        <th>vi - vi - <a href="#" data-toggle="tooltip" title="applicative particle">appl</a></th>
+        <th>use something for paddling to the deep sea</th>
+      </tr>
+      <tr>
+        <th>paku kave</th>
+        <th>vi.constr</th>
+        <th>vt - n</th>
+        <th>make fishing nets</th>
+      </tr>
+    </tbody>
+  </table>
+</figure>
+    <div style="clear: both;"></div>
+
+    <p>Ideally, the construction field is also complemented by a field of morphological segmentation and a field of glossing:</p>
+    <p><i>hua	hiava	 ni</i></p>
+    <p>paddle 	go.up 	APPL</p>
+
+    <h4><a name="clitics"></a>Clitics</h4>
+    <p>
+If a clitic is a variant of a phonologically independent headword, it is classified in the same way. Typical examples are clitic pronouns, articles, auxiliaries, or tense-aspect-mood particles.
+ Otherwise it is simply classified as “clitic”.
+    </p>
+
+    <div style="clear: both;"></div>
+
+<figure>
+  <figcaption>Table 1: MWEs in Teop</figcaption>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>language</th>
+        <th>headword</th>
+        <th>part-of-speech</th>
+        <th>meaning description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>English</td>
+        <td><i>=m</i></td>
+        <td>vi</td>
+        <td>short form of <i>am</i>; 1st person singular present tense of <i>be</i></td>
+      </tr>
+      <tr>
+        <td>French</td>
+        <td><i>l=</i></td>
+        <td>article</td>
+        <td>short form of <i>le</i>; definite singular masculine article <i>le</i></td>
+      </tr>
+      <tr>
+        <td>Latin</td>
+        <td><i>=ne</i></td>
+        <td>particle</td>
+        <td>interrogative particle</td>
+      </tr>
+    </tbody>
+  </table>
+</figure>
+    <div style="clear: both;"></div>
+
+<h4><a name="affixes"></a>Affixes</h4>
+    <p>
+The part-of-speech assignment of affixes is based on their position, i.e. they are categorized as prefix, infix, transfix, or suffix; the English headword <i>-s</i> would, for example, have the part-of-speech: suffix.
+    </p> 
+</%util:section>
+
+<%util:section title="Meaning descriptions" id="descriptors">
+
+    <h4><a name="definition-descriptors"></a>Definition</h4>
+    <p>The meaning description contains translation equivalents, explanations, or descriptions.</p>
+
+    <h4><a name="conventions-descriptors"></a>Conventions</h4>
+    <p>Meaning descriptions do not start with capital letters (unless they begin with a proper name) and do not have a period at the end.<p>
+
+    <h4><a name="mosonemy"></a>Monosemy and polysemy of content words</h4>
+    <p>With the exception of internationally defined terminologies, the meanings and usages of the source language (SL) and target language (TL) words rarely fully match.
+ The fact that a SL word has two or more translation equivalents does not imply that it is polysemous.
+ The SL word may be monosmous and denote a concept that is not expressed by any single TL word (Evans 2011:522-528).
+ In this case the translation equivalents should be treated as belonging to a single sense, if the purpose of the ULD is to document the semantics and the usage of SL lexical items rather than to serve as a tool for rapid translation.
+    </p>
+    <p>As evidence for polysemy and consequently, as a justification of sense division one counts distinct grammatical and collocational features which should be illustrated by examples.</p>
+
+    <h4><a name="problematic"></a>Probematic translation equivalents</h4>
+    <p>If a translation equivalent is polysemous or homonymous, it should be accompanied by an explanation.
+ For example, mere translation equivalents like ‘back’  are not sufficient, because the English word <i>back</i> has several senses, for example,
+    </p>
+    <ol>
+        <li>‘back (of a person)’</li>
+        <li>‘back (opposite of front)’</li>
+    </ol>
+    <p>which in many languages are denoted by distinct lexical items.</p>
+    <p>
+If the SL headword has a narrower meaning than its translation equivalent, this restriction can be indicated by brackets at the beginning of the meaning description,
+ e.g. the English meaning description of German <i>fressen</i> would be ‘(of animals) eat’.
+    </p>
+
+
+    <h4><a name="function-words"></a>Grammatical affixes and function words</h4>
+    <p>
+The grammatical categorization of affixes and function words are put in square brackets, e.g. [first person dual inclusive pronoun].
+ This convention facilitates the search for all grammatical meaning descriptions by a single click, when you search for “[“ in the meaning description field.
+    </p>
+    
+</%util:section>    
+
+<%util:section title="Examples" id="examples">
+
+    <h4><a name="function-examples"></a>The function of examples</h4>
+    <p>
+In documentary ULDs authentic examples prove the existence of the lexical items functioning as headwords and, as in other dictionaries,
+ they complement the information given by the meaning description because they show how the lexical item is actually used in context (Kosem 2016:90).
+ The examples must not be invented by the lexicographer (Hanks 2013:3-5, 21, 307-310). The sources of the examples must be explained in the dictionary information;
+ ideally, the source of each example is stated together with the example in the entry.
+    </p>
+    <p> For the properties of good examples see <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/04/D01-MOSEL_06_ed-1.pdf">Mosel forthcoming</a>
+ <a href="#selection-semantic">§2.5.4</a> and the literature quoted there (LINK to article).</p>
+
+    <h4><a name="translation-examples"></a>The translations of examples</h4>
+    <p>
+All examples must have a translation. If the construction of the free translation is very different from that of the SL, an additional literal translation will help the user to understand the structure of the example.
+ The translation may also contain information put into brackets about the context. Idiomatic expressions should also always be accompanied by a literal translation.</p>
+    <p>If the citation of a sentence from the text corpus is too long to be user-friendly, it may be shortened as long as the relevant construction is not affected.</p>
+    <p>Ideally, the examples are also morphologically segmented and glossed.</p>
+
+</%util:section>
+
+<%util:section title="Semantic domains /semantic fields (optional)" id="semantic-domains-fields">
+
+    <h4><a name="definition-semantic"></a>Definition</h4>
+    <p>
+Semantic domains consist of semantically related lexical units and are independent of parts-of-speech.
+ The semantic domain of cooking may, for instance, comprise verbs denoting processes and actions as well as the names of tools. A headword can belong to more than one semantic domain;
+ the English word <i>potato</i> could, for instance, be assigned to the semantic domains PLANTS and FOOD.
+    </p>
+
+    <h4><a name="purpose-semantic"></a>Purpose</h4>
+    <p>
+In an e-dictionary of an under-resourced language of a few thousands entries, the list of semantic domains is necessary to show the user its content.
+ In Dictionaria the semantic domains are listed in a drop-down list.
+ If, for example, you click FISHES in the Teop Encyclopedic Dictionary of Marine Life and Fishing, you see that the dictionary contains 159 fish names, but if you search the drop-down list for KINSHIP,
+ you'll see that this semantic domain is absent.
+    </p>
+
+    <h4><a name="types-domains"></a>Types of semantic domains</h4>
+    <p>Typical semantic domains are taxonomic groupings and partonomies (Evans 2011:517):</p>
+    <ul>
+         <li>a superordinate concept that comprises subordinate concepts of the same kind of entity, event or property, e.g. 
+         <ul>
+             <li>pig, eagle, turtle, frog, tuna, wasp, beatle denote a kind of ANIMAL</li>
+             <li>butcher, cut, chop, carve, slice denote a kind of CUTTING</li>
+        </ul>
+        </li>
+        <li>the concept of a whole, that consists of several parts of different kinds, e.g. 
+         <ul>
+             <li>HOUSE: roof, thatch, ridgepole, wall, door, window</li> 
+             <li>TREE: branch, twig, leaf</li>
+        </ul>
+        </li>
+        <li>the concept of SPACE, e.g. top, front, back, inside, in, under, behind, above, etc.</li>
+    </ul>
+
+    <h4><a name="selection-semantic"></a>Selection of semantic fields</h4>
+    <p>
+Since “there is no real consensus on what constitutes a semantic field or semantic domain, nor how it can be identified” (Majid 2015:366),
+ Dictionaria leaves the selection of semantic fields to the dictionary compilers. There are several lists of semantic domains on the internet (see the references below).
+ Do not blindly copy them, but critically select those that are adequate for your dictionary. Only have one level of categories, no subcategories.
+ For headwords that are difficult to classify have a category "unclassified".
+</p>
+
+</%util:section>
+
+<h4><a name="websites"></a>Websites for semantic domains:</h4>
+<p class="hang">
+http://www.anu.edu.au/linguistics/nash/aust/domains.html (accessed 02.04.2018). A collection of lists of semantic domains, put together by David Nash
+</p>
+<p class="hang">
+http://www.ausil.org.au/node/3717  Most Austrlian -Aboriginal dictionaries found on this website have a drop-down list for semantic domains called "categories. (accessed 02.04.2018)
+</p>
+<p class="hang">
+http://semdom.org/book/export/html/ This is the website for semantic domains used by the Summer Institute of Linguistics, (accessed 02.04.2018)
+</p>
+<p class="hang">
+http://wold.clld.org/meaning . Semantic domains of thhe World Loanword Database (WOLD) (accessed 02.04.2018)
+</p>
+
+<h4><a name="reference-list"></a>References</h4>
+
+<p class="hang">
+Evans, Nicholas. 2011. Semantic typology. In Jae Jung Song (ed.) The Oxford Handbook of Linguistic Typology. Oxford: OUP, pp. 504-533.
+</p>
+<p class="hang">
+Hanks, Patrick. 2013. Lexical analysis. Norms and exploitations. Cambridge, Mass./London: MIT Press.
+</p>
+<p class="hang">
+Kosem, Iztok. 2016. Interrogating a corpus. In Philip Durkin (ed.). The Oxford handbook of lexicography. Oxford: OUP, pp. 76-93.
+</p>
+<p class="hang">
+Majid, Asifa. 2015. Comparing lexicons cross-linguistically. In John R. Taylor (ed.). 2015. The word. Oxford: OUP, pp.364-379. 
+</p>
+<p class="hang">
+Mosel, Ulrike. Forthcoming. Dictionaries of under-researched languages. In A Course Book on Foundational Skills, edited by Firmin Ahoua, Dafydd Gibbon and Stavros Skopeteas.
+</p>
+<p class="hang">
+Munro, Pamela. 2002. Entries for verbs in American Indian language dictionaries. In William Frawley, Kenneth C. Hill & Pamela Munro (eds.). Making dictionaries. Preserving Indigenous Languages of the Americas. Berkeley, Los Angeles, London: University of California Press, pp. 86-107.
+</p>
+<p class="hang">
+Pulte, William & Durbin Feeling 2002. Morphology in Cherokee Lexicography. In William Frawley, Kenneth C. Hill & Pamela Munro (eds.). Making dictionaries. Preserving Indigenous Languages of the Americas. Berkeley, Los Angeles, London: University of California Press,60-69.
+</p>
+<p class="hang">
+Hinton, Leanne & William Weigel 2002. A dictionary for whom? Tensions between academic and nonacademic functions of bilingual dictionaries. In William Frawley, Kenneth C. Hill & Pamela Munro (eds.). Making dictionaries. Preserving Indigenous Languages of the Americas. Berkeley, Los Angeles, London: University of California Press, 155-170.
+</p>
+
 </div>
