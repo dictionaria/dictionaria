@@ -5,7 +5,6 @@
         <h3>Chief Editors</h3>
         <ul class="unstyled">
             <li>Martin Haspelmath</li>
-            <li>Ulrike Mosel</li>
             <li>Barbara Stiebels</li>
         </ul>
         <h3>Managing Editor</h3>

@@ -45,7 +45,6 @@ def main(args):
 
     for i, (id_, name) in enumerate([
         ('haspelmathmartin', 'Martin Haspelmath'),
-        ('moselulrike', 'Ulrike Mosel'),
         ('stiebelsbarbara', 'Barbara Stiebels')
     ]):
         ed = data.add(common.Contributor, id_, id=id_, name=name)
@@ -182,7 +181,7 @@ def main(args):
     load_families(
         Data(),
         [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)],
-        glottolog_repos='../../glottolog3/glottolog')
+        glottolog_repos='../../glottolog/glottolog')
 
 
 def prime_cache(cfg):

@@ -939,8 +939,9 @@
     we will try to help you the best we can to fit it into our data model. Don’t let “tech
     talk” discourage you</b>
     <p><b><i>✉ dictionary.journal@uni-leipzig.de</i></b></p>
-    
-    <h2><a name="best-practice">Best practice recommendations for dictionary entries</h2>
+</div>
+
+    <h2><a name="best-practice"></a>Best practice recommendations for dictionary entries</h2>
 <p><b>version of 5-4-2018</b></p>
 
 <%util:section title="Headwords" id="headwords">
@@ -1029,8 +1030,9 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
 
     <p> Details of the composition of the construction can be given in an adjacent "structure" field, see Table 1. </p>
 
-<div class="container">
-  <p>Table 1: MWEs in Teop</p>            
+        <div style="clear: both;"></div>
+<figure>
+  <figcaption>Table 1: MWEs in Teop</figcaption>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -1073,7 +1075,8 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
       </tr>
     </tbody>
   </table>
-</div>
+</figure>
+    <div style="clear: both;"></div>
 
     <p>Ideally, the construction field is also complemented by a field of morphological segmentation and a field of glossing:</p>
     <p><i>hua	hiava	 ni</i></p>
@@ -1085,8 +1088,10 @@ If a clitic is a variant of a phonologically independent headword, it is classif
  Otherwise it is simply classified as “clitic”.
     </p>
 
-<div class="container">
-  <p>Table 1: MWEs in Teop</p>            
+    <div style="clear: both;"></div>
+
+<figure>
+  <figcaption>Table 1: MWEs in Teop</figcaption>
   <table class="table table-bordered">
     <thead>
       <tr>
@@ -1117,6 +1122,8 @@ If a clitic is a variant of a phonologically independent headword, it is classif
       </tr>
     </tbody>
   </table>
+</figure>
+    <div style="clear: both;"></div>
 
 <h4><a name="affixes"></a>Affixes</h4>
     <p>

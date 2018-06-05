@@ -384,7 +384,7 @@ class Dictionary(BaseDictionary):
                                 ord=i + 1))
 
         # FIXME: vgroup words by description and add synonym relationships!
-        for word in data['Word'].keys()[:]:
+        for word in list(data['Word'].keys())[:]:
             if '-' in word:
                 alt = word.replace('-', '')
                 if alt not in data['Word']:

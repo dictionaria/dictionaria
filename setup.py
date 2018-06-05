@@ -13,7 +13,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
     ],
     author='Robert Forkel',
-    author_email='robert_forkel@eva.mpg.de',
+    author_email='forkel@shh.mpg.de',
     url='http://clld.org',
     keywords='web pyramid pylons',
     packages=find_packages(),
