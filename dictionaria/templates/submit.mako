@@ -18,7 +18,7 @@
             <ol class="nested">
                
                 <li>
-                    <a href="#introductory"><strong>The introductory text</strong></a>
+                    <a href="#introductory">The introductory text</a>
                     <ol class="nested">
                         <li><a href="#language">The language and its speakers</a></li>
                         <li><a href="#source">Source of the data </a></li>
@@ -51,24 +51,87 @@
             <ol class="nested">    
                 <li>
                     <a href="#definition-headwords">Headwords</a>
-                </li>
+                </li>    
+                    <ol class="nested">
+                        <li>
+                            <a href="#definition-headwords">Definition</a>
+                        </li>
+                        <li>
+                            <a href="#conventions">Conventions in Dictionaria</a>
+                        </li>
+                    </ol>
                 <li>
                     <a href="#parts-of-speech">Parts-of-speech in Dictionaria</a>
-                </li>
+                </li>    
+                    <ol class="nested">
+                        <li>
+                            <a href="#drop-down">The drop-down box</a>
+                        </li>
+                        <li>
+                            <a href="#single-word">Single-word headwords</a>
+                        </li>
+                        <li>
+                            <a href="#mwe">Multi-word expressions (MWEs) used as headwords</a>
+                        </li>
+                        <li>
+                            <a href="#clitics">Clitics</a>
+                        </li>
+                        <li>
+                            <a href="#affixes">Affixes</a>
+                        </li>
+                    </ol>
                 <li>
                     <a href="#descriptors">Meaning descriptions</a>
                 </li>
+                    <ol class="nested">
+                        <li>
+                            <a href="#definition-descriptors">Definition</a>
+                        </li>
+                        <li>
+                            <a href="#conventions-descriptors">Conventions</a>
+                        </li>
+                        <li>
+                            <a href="#mosonemy">Monosemy and polysemy of content words</a>
+                        </li>
+                        <li>
+                            <a href="#problematic">Problematic translation equivalents</a>
+                        </li>
+                        <li>
+                            <a href="#function-words">Grammatical affixes and function words</a>
+                        </li>
+                    </ol>
                 <li>
                     <a href="#examples">Examples</a>
                 </li>
+                    <ol class="nested">
+                        <li>
+                            <a href="#function-examples">The function of examples</a>
+                        </li>
+                        <li>
+                            <a href="#translation-examples">The translations of examples</a>
+                        </li>
+                    </ol>
                 <li>
                     <a href="semantic-domains-fields">Semantic domains /semantic fields (optional)</a>
                 </li>
+                    <ol class="nested">
+                        <li>
+                            <a href="#definition-semantic">Definition</a>
+                        </li>
+                        <li>
+                            <a href="#purpose-semantic">Purpose</a>
+                        </li>
+                        <li>
+                            <a href="#types-domains">Types of semantic domains</a>
+                        </li>
+                        <li>
+                            <a href="#selection-semantic">Selection of semantic fields</a>
+                        </li>
+                    </ol>
             </ol>
         </ol>
     </div>
 </%def>
-
 
 <h2>General <em>Dictionaria</em> Submission Guidelines and Best Practice Recommendations for Dictionary Entries</h2>
 
@@ -1044,31 +1107,31 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
     </thead>
     <tbody>
       <tr>
-        <td>benoo beera</td>
+        <td><a href="http://dictionaria.clld.org/units/teopfish-94-1">benoo beera</a></td>
         <td>adj.constr</td>
         <td>n - adj</td>
         <td>having a lot of meat</td>
       </tr>
       <tr>
-        <td>kapa kikis</td>
+        <td><a href="http://dictionaria.clld.org/units/teopfish-371-1">kapa kikis</a></td>
         <td>adj.constr</td>
         <td>n - adj</td>
         <td>having a strong skin</td>
       </tr>
       <tr>
-        <td>hua hiava</td>
+        <td><a href="http://dictionaria.clld.org/units/teopfish-274-1">hua hiava</a></td>
         <td>vi.constr</td>
         <td>vi - vi</td>
         <td>paddle to the deep sea</td>
       </tr>
       <tr>
-        <th>hua hiava ni</th>
+        <th><a href="http://dictionaria.clld.org/units/teopfish-275-1">hua hiava ni</a></th>
         <th>vt.constr</th>
         <th>vi - vi - <a href="#" data-toggle="tooltip" title="applicative particle">appl</a></th>
         <th>use something for paddling to the deep sea</th>
       </tr>
       <tr>
-        <th>paku kave</th>
+        <th><a href="http://dictionaria.clld.org/units/teopfish-637-1">paku kave</a></th>
         <th>vi.constr</th>
         <th>vt - n</th>
         <th>make fishing nets</th>
@@ -1087,7 +1150,7 @@ If a clitic is a variant of a phonologically independent headword, it is classif
     </p>
 
         <table class="table table-bordered">
-            <caption>Table 2: Clitics</caption>
+            <caption>Table 2: Examples of clitics used as headwords</caption>
             <thead>
             <tr>
                 <th>language</th>
@@ -1140,7 +1203,7 @@ The part-of-speech assignment of affixes is based on their position, i.e. they a
     </p>
     <p>As evidence for polysemy and consequently, as a justification of sense division one counts distinct grammatical and collocational features which should be illustrated by examples.</p>
 
-    <h4><a name="problematic"></a>Probematic translation equivalents</h4>
+    <h4><a name="problematic"></a>Problematic translation equivalents</h4>
     <p>If a translation equivalent is polysemous or homonymous, it should be accompanied by an explanation.
  For example, mere translation equivalents like ‘back’  are not sufficient, because the English word <i>back</i> has several senses, for example,
     </p>
