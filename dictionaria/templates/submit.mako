@@ -129,7 +129,8 @@
                         </li>
                     </ol>
             </ol>
-        </ol>    
+        </ol>
+    </div>
 </%def>
 
 <h2>General <em>Dictionaria</em> Submission Guidelines and Best Practice Recommendations for Dictionary Entries</h2>
@@ -1011,9 +1012,9 @@
 
     <h4><a name="definition-headwords"></a>Definition</h4>
     <p>
-        A headword is the heading of a lexical entry. It either consists of an orthographical word, a sequence of orthographical words, so-called Multi-Word-Expressions (MWEs), a clitic, or an affix. 
+        A headword is the heading of a lexical entry. It either consists of an orthographical word, a sequence of orthographical words, so-called Multi-Word-Expressions (MWEs), a clitic, or an affix.
     </p>
-    
+
     <h4><a name="conventions"></a>Conventions in Dictionaria</h4>
     <p>
         The dictionaries published in Dictionaria do not have subentries and, consequently, no sub-headwords. Therefore, we suggest to include different types of headwords:
@@ -1028,7 +1029,7 @@
  Alternatively you may include a field in your micro-structure listing variants, but then these variants cannot be searched for as easily.</li>
         <li><b>Affixes</b> and <b>clitics</b> can be distinguished by ‘-’  and ‘=’, respectively, e.g. =m (short form of am in English; -ed  1. past-tense suffix, 2.
  past participle suffix. We recommend that each dictionary contain all inflectional and derivational morphemes known in the language as headwords.</li>
-        <li>If the headword is a <b>multi-word expression</b>, the component words should, if possible, be headwords as well. 
+        <li>If the headword is a <b>multi-word expression</b>, the component words should, if possible, be headwords as well.
 For example, if the dictionary has the headword light year, it also should have the headwords light and year. Ideally, the entry would then also show the glossing of the multi-word expression.</li>
     </ol>
 
@@ -1081,7 +1082,7 @@ Class and subclass information should be separated by a period.
 
     <h4><a name="mwe"></a>Multi-word expressions (MWEs) used as headwords</h4>
     <p>
-        If it is impractical to classify MWEs on the basis of grammatical criteria, simply use the abbreviation MWE in the part-of-speech field. 
+        If it is impractical to classify MWEs on the basis of grammatical criteria, simply use the abbreviation MWE in the part-of-speech field.
 Otherwise, use transparent abbreviations for the type of MWE, for example:
     </p>
 
@@ -1093,10 +1094,9 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
 
     <p> Details of the composition of the construction can be given in an adjacent "structure" field, see Table 1. </p>
 
-        <div style="clear: both;"></div>
-<figure>
-  <figcaption>Table 1: MWEs in Teop</figcaption>
+
   <table class="table table-bordered">
+      <caption>Table 1: MWEs in Teop</caption>
     <thead>
       <tr>
         <th>headword</th>
@@ -1138,8 +1138,6 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
       </tr>
     </tbody>
   </table>
-</figure>
-    <div style="clear: both;"></div>
 
     <p>Ideally, the construction field is also complemented by a field of morphological segmentation and a field of glossing:</p>
     <p><i>hua	hiava	 ni</i></p>
@@ -1151,47 +1149,42 @@ If a clitic is a variant of a phonologically independent headword, it is classif
  Otherwise it is simply classified as “clitic”.
     </p>
 
-    <div style="clear: both;"></div>
-
-<figure>
-  <figcaption>Table 2: Examples of clitics used as headwords</figcaption>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>language</th>
-        <th>headword</th>
-        <th>part-of-speech</th>
-        <th>meaning description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>English</td>
-        <td><i>=m</i></td>
-        <td>vi</td>
-        <td>short form of <i>am</i>; 1st person singular present tense of <i>be</i></td>
-      </tr>
-      <tr>
-        <td>French</td>
-        <td><i>l=</i></td>
-        <td>article</td>
-        <td>short form of <i>le</i>; definite singular masculine article <i>le</i></td>
-      </tr>
-      <tr>
-        <td>Latin</td>
-        <td><i>=ne</i></td>
-        <td>particle</td>
-        <td>interrogative particle</td>
-      </tr>
-    </tbody>
-  </table>
-</figure>
-    <div style="clear: both;"></div>
+        <table class="table table-bordered">
+            <caption>Table 2: Examples of clitics used as headwords</caption>
+            <thead>
+            <tr>
+                <th>language</th>
+                <th>headword</th>
+                <th>part-of-speech</th>
+                <th>meaning description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>English</td>
+                <td><i>=m</i></td>
+                <td>vi</td>
+                <td>short form of <i>am</i>; 1st person singular present tense of <i>be</i></td>
+            </tr>
+            <tr>
+                <td>French</td>
+                <td><i>l=</i></td>
+                <td>article</td>
+                <td>short form of <i>le</i>; definite singular masculine article <i>le</i></td>
+            </tr>
+            <tr>
+                <td>Latin</td>
+                <td><i>=ne</i></td>
+                <td>particle</td>
+                <td>interrogative particle</td>
+            </tr>
+            </tbody>
+        </table>
 
 <h4><a name="affixes"></a>Affixes</h4>
     <p>
 The part-of-speech assignment of affixes is based on their position, i.e. they are categorized as prefix, infix, transfix, or suffix; the English headword <i>-s</i> would, for example, have the part-of-speech: suffix.
-    </p> 
+    </p>
 </%util:section>
 
 <%util:section title="Meaning descriptions" id="descriptors">
@@ -1230,8 +1223,8 @@ If the SL headword has a narrower meaning than its translation equivalent, this 
 The grammatical categorization of affixes and function words are put in square brackets, e.g. [first person dual inclusive pronoun].
  This convention facilitates the search for all grammatical meaning descriptions by a single click, when you search for “[“ in the meaning description field.
     </p>
-    
-</%util:section>    
+
+</%util:section>
 
 <%util:section title="Examples" id="examples">
 
@@ -1274,15 +1267,15 @@ In an e-dictionary of an under-resourced language of a few thousands entries, th
     <h4><a name="types-domains"></a>Types of semantic domains</h4>
     <p>Typical semantic domains are taxonomic groupings and partonomies (Evans 2011:517):</p>
     <ul>
-         <li>a superordinate concept that comprises subordinate concepts of the same kind of entity, event or property, e.g. 
+         <li>a superordinate concept that comprises subordinate concepts of the same kind of entity, event or property, e.g.
          <ul>
              <li>pig, eagle, turtle, frog, tuna, wasp, beatle denote a kind of ANIMAL</li>
              <li>butcher, cut, chop, carve, slice denote a kind of CUTTING</li>
         </ul>
         </li>
-        <li>the concept of a whole, that consists of several parts of different kinds, e.g. 
+        <li>the concept of a whole, that consists of several parts of different kinds, e.g.
          <ul>
-             <li>HOUSE: roof, thatch, ridgepole, wall, door, window</li> 
+             <li>HOUSE: roof, thatch, ridgepole, wall, door, window</li>
              <li>TREE: branch, twig, leaf</li>
         </ul>
         </li>
@@ -1325,7 +1318,7 @@ Hanks, Patrick. 2013. Lexical analysis. Norms and exploitations. Cambridge, Mass
 Kosem, Iztok. 2016. Interrogating a corpus. In Philip Durkin (ed.). The Oxford handbook of lexicography. Oxford: OUP, pp. 76-93.
 </p>
 <p class="hang">
-Majid, Asifa. 2015. Comparing lexicons cross-linguistically. In John R. Taylor (ed.). 2015. The word. Oxford: OUP, pp.364-379. 
+Majid, Asifa. 2015. Comparing lexicons cross-linguistically. In John R. Taylor (ed.). 2015. The word. Oxford: OUP, pp.364-379.
 </p>
 <p class="hang">
 Mosel, Ulrike. Forthcoming. Dictionaries of under-researched languages. In A Course Book on Foundational Skills, edited by Firmin Ahoua, Dafydd Gibbon and Stavros Skopeteas.
@@ -1340,4 +1333,3 @@ Pulte, William & Durbin Feeling 2002. Morphology in Cherokee Lexicography. In Wi
 Hinton, Leanne & William Weigel 2002. A dictionary for whom? Tensions between academic and nonacademic functions of bilingual dictionaries. In William Frawley, Kenneth C. Hill & Pamela Munro (eds.). Making dictionaries. Preserving Indigenous Languages of the Americas. Berkeley, Los Angeles, London: University of California Press, 155-170.
 </p>
 
-</div>
