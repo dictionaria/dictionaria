@@ -14,121 +14,120 @@
             <li>
                 <a href="#overview">Overview: The five parts of the content structure</a>
                 [<a href="#toolbox1">Toolbox help</a>]
+                <ol class="nested">
+                    <li>
+                        <a href="#introductory">The introductory text</a>
+                        <ol class="nested">
+                            <li><a href="#language">The language and its speakers</a></li>
+                            <li><a href="#source">Source of the data </a></li>
+                            <li><a href="#orthography">The orthography used in the dictionary </a>
+                            </li>
+                            <li><a href="#types">Types of special information </a></li>
+                            <li><a href="#additional">Additional sections</a></li>
+                        </ol>
+                    </li>
+                    <li>
+                        <a href="#entry">The entry table</a>
+                        [<a href="#toolbox3">Toolbox help</a>]
+                    </li>
+                    <li>
+                        <a href="#sense">The sense table</a>
+                        [<a href="#toolbox4">Toolbox help</a>]
+                    </li>
+                    <li>
+                        <a href="#example">The example table</a>
+                        [<a href="#toolbox5">Toolbox help</a>]
+                    </li>
+                    <li>
+                        <a href="#references">The references table</a>
+                        [<a href="#toolbox6">Toolbox help</a>]
+                    </li>
+                </ol>
             </li>
-            <ol class="nested">
-               
-                <li>
-                    <a href="#introductory">The introductory text</a>
-                    <ol class="nested">
-                        <li><a href="#language">The language and its speakers</a></li>
-                        <li><a href="#source">Source of the data </a></li>
-                        <li><a href="#orthography">The orthography used in the dictionary </a>
-                        </li>
-                        <li><a href="#types">Types of special information </a></li>
-                        <li><a href="#additional">Additional sections</a></li>
-                    </ol>
-                </li>
-                <li>
-                    <a href="#entry">The entry table</a>
-                    [<a href="#toolbox3">Toolbox help</a>]
-                </li>
-                <li>
-                    <a href="#sense">The sense table</a>
-                    [<a href="#toolbox4">Toolbox help</a>]
-                </li>
-                <li>
-                    <a href="#example">The example table</a>
-                    [<a href="#toolbox5">Toolbox help</a>]
-                </li>
-                <li>
-                    <a href="#references">The references table</a>
-                    [<a href="#toolbox6">Toolbox help</a>]
-                </li>
-            </ol>
             <li>
                 <a href="#best-practice">Best practice recommendations for dictionary entries</a>
+                <ol class="nested">    
+                    <li>
+                        <a href="#definition-headwords">Headwords</a>
+                        <ol class="nested">
+                            <li>
+                                <a href="#definition-headwords">Definition</a>
+                            </li>
+                            <li>
+                                <a href="#conventions">Conventions in Dictionaria</a>
+                            </li>
+                        </ol>
+                    </li>    
+                    <li>
+                        <a href="#parts-of-speech">Parts-of-speech in Dictionaria</a>
+                        <ol class="nested">
+                            <li>
+                                <a href="#drop-down">The drop-down box</a>
+                            </li>
+                            <li>
+                                <a href="#single-word">Single-word headwords</a>
+                            </li>
+                            <li>
+                                <a href="#mwe">Multi-word expressions (MWEs) used as headwords</a>
+                            </li>
+                            <li>
+                                <a href="#clitics">Clitics</a>
+                            </li>
+                            <li>
+                                <a href="#affixes">Affixes</a>
+                            </li>
+                        </ol>
+                    </li>    
+                    <li>
+                        <a href="#descriptors">Meaning descriptions</a>
+                        <ol class="nested">
+                            <li>
+                                <a href="#definition-descriptors">Definition</a>
+                            </li>
+                            <li>
+                                <a href="#conventions-descriptors">Conventions</a>
+                            </li>
+                            <li>
+                                <a href="#mosonemy">Monosemy and polysemy of content words</a>
+                            </li>
+                            <li>
+                                <a href="#problematic">Problematic translation equivalents</a>
+                            </li>
+                            <li>
+                                <a href="#function-words">Grammatical affixes and function words</a>
+                            </li>
+                        </ol>
+                    </li>    
+                    <li>
+                        <a href="#examples">Examples</a>
+                        <ol class="nested">
+                            <li>
+                                <a href="#function-examples">The function of examples</a>
+                            </li>
+                            <li>
+                                <a href="#translation-examples">The translations of examples</a>
+                            </li>
+                        </ol>
+                    </li>    
+                    <li>
+                        <a href="semantic-domains-fields">Semantic domains /semantic fields (optional)</a>
+                        <ol class="nested">
+                            <li>
+                                <a href="#definition-semantic">Definition</a>
+                            </li>
+                            <li>
+                                <a href="#purpose-semantic">Purpose</a>
+                            </li>
+                            <li>
+                                <a href="#types-domains">Types of semantic domains</a>
+                            </li>
+                            <li>
+                                <a href="#selection-semantic">Selection of semantic fields</a>
+                            </li>
+                        </ol>
+                    </li>    
+                </ol>
             </li>
-            <ol class="nested">    
-                <li>
-                    <a href="#definition-headwords">Headwords</a>
-                </li>    
-                    <ol class="nested">
-                        <li>
-                            <a href="#definition-headwords">Definition</a>
-                        </li>
-                        <li>
-                            <a href="#conventions">Conventions in Dictionaria</a>
-                        </li>
-                    </ol>
-                <li>
-                    <a href="#parts-of-speech">Parts-of-speech in Dictionaria</a>
-                </li>    
-                    <ol class="nested">
-                        <li>
-                            <a href="#drop-down">The drop-down box</a>
-                        </li>
-                        <li>
-                            <a href="#single-word">Single-word headwords</a>
-                        </li>
-                        <li>
-                            <a href="#mwe">Multi-word expressions (MWEs) used as headwords</a>
-                        </li>
-                        <li>
-                            <a href="#clitics">Clitics</a>
-                        </li>
-                        <li>
-                            <a href="#affixes">Affixes</a>
-                        </li>
-                    </ol>
-                <li>
-                    <a href="#descriptors">Meaning descriptions</a>
-                </li>
-                    <ol class="nested">
-                        <li>
-                            <a href="#definition-descriptors">Definition</a>
-                        </li>
-                        <li>
-                            <a href="#conventions-descriptors">Conventions</a>
-                        </li>
-                        <li>
-                            <a href="#mosonemy">Monosemy and polysemy of content words</a>
-                        </li>
-                        <li>
-                            <a href="#problematic">Problematic translation equivalents</a>
-                        </li>
-                        <li>
-                            <a href="#function-words">Grammatical affixes and function words</a>
-                        </li>
-                    </ol>
-                <li>
-                    <a href="#examples">Examples</a>
-                </li>
-                    <ol class="nested">
-                        <li>
-                            <a href="#function-examples">The function of examples</a>
-                        </li>
-                        <li>
-                            <a href="#translation-examples">The translations of examples</a>
-                        </li>
-                    </ol>
-                <li>
-                    <a href="semantic-domains-fields">Semantic domains /semantic fields (optional)</a>
-                </li>
-                    <ol class="nested">
-                        <li>
-                            <a href="#definition-semantic">Definition</a>
-                        </li>
-                        <li>
-                            <a href="#purpose-semantic">Purpose</a>
-                        </li>
-                        <li>
-                            <a href="#types-domains">Types of semantic domains</a>
-                        </li>
-                        <li>
-                            <a href="#selection-semantic">Selection of semantic fields</a>
-                        </li>
-                    </ol>
-            </ol>
         </ol>
     </div>
 </%def>
