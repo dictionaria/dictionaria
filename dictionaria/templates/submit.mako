@@ -1124,16 +1124,16 @@ Otherwise, use transparent abbreviations for the type of MWE, for example:
         <td>paddle to the deep sea</td>
       </tr>
       <tr>
-        <th><a href="http://dictionaria.clld.org/units/teopfish-275-1">hua hiava ni</a></th>
-        <th>vt.constr</th>
-        <th>vi - vi - <a href="#" data-toggle="tooltip" title="applicative particle">appl</a></th>
-        <th>use something for paddling to the deep sea</th>
+        <td><a href="http://dictionaria.clld.org/units/teopfish-275-1">hua hiava ni</a></td>
+        <td>vt.constr</td>
+        <td>vi - vi - <a href="#" data-toggle="tooltip" title="applicative particle">appl</a></td>
+        <td>use something for paddling to the deep sea</td>
       </tr>
       <tr>
-        <th><a href="http://dictionaria.clld.org/units/teopfish-637-1">paku kave</a></th>
-        <th>vi.constr</th>
-        <th>vt - n</th>
-        <th>make fishing nets</th>
+        <td><a href="http://dictionaria.clld.org/units/teopfish-637-1">paku kave</a></td>
+        <td>vi.constr</td>
+        <td>vt - n</td>
+        <td>make fishing nets</td>
       </tr>
     </tbody>
   </table>
