@@ -42,7 +42,7 @@
 	<td>all entries with the word <em>eat</em> within the entry field</td>
 	</tr>
 	<tr>
-	<td colspan="3"><b>ea$</b></td>
+	<td colspan="3"><b>eat$</b></td>
 	<td><em>heartb<b>eat</b>; <b>eat</b>; m<b>eat</b>; tr<b>eat</b>; …</em></td>
 	<td>all entries with the character sequence <em>eat</em> at the end of the field</td>
 	</tr>
@@ -56,6 +56,28 @@
 	<td colspan="3"><b>^eat$</b></td>
 	<td><em>eat</em></td>
 	<td>all entries containing exactly the character sequence <em>eat</em> in the entry field and nothing else</td>
+	</tr>
+	<tr>
+	<td colspan="3"><b>eat%eat</b></td>
+	<td><em>br<b>eat</b>he heavily; be out of br<b>eat</b>h</em></td>
+	<td>all entries containing the sequences entered in the exact order</td>
+	</tr>
+	<tr>
+	<td colspan="3"><b>_eat</b></td>
+	<td><em><p>m<b>eat</b></p>
+            <p>fish and other cr<b>eat</b>ures that swim</p></em></td>
+	<td>all entries containing the sequence <em>eat</em>, but <em>not at the beginning of the entry</em></td>
+	</tr>
+	<tr>
+	<td colspan="3"><b>eat_</b></td>
+	<td><em><p>cr<b>eat</b>ure; animal</p>
+            <p>bad w<b>eat</b>her</p></em></td>
+	<td>all entries containing the sequence <em>eat</em>, but <em>not at the end of the entr</em>y</td>
+	</tr>
+	<tr>
+	<td colspan="3"><b>_eat_</b></td>
+	<td><em>attach a f<b>eat</b>her to something</em></td>
+	<td>all entries containing the sequence <em>eat</em>, but <em>not at the beginning or end of the entry</em> (only in the middle)</td>
 	</tr>
 </tbody>
 </table>
@@ -72,6 +94,10 @@
 <td>Semantic domain</td>
 <td>The drop-down list shows a selection of semantic domains covered by the dictionary, for example 'plants' in the Daakaka and the Teop dictionary or 'botanical' in the Hdi dictionary.</td>
 </tr>
+<tr>
+<td>Examples</td>
+<td>Typing in a number will filter for entries with the same exact number of examples. Using the more than/less then/equal sign will give a range. For example: “>1” will give entries that have more than one examples. “=>1” will give entries with one example or more.</td>
+</tr>
 </table>
 
 <h3 id="Search across columns">Search across columns</h3>
@@ -79,31 +105,38 @@
 <ol>
 <li>Part of speech & meaning description
 <br>
-<p>For example, if you select 'v.tr' in 'part of speech' and enter 'hand' in 'meaning description' in the Teop dictionary, you find:</p>
+<p>For example, if you select 'vt' in 'part of speech' and enter 'hand' in 'meaning description' in the Teop dictionary, you will find:</p>
 <br>
-<p><em>atoato</em>		'catch something with one's <strong>hand</strong>s'</p>
-<p><em>kae</em>			'hold something in one <strong>hand</strong>'</p>
-<p><em>poto</em>		'grab something or catch something with one's <strong>hand</strong>s'</p>
+    <ul>
+        <li><em>atoato</em>:		'catch something with one's <strong>hand</strong>s'</li>
+        <li><em>kae</em>:			'hold something in one <strong>hand</strong>'</li>
+        <li><p><em>poto</em>:		'grab something or catch something with one's <strong>hand</strong>s'</li>
+    </ul>
 <br>
 <p>In the Daakaka dictionary the search for 'v.tr' and 'hand' finds:</p>
 <br>
-<p><em>bwiti</em>		'break an elongated object in two with both <strong>hand</strong>s'</p>
-<p><em>kinkate</em>		'hold something in one <strong>hand</strong>'</p>
-<p><em>sedisi</em>		'raise a weapon (in one <strong>hand</strong>) to hit someone</p>
-<p><em>tiwiye</em>		'break (something which can be broken easily with two <strong>hand</strong>s)</p>
+    <ul>
+        <li><em>bwiti</em>:		'break an elongated object in two with both <strong>hand</strong>s'</li>
+        <li><em>kinkate</em>:		'hold something in one <strong>hand</strong>'</li>
+        <li><em>sedisi</em>:		'raise a weapon (in one <strong>hand</strong>) to hit someone</li>
+        <li><em>tiwiye</em>:		'break (something which can be broken easily with two <strong>hand</strong>s)</li>
+    </ul>
 </li>
-
+<br>
 <li>Part of speech and semantic domain
 <br>
 <p>For example, if you select 'v.itr' and 'body' you find 7 entries in the Daakaka dictionary, e.g.</p>
 <br>
-<p><em>banga</em>		'open one's mouth'</p>
-<p><em>kyep</em>		'shit'</p>
+    <ul>
+        <li><em>banga</em>:		'open one's mouth'</li>
+        <li><em>kyep</em>:		'shit'</li>
+    </ul>
 <br>
-<p>In the Teop dictionary the selection of 'v.intr' and 'body' finds 8 entried, e.g.</p>
+<p>In the Teop dictionary the selection of 'vi' and 'body' finds 8 entried, e.g.</p>
 <br>
-<p><em>goroho</em>		'sleep'</p>
-<p><em>kayuhu</em>		'spit'</p>
-
+    <ul>
+        <li><em>goroho</em>:		'sleep'</li>
+        <li><em>kayuhu</em>:		'spit'</li>
+    </ul>
 </li>
 </ol>
