@@ -12,7 +12,7 @@
         <h3>Contents</h3>
         <ol class="nested">
             <li>
-                <a href="#overview">Overview: The five parts of the content structure</a>
+                <a href="#overview">Overview: The six parts of the content structure</a>
                 [<a href="#toolbox1">Toolbox help</a>]
                 <ol class="nested">
                     <li>
@@ -41,6 +41,9 @@
                     <li>
                         <a href="#references">The references table</a>
                         [<a href="#toolbox6">Toolbox help</a>]
+                    </li>
+                    <li>
+                        <a href="#media">The media table</a>
                     </li>
                 </ol>
             </li>
@@ -167,7 +170,7 @@
     consists of (up to) four data tables plus (optionally) multimedia content.
 </p>
 
-<%util:section title="Overview: The five parts of the content structure" id="overview">
+<%util:section title="Overview: The six parts of the content structure" id="overview">
     <p>
         The most important principles of <i>Dictionaria</i> contributions, which
         distinguish them from many existing dictionaries, are:
@@ -209,14 +212,10 @@
         </dd>
         <dt>Part 2: The entry table (<a href="#entry">details in §1.2</a>)</dt>
         <dd>
-            <figure class="well well-small">
-                <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot2.png">
-                    <img class="size-medium wp-image-475 alignnone"
-                         src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot2-272x300.png"
-                         alt="" width="272" height="300"
-                         srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot2-272x300.png 272w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot2.png 306w"
-                         sizes="(max-width: 272px) 100vw, 272px"/>
-                </a>
+           <figure class="well well-small">
+                <img class="size-medium wp-image-475 alignnone"
+                     src="${request.static_url('dictionaria:static/screenshot2.png')}"
+                     alt="" width="272" height="300"/>
                 <figcaption>Screenshot 1. The entry table</figcaption>
             </figure>
             <p>Each entry must contain information in the following three fields:</p>
@@ -242,12 +241,9 @@
         </dt>
         <dd>
             <figure class="well well-small">
-                <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot22.png"><img
-                        class="alignnone size-medium wp-image-478"
-                        src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot22-300x151.png"
-                        alt="" width="300" height="151"
-                        srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot22-300x151.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot22.png 663w"
-                        sizes="(max-width: 300px) 100vw, 300px"/></a>
+                <img class="alignnone size-medium wp-image-478"
+                     src="${request.static_url('dictionaria:static/screenshot22.png')}"
+                     alt="" width="300" height="151"/>
                 <figcaption>Screenshot 2. The sense table</figcaption>
             </figure>
             <p>The sense table contains all the senses, which are represented in the
@@ -280,12 +276,9 @@
         </dt>
         <dd>
             <figure class="well well-small">
-                <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot3.png"><img
-                        class="alignnone size-medium wp-image-481"
-                        src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot3-300x73.png"
-                        alt="" width="300" height="73"
-                        srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot3-300x73.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot3-768x188.png 768w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot3.png 859w"
-                        sizes="(max-width: 300px) 100vw, 300px"/></a>
+                <img class="alignnone size-medium wp-image-481"
+                     src="${request.static_url('dictionaria:static/screenshot3.png')}"
+                     alt="" width="300" height="73"/>
                 <figcaption>Screenshot 3. The example table</figcaption>
             </figure>
             <p>
@@ -319,12 +312,9 @@
         </dt>
         <dd>
             <figure class="well well-small">
-                <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot4.png"><img
-                        class="alignnone size-medium wp-image-482"
-                        src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot4-300x103.png"
-                        alt="" width="300" height="103"
-                        srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot4-300x103.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot4.png 547w"
-                        sizes="(max-width: 300px) 100vw, 300px"/></a>
+                <img class="alignnone size-medium wp-image-482"
+                        src="${request.static_url('dictionaria:static/screenshot4.png')}"
+                        width="300" height="103"/>
                 <figcaption>Screenshot 4. The references table</figcaption>
             </figure>
             <p>A bibliographical reference must contain information on the standard bib
@@ -336,6 +326,18 @@
                 <li><b>title of paper</b></li>
                 <li>(and so on)</li>
             </ul>
+        </dd>
+        <dt style="clear: right">Part 6 (optional): The media table (<a href="#media">details
+            in §1.6</a>)
+        </dt>
+        <dd>
+            <figure class="well well-small">
+                <img class="alignnone size-medium wp-image-482"
+                        src="${request.static_url('dictionaria:static/media_sub_guide.JPG')}"
+                        alt="" width="300" height="103"/>
+                <figcaption>Screenshot 5. The media table</figcaption>
+            </figure>
+            <p>A table containing further information about the included media files.</p>
         </dd>
     </dl>
 </%util:section>
@@ -497,14 +499,10 @@
         the culture).
     </p>
     <figure class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot5.png">
-            <img class="alignnone size-medium wp-image-489"
-                 src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot5-300x136.png"
-                 alt="" width="300" height="136"
-                 srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot5-300x136.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot5.png 544w"
-                 sizes="(max-width: 300px) 100vw, 300px"/>
-        </a>
-        <figcaption>Screenshot 5. The entry table with fields for original script and
+        <img class="alignnone size-medium wp-image-489"
+             src="${request.static_url('dictionaria:static/screenshot5.png')}"
+             alt="" width="300" height="136"/>
+        <figcaption>Screenshot 6. The entry table with fields for original script and
             sound
             files
         </figcaption>
@@ -534,15 +532,10 @@
         </li>
     </ul>
     <figure class="well well-small" style="clear: right">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot6.png">
-            <img
-                    class="alignnone size-medium wp-image-491"
-                    src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot6-300x152.png"
-                    alt="" width="300" height="152"
-                    srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot6-300x152.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot6.png 631w"
-                    sizes="(max-width: 300px) 100vw, 300px"/>
-        </a><br/>
-        <figcaption>Screenshot 6. The entries table with an association field (it
+        <img class="alignnone size-medium wp-image-491"
+             src="${request.static_url('dictionaria:static/screenshot6.png')}"
+             alt="" width="300" height="152"/><br/>
+        <figcaption>Screenshot 7. The entries table with an association field (it
             contains)
         </figcaption>
     </figure>
@@ -601,13 +594,10 @@
         “big, expensive boat”).
     </p>
     <figure class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot7-1.png"><img
-                class="alignnone size-medium wp-image-496"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot7-1-300x91.png"
-                alt="" width="300" height="91"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot7-1-300x91.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot7-1-768x232.png 768w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot7-1.png 1005w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a>
-        <figcaption>Screenshot 7. The sense table with fields for scientific name,
+        <img class="alignnone size-medium wp-image-496"
+             src="${request.static_url('dictionaria:static/screenshot7-1.png')}"
+             alt="" width="300" height="91"/>
+        <figcaption>Screenshot 8. The sense table with fields for scientific name,
             semantic domain
             and an association field (is synonymous with)
         </figcaption>
@@ -644,13 +634,10 @@
 
 <%util:section title="The example table" id="example">
     <figure class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8.png"><img
-                class="alignnone size-medium wp-image-499"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8-300x40.png"
-                alt="" width="300" height="40"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8-300x40.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8-768x101.png 768w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8-1024x135.png 1024w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/screenshot8.png 1344w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a>
-        <figcaption>Screenshot 8. The example table with fields for interlinear gloss and
+        <img class="alignnone size-medium wp-image-499"
+             src="${request.static_url('dictionaria:static/screenshot8.png')}"
+             alt="" width="300" height="40"/>
+        <figcaption>Screenshot 9. The example table with fields for interlinear gloss and
             source
         </figcaption>
     </figure>
@@ -703,6 +690,21 @@
     <p>Of course, different publication types use different subsets of these fields.</p>
 </%util:section>
 
+<%util:section title="The media table" id="media">
+    <p>If your dictionary includes media files and additional information about
+    them (e.g. comments, sources, descriptions), you need to also submit a
+    media table. In this table the file names and their file extensions are
+    listed (these serve as the media file IDs) in the first column.
+    additional information can be added in the following standard columns:</p>
+    <ul>
+        <li><b>source</b> (e.g. name of native speaker for audio recordings, photographer
+        of a photo, illustrator of a drawing)</li>
+        <li><b>source URL</b> (if your file is also part of another web publication)</li>
+        <li><b>description</b> (e.g. if you want to describe what is shown in a picture)</li>
+    </ul>
+    <p>The media table should be submitted in .csv format.</p>
+</%util:section>
+
 <h3><i>Dictionaria </i> Submission Guidelines Commentary for Toolbox Users</h3>
 <p><b>version of 10/23/2016</b></p>
 <p>
@@ -726,7 +728,7 @@
     described in §1.1 in the general guidelines.
 </p>
 
-<%util:section title="Re: Overview: The five parts of the content structure" id="toolbox1" level="4">
+<%util:section title="Re: Overview: The six parts of the content structure" id="toolbox1" level="4">
     <p>
         ${badge('important', 'exclamation-sign')} no subentries
     </p>
@@ -750,18 +752,14 @@
     </p>
     <p>An entry like this:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox1.png"><img
-                class="alignnone size-full wp-image-501"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox1.png"
-                alt="" width="290" height="170"/></a></p>
+        <img class="alignnone size-full wp-image-501"
+             src="${request.static_url('dictionaria:static/toolbox1.png')}"
+                alt="" width="290" height="170"/></p>
     <p>Will need to become two entries like so:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox2.png"><img
-                class="alignnone size-medium wp-image-502"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox2-300x98.png"
-                alt="" width="300" height="98"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox2-300x98.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox2.png 580w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-502"
+                src="${request.static_url('dictionaria:static/toolbox2.png')}"
+                alt="" width="300" height="98"/></p>
     <p>${badge('important', 'exclamation-sign')} examples</p>
     <p>
         Toolbox is set up to have example sentences stored directly in each dictionary
@@ -782,32 +780,27 @@
     <p>Entries like the one here (using <span class="label">\xv</span> and <span
             class="label">\xe</span>):</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox3.png"><img
-                class="alignnone size-full wp-image-504"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox3.png"
-                alt="" width="250" height="190"/></a></p>
+       <img class="alignnone size-full wp-image-504"
+                src="${request.static_url('dictionaria:static/toolbox3.png')}"
+                alt="" width="250" height="190"/></p>
     <p>
         should look like this instead, with the example being stored in a separate text
         file
         (glossing is optional):
     </p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox4.png"><img
-                class="alignnone size-medium wp-image-505"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox4-300x91.png"
-                alt="" width="300" height="91"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox4-300x91.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox4.png 560w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-505"
+             src="${request.static_url('dictionaria:static/toolbox4.png')}"
+             alt="" width="300" height="91"/></p>
     <p>
         This way you can link one example sentence to several entries without creating
         inconsistent copies of one and the same sentence, e.g. in the entry below the same
         example can be listed as in the one above:
     </p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox5.png"><img
-                class="alignnone size-full wp-image-508"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox5.png"
-                alt="" width="160" height="190"/></a></p>
+        <img class="alignnone size-full wp-image-508"
+             src="${request.static_url('dictionaria:static/toolbox5.png')}"
+             alt="" width="160" height="190"/></p>
     <p>
         If you already have a Toolbox dictionary with example sentence, then please
         contact us,
@@ -916,12 +909,9 @@
         entry
         below, for a good illustration of sense numbering:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox6.png"><img
-                class="alignnone size-medium wp-image-509"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox6-300x192.png"
-                alt="" width="300" height="192"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox6-300x192.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox6.png 320w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-509"
+             src="${request.static_url('dictionaria:static/toolbox6.png')}"
+             alt="" width="300" height="192"/></p>
     <p>With the senses cleanly separated, you can also assign different semantic domains
         and
         different example sentences to each sense, as also illustrated in the
@@ -947,12 +937,9 @@
     <p>Here is an illustration of what such an example sentence text file could look
         like:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox7.png"><img
-                class="alignnone size-medium wp-image-510"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox7-300x195.png"
-                alt="" width="300" height="195"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox7-300x195.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox7.png 400w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-510"
+             src="${request.static_url('dictionaria:static/toolbox7.png')}"
+             alt="" width="300" height="195"/></p>
     <p>With your dictionary being a scientific publication we also expect you to list
         sources
         for where your example sentence came from, this can either be a bibliographical
@@ -977,22 +964,16 @@
     <p>In the screenshot below an example sentence is listed as having a source
         RE0001:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox8.png"><img
-                class="alignnone size-medium wp-image-511"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox8-300x61.png"
-                alt="" width="300" height="61"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox8-300x61.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox8.png 590w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-511"
+             src="${request.static_url('dictionaria:static/toolbox8.png')}"
+             alt="" width="300" height="61"/></p>
     <p>This reference can be retrieved from a spreadsheet which follows the general
         submission
         guidelines like so:</p>
     <p class="well well-small">
-        <a href="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox9.png"><img
-                class="alignnone size-medium wp-image-512"
-                src="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox9-300x84.png"
-                alt="" width="300" height="84"
-                srcset="http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox9-300x84.png 300w, http://home.uni-leipzig.de/dictionaryjournal/wp-content/uploads/2016/12/toolbox9.png 450w"
-                sizes="(max-width: 300px) 100vw, 300px"/></a></p>
+        <img class="alignnone size-medium wp-image-512"
+             src="${request.static_url('dictionaria:static/toolbox9.png')}"
+             alt="" width="300" height="84"/></p>
 </%util:section>
 
 
@@ -1212,7 +1193,7 @@ The part-of-speech assignment of affixes is based on their position, i.e. they a
     </ol>
     <p>which in many languages are denoted by distinct lexical items.</p>
     <p>
-If the SL headword has a narrower meaning than its translation equivalent, this restriction can be indicated by brackets at the beginning of the meaning description,
+If the SL headword has a narrower meaning than its translation equivalent, this restriction can be indicated by parentheses at the beginning of the meaning description,
  e.g. the English meaning description of German <i>fressen</i> would be ‘(of animals) eat’.
     </p>
 
