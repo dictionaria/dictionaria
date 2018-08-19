@@ -243,7 +243,7 @@
             <figure class="well well-small">
                 <img class="alignnone size-medium wp-image-478"
                      src="${request.static_url('dictionaria:static/screenshot22.png')}"
-                     alt="" width="300" height="151"/>
+                     alt="" style="width: 100%" height=""/>
                 <figcaption>Screenshot 2. The sense table</figcaption>
             </figure>
             <p>The sense table contains all the senses, which are represented in the
