@@ -34,6 +34,9 @@
             <div class="img-with-caption well">
                 ${u.cdstar.linked_image(file)}
                 ##<img src="${h.data_uri(request.file_ospath(file), file.mime_type)}" class="img-polaroid">
+                % if file.jsondata.get('Description'):
+                <p>${file.jsondata.get('Description')}</p>
+                % endif
                 % if file.jsondata.get('copyright'):
                     <p>© ${file.jsondata.get('copyright')}</p>
                 % endif

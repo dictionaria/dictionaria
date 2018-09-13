@@ -45,10 +45,12 @@ class Submission(object):
         impl = sfm.Dictionary if d.joinpath('db.sfm').exists() else cldf.Dictionary
         return impl(d)
 
-    def add_file(self, type_, checksum, file_cls, obj):
+    def add_file(self, type_, checksum, file_cls, obj, attrs=None):
         if checksum in self.cdstar:
             jsondata = {k: v for k, v in self.props.get(type_, {}).items()}
             jsondata.update(self.cdstar[checksum])
+            if attrs:
+                jsondata.update(attrs)
             f = file_cls(
                 id='%s-%s' % (obj.id, checksum),
                 name=self.cdstar[checksum]['original'],

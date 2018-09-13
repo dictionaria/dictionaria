@@ -4,6 +4,7 @@ from collections import defaultdict
 import re
 from itertools import chain
 
+from csvw import dsv
 from pycldf import Dictionary as CldfDictionary
 from clldutils.misc import lazyproperty, nfilter
 from clld.db.models import common
@@ -30,6 +31,12 @@ class Dictionary(BaseDictionary):
              labels):
         def id_(oid):
             return '%s-%s' % (submission.id, oid)
+
+        media = self.dir.parent / 'media.csv'
+        if media.exists():
+            media = {d['ID']: d for d in dsv.reader(media, dicts=True)}
+        else:
+            media = {}
 
         metalanguages = submission.props.get('metalanguages', {})
         colmap = {k: self.cldf['EntryTable', k].name
@@ -133,7 +140,8 @@ class Dictionary(BaseDictionary):
                     fnames = [fnames] if not isinstance(fnames, list) else fnames
                     fnames = nfilter(chain(*[f.split(';') for f in fnames]))
                     for fname in set(fnames):
-                        submission.add_file(type_, fname, models.Meaning_files, m)
+                        submission.add_file(
+                            type_, fname, models.Meaning_files, m, media.get(fname, {}))
 
         colmap = {k: self.cldf['ExampleTable', k].name
                   for k in ['id', 'primaryText', 'translatedText']}
