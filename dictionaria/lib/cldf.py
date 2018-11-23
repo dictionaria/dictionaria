@@ -139,9 +139,12 @@ class Dictionary(BaseDictionary):
                 if fnames:
                     fnames = [fnames] if not isinstance(fnames, list) else fnames
                     fnames = nfilter(chain(*[f.split(';') for f in fnames]))
-                    for fname in set(fnames):
-                        submission.add_file(
-                            type_, fname, models.Meaning_files, m, media.get(fname, {}))
+                    files = [(fname, media[fname]) for fname in set(fnames) if fname in media]
+                    for fname, spec in sorted(
+                        files,
+                        key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
+                    ):
+                        submission.add_file(type_, fname, models.Meaning_files, m, spec)
 
         colmap = {k: self.cldf['ExampleTable', k].name
                   for k in ['id', 'primaryText', 'translatedText']}
