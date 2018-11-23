@@ -109,7 +109,7 @@ class CustomCol(Col):
         return icontains(self.dt.vars[self.name].value, qs)
 
     def format(self, item):
-        return item.datadict().get(self.name, '')
+        return HTML.p(item.datadict().get(self.name, ''))
 
     def order(self):
         return self.dt.vars[self.name].value

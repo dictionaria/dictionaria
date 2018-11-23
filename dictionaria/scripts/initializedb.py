@@ -151,7 +151,7 @@ def main(args):
                     email=spec.get('email'))
             DBSession.add(common.ContributionContributor(
                 ord=i + 1,
-                primary=True,
+                primary=spec.get('primary', True),
                 contributor=contrib,
                 contribution=dictionary))
 
