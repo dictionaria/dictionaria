@@ -216,15 +216,16 @@ class Words(datatables.Units):
                     'description',
                     sTitle='meaning description',
                     model_col=common.Unit.description),
-                Col(self,
-                    'examples',
-                    input_size='mini',
-                    model_col=Word.example_count),
             ]
             if self.second_tab:
                 for name in self.vars:
                     res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
                 return res
+            else:
+                res.append(Col(self,
+                    'examples',
+                    input_size='mini',
+                    model_col=Word.example_count))
             if self.contribution.semantic_domains:
                 res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
             if self.contribution.count_audio:
