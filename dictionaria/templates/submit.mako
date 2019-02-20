@@ -1000,7 +1000,7 @@
         The dictionaries published in Dictionaria do not have subentries and, consequently, no sub-headwords. Therefore, we suggest to include different types of headwords:
     </p>
     <ol>
-        <li>The most user-friendly form of the headword is the conventional <b>citation form</b> used by the speech community, rather than a stem form or <a href="#" data-toggle="tooltip" title="Renown lexicographers of indigenous American languages report that the use of roots or stems hasn't been accepted by the speech communities.  Cf. Pulte & Feeling 2002; Hinton & Weigel 2002; Munro 2002">a root,</a>,
+        <li>The most user-friendly form of the headword is the conventional <b>citation form</b> used by the speech community, rather than a stem form or <a href="#" data-toggle="tooltip" title="Renown lexicographers of indigenous American languages report that the use of roots or stems hasn't been accepted by the speech communities.  Cf. Pulte & Feeling 2002; Hinton & Weigel 2002; Munro 2002">a root</a>,
  therefore it should be included at any rate.</li>
         <li><b>Roots</b> or <b>stems</b> can additionally be included as headwords, if their entries have association fields linking the entry to the relevant derived or inflected forms
  used as the conventional citation form as stated in (1).
