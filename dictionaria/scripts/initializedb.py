@@ -111,6 +111,7 @@ def main(args):
             props['metalanguage_styles'][v] = s
         props['custom_fields'] = ['lang-' + f if f in props['metalanguage_styles'] else f
                                   for f in props['custom_fields']]
+        props.setdefault('choices', {})
 
         language = data['Variety'].get(lmd['glottocode'])
         if not language:
@@ -168,6 +169,7 @@ def main(args):
         submission.load_sources(Dictionary.get(did), dictdata)
         submission.load_examples(Dictionary.get(did), dictdata, lang)
         print(len(list(dictdata['Example'].keys())))
+        print(list(dictdata['Example'].keys()).pop())
         submission.dictionary.load(
             submission,
             dictdata,
