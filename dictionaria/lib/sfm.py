@@ -12,7 +12,7 @@ from clld.db.fts import tsvector
 from clld.db.meta import DBSession
 
 from clldutils import sfm
-from clldutils.misc import cached_property
+from clldutils.misc import lazyproperty
 
 from dictionaria.lib.ingest import MeaningDescription, split, BaseDictionary
 from dictionaria import models
@@ -203,7 +203,7 @@ class Entry(sfm.Entry):
 
 
 class Dictionary(BaseDictionary):
-    @cached_property()
+    @lazyproperty
     def sfm(self):
         return sfm.SFM.from_file(
             self.dir.joinpath('db.sfm'),

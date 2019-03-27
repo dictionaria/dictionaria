@@ -1,7 +1,6 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 from collections import defaultdict, OrderedDict
-import re
 from itertools import chain
 
 from csvw import dsv
@@ -11,10 +10,26 @@ from clld.db.models import common
 from clld.db.fts import tsvector
 from clld.db.meta import DBSession
 
-from dictionaria.lib.ingest import MeaningDescription, split, BaseDictionary
+from dictionaria.lib.ingest import BaseDictionary
 from dictionaria import models
 
-ASSOC_PATTERN = re.compile('rel_(?P<rel>[a-z]+)')
+
+def get_foreign_keys(ds, from_table):
+    """
+    :param ds: A CLDF Dataset object.
+    :param from_table: A csvw.metadata.Table object.
+    :return: a `dict` mapping CLDF component names to `list`s of column names in `from_table`,
+    which are foreign keys into the component.
+    """
+    res = defaultdict(list)
+    for component in ['EntryTable', 'SenseTable', 'ExampleTable']:
+        ref = ds[component]
+        for fk in from_table.tableSchema.foreignKeys:
+            if fk.reference.resource == ref.url and \
+                    fk.reference.columnReference == ref.tableSchema.primaryKey and \
+                    len(fk.columnReference) == 1:
+                res[component].append(fk.columnReference[0])
+    return res
 
 
 class Dictionary(BaseDictionary):
@@ -34,61 +49,32 @@ class Dictionary(BaseDictionary):
 
         print('######\n a CLDF dict! \n####')
 
-        media = self.dir.parent / 'media.csv'
+        media = self.dir / 'media.csv'
         if media.exists():
             media = {d['ID']: d for d in dsv.reader(media, dicts=True)}
         else:
             media = {}
 
         metalanguages = submission.props.get('metalanguages', {})
+
+        entries = self.cldf['EntryTable']
+
         colmap = {k: self.cldf['EntryTable', k].name
-                  for k in ['id', 'headword', 'partOfSpeech']}
-        if 'EntryTable' in labels:
-            elabels = OrderedDict(labels['EntryTable'])
-        else:
-            elabels = OrderedDict()
+                  for k in ['id', 'headword', 'partOfSpeech', 'languageReference']}
+        fks = get_foreign_keys(self.cldf, entries)
+
+        elabels = OrderedDict()
+        for col in entries.tableSchema.columns:
+            if col not in fks['EntryTable'] and col.name not in colmap.values():
+                elabels[col.name] = (col.titles.getfirst() if col.titles else col.name, False)
+        if submission.md['properties'].get('entry_map'):
             for key, label in labels.items():
                 if key in submission.md['properties']['entry_map']:
-                    elabels[submission.md['properties']['entry_map'][key]] = label
+                    elabels[submission.md['properties']['entry_map'][key]] = (
+                        label,
+                        key in submission.md['properties'].get('process_links_in_labels', []))
 
-        for lemma in self.cldf['EntryTable']:
-            """
-ID,Language_ID,Headword,Part_Of_Speech,
-    Contains,
-    Possessed_Plural,
-    Related_Dialectal_Form,
-    Phonetic_Form,
-    Homonym,
-    Related_Dialectal_Form_BibRef,
-    Dialectal_Distribution,
-    Agentive_Noun,
-    Diffusive_Form,
-    Morphological_Segmentation_BibRef,
-    Alternative_Form,
-    Predictable_Dialectal_Variants,
-    Morphological_Segmentation,
-    Related_Form,
-    Associated_Phrasemes,
-    NonPossessed_Form,
-    Abstract_Noun,
-    Attributive,
-    MarkedPossession,
-    NonPredictable_Variants,
-    Etymology,
-    Plural,
-    Media_IDs,
-    Infinititve
-LX000001,tzh,,,,,,,,,,,,,,,,,,,,,,,,,,
-LX000002,tzh,a,part.,,,,,1,,,,,,,,,,,,,,,,,,,
-LX000003,tzh,a,part.,,,,,3,,,,,,,,,,,,,,,,,,,
-LX000004,tzh,a,aux.,,,,,2,,,,,,,,,,,,,,,,,,,
-LX000005,tzh,a',n2.,,,,,,,,,,,,,,,,-il,,,,,,,,
-LX000006,tzh,a'al,n2.,,,,,,,,,,,,,(h)a' -al,,,,,,,,de [ha'](LX001760),,,
-LX000007,tzh,a'lel,n2.,,,,,,,,,,,,,(h)a' -al,,,,,,,,,,,
-LX000008,tzh,a'an,agt.i.v.,,,,,1,,,,,,,,a'iy -an,,,,,,,,,,,
-LX000009,tzh,a'an,t.v.,,,,,2,,,,,,,,a'iy -an,[a'an](LX000008),,,,,,,,,,
-            """
-
+        for lemma in entries:
             #
             # FIXME: handle Sources!
             #
@@ -114,29 +100,31 @@ LX000009,tzh,a'an,t.v.,,,,,2,,,,,,,,a'iy -an,[a'an](LX000008),,,,,,,,,,
                         submission.add_file(type_, fname, common.Unit_files, word)
 
             for index, (key, label) in enumerate(elabels.items()):
-                if lemma[key]:
+                label, with_links = label
+                if lemma.get(key):
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk,
                         key=label,
                         value=lemma[key],
-                        ord=index))
+                        ord=index,
+                        jsondata=dict(with_links=with_links)))
 
         DBSession.flush()
 
+        #
+        # Now that all entries are in the DB and have primary keys, we can create the
+        # self-referential links:
+        #
         fullentries = defaultdict(list)
-        for lemma in self.cldf['EntryTable']:
+        for lemma in entries:
             fullentries[lemma[colmap['id']]].extend(list(lemma.items()))
             word = data['Word'][lemma[colmap['id']]]
-            for key in lemma:
-                assoc = ASSOC_PATTERN.match(key)
-                if assoc:
-                    for lid in split(lemma.get(key, '')):
-                        # Note: we correct invalid references, e.g. "lx 13" and "Lx13".
-                        lid = lid.replace(' ', '').lower()
-                        DBSession.add(models.SeeAlso(
-                            source_pk=word.pk,
-                            target_pk=data['Word'][lid].pk,
-                            description=assoc.group('rel')))
+            for col in fks['EntryTable']:
+                for lid in lemma[col.name] or []:
+                    DBSession.add(models.SeeAlso(
+                        source_pk=word.pk,
+                        target_pk=data['Word'][lid].pk,
+                        description=col.titles.getfirst() if col.titles else col.name))
 
         #
         # FIXME: start from here!
@@ -149,9 +137,12 @@ LX000009,tzh,a'an,t.v.,,,,,2,,,,,,,,a'iy -an,[a'an](LX000008),,,,,,,,,,
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
             sense2word[sense[colmap['id']]] = sense[colmap['entryReference']]
             w = data['Word'][sense[colmap['entryReference']]]
+            dsc = sense[colmap['description']]
+            if not isinstance(dsc, list):
+                dsc = [dsc]
             kw = dict(
                 id=id_(sense[colmap['id']]),
-                name='; '.join(nfilter(sense[colmap['description']])),
+                name='; '.join(nfilter(dsc)),
                 jsondata={slabels[k]: v for k, v in sense.items() if v and k in slabels},
                 word=w)
             if 'alt_translation1' in sense and metalanguages.get('gxx'):
@@ -183,7 +174,7 @@ LX000009,tzh,a'an,t.v.,,,,,2,,,,,,,,a'iy -an,[a'an](LX000008),,,,,,,,,,
                     id='{0}-{1}'.format(m.id, i), name=w.name, valueset=vs, word=w))
 
             DBSession.flush()
-            for attr, type_ in [('picture', 'image'), ('sound', 'audio')]:
+            for attr, type_ in [('picture', 'image'), ('sound', 'audio'), ('Media_IDs', 'image')]:
                 fnames = sense.pop(attr, None)
                 if fnames is None:
                     fnames = sense.pop(type_, None)
@@ -200,7 +191,13 @@ LX000009,tzh,a'an,t.v.,,,,,2,,,,,,,,a'iy -an,[a'an](LX000008),,,,,,,,,,
         colmap = {k: self.cldf['ExampleTable', k].name
                   for k in ['id', 'primaryText', 'translatedText']}
         for ex in self.cldf['ExampleTable']:
-            for mid in ex.get('Senses') or ex.get('Sense_IDs', []):
+            #
+            # FIXME: Detect the column with sense IDs by looking at the foreign keys!
+            #
+            mids = ex.get('Senses') or ex.get('Sense_IDs', [])
+            if not isinstance(mids, list):
+                mids = mids.split(' ; ')
+            for mid in mids:
                 if mid in sense2word:
                     fullentries[sense2word[mid]].extend(list(ex.items()))
                     models.MeaningSentence(

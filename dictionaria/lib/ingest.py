@@ -4,11 +4,8 @@ from hashlib import md5
 from collections import OrderedDict, defaultdict
 import re
 
-from clld.db.models import common
-from clld.db.meta import DBSession
-from clldutils.dsv import reader
 from clldutils.sfm import SFM, Entry
-from clldutils.misc import cached_property, slug, UnicodeMixin
+from clldutils.misc import lazyproperty, slug, UnicodeMixin
 from clldutils.path import Path
 from clldutils.jsonlib import load
 from clldutils.text import split_text
@@ -170,7 +167,7 @@ class Examples(SFM):
     def read(self, filename, **kw):
         return SFM.read(self, filename, entry_impl=Example, **kw)
 
-    @cached_property()
+    @lazyproperty
     def _map(self):
         return {entry.get('ref'): entry for entry in self}
 

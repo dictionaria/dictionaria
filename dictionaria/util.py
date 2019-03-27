@@ -5,15 +5,25 @@ import re
 
 from clldutils.text import truncate_with_ellipsis
 from clldutils.misc import UnicodeMixin
-from clld.web.util.htmllib import HTML
 from clld.db.models import common
 from clld.db.meta import DBSession
 from bs4 import BeautifulSoup
 from clldmpg import cdstar
 from clld.web.util.helpers import link
+from clld.web.util.htmllib import HTML
+from clld.web.util import concepticon
 assert cdstar and link
 
 MULT_VALUE_SEP = ' ; '
+MARKDOWN_LINK_PATTERN = re.compile(r'\[(?P<label>[^\]]+)\]\((?P<uid>[^\)]+)\)')
+
+
+def add_unit_links(req, contrib, text):
+    def repl(m):
+        return HTML.a(
+            m.group('label'),
+            href=req.route_url('unit', id='{0}-{1}'.format(contrib.id, m.group('uid'))))
+    return MARKDOWN_LINK_PATTERN.sub(repl, text)
 
 
 def add_links2(sid, ids, desc, type_):
@@ -59,13 +69,7 @@ def join(iterable):
 
 
 def concepticon_link(request, meaning):
-    return HTML.a(
-        HTML.img(
-            src=request.static_url('dictionaria:static/concepticon_logo.png'),
-            height=20,
-            width=30),
-        title='corresponding concept set at Concepticon',
-        href=meaning.concepticon_url)
+    return concepticon.link(request, meaning.concepticon_url.split('/')[-1])
 
 
 class Link(UnicodeMixin):

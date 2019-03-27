@@ -28,7 +28,7 @@ from dictionaria.models import (
     Word, Counterpart, Dictionary, ComparisonMeaning, Variety, Example,
     DictionarySource,
 )
-from dictionaria.util import concepticon_link, split
+from dictionaria.util import concepticon_link, split, add_unit_links
 
 
 class GlottocodeCol(Col):
@@ -151,7 +151,7 @@ class FtsCol(DetailsRowLinkCol):
 
 class MeaningDescriptionCol2(Col):
     def format(self, item):
-        return HTML.p(Col.format(self, item))
+        return add_unit_links(self.dt.req, item.dictionary, Col.format(self, item))
 
 
 class Words(datatables.Units):

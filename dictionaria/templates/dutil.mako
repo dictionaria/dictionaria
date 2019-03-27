@@ -41,7 +41,7 @@
     <table class="table table-condensed table-nonfluid borderless">
         % if ctx.pos:
             <tr>
-                <td><small>part of speech</small></td>
+                <td><small>Part of speech</small></td>
                 <td>
                     <span class="vocabulary">${ctx.pos}</span>
                     % if links and 'pos' in links:
@@ -104,7 +104,7 @@
         <li>
             <ul class="unstyled">
                 <li>
-                    <strong>${m.name}</strong>
+                    <strong>${u.add_unit_links(req, ctx.dictionary, m.name)|n}</strong>
                     ##% if m.gloss and m.name != m.gloss:
                 ##    [${m.gloss}]
                 ##% endif

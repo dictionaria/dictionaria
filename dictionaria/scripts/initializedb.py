@@ -94,13 +94,16 @@ def main(args):
 
         md = submission.md
         if md is None:
+            print('no md', submission.id)
             continue
 
         if not md['date_published']:
+            print('no date', submission.id)
             continue
 
         id_ = submission.id
         if args.dict and args.dict != id_ and args.dict != 'all':
+            print('not selected', submission.id)
             continue
         lmd = md['language']
         props = md.get('properties', {})
@@ -160,8 +163,6 @@ def main(args):
     transaction.commit()
 
     for did, lid, submission in submissions:
-        #if submission.id != 'sidaama':
-        #    continue
         transaction.begin()
         print('loading %s ...' % submission.id)
         dictdata = Data()
