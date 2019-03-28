@@ -112,10 +112,9 @@ class Submission(object):
                     alt_translation_language2=self.props.get('metalanguages', {}).get('gxy'),
                 )
                 DBSession.flush()
+                for md5 in sorted(set(ex.get('Media_IDs', []))):
+                    self.add_file(None, md5, common.Sentence_files, obj)
 
-                #if ex.get('Media_IDs'):
-                if ex.get('audio'):
-                    self.add_file('audio', ex['audio'], common.Sentence_files, obj)
         elif self.dir.joinpath('processed', 'examples.sfm').exists():
             for i, ex in enumerate(
                     Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):

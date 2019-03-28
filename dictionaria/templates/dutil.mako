@@ -1,5 +1,23 @@
 <%! from itertools import chain %>
 
+
+<%def name="data_tr(obj, links=None)">
+% for _d in obj.data:
+    % if not _d.key.startswith('lang-') and not _d.key.endswith('_links'):
+        <tr>
+            <td><small>${_d.key.replace('_', ' ')}</small></td>
+            <td>
+                ${u.add_unit_links(req, ctx.dictionary, _d.value)|n}
+                % if links and _d.key in links:
+                    <small>${links[_d.key]|n}</small>
+                % endif
+            </td>
+        </tr>
+    % endif
+% endfor
+</%def>
+
+
 <%def name="sentences(obj=None, fmt='long')">
     <% obj = obj or ctx %>
     <ul id="sentences-${obj.pk}" class="unstyled">
@@ -79,19 +97,7 @@
                 </td>
             </tr>
         % endfor
-        % for _d in ctx.data:
-            % if not _d.key.startswith('lang-') and not _d.key.endswith('_links'):
-                <tr>
-                    <td><small>${_d.key}</small></td>
-                    <td>
-                        ${_d.value}
-                        % if links and _d.key in links:
-                            <small>${links[_d.key]|n}</small>
-                        % endif
-                    </td>
-                </tr>
-            % endif
-        % endfor
+        ${data_tr(ctx, links=links)}
     </table>
 
     ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
@@ -128,12 +134,9 @@
                         </ul>
                     </li>
                 % endif
-                <dl>
-                % for k, v in m.jsondatadict.items():
-                    <dt>${k}</dt>
-                    <dd>${';'.join(v) if isinstance(v, list) else v}</dd>
-                % endfor
-                </dl>
+                <table class="table table-condensed table-nonfluid borderless">
+                    ${data_tr(m)}
+                </table>
                 % if m.sentence_assocs:
                     <li>${sentences(m)}</li>
                 % endif
