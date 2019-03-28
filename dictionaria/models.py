@@ -148,7 +148,11 @@ class Meaning_files(Base, common.FilesMixin):
     pass
 
 
-class Meaning(Base, common.HasFilesMixin, common.IdNameDescriptionMixin):
+class Meaning_data(Base, common.DataMixin):
+    pass
+
+
+class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDescriptionMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
     ord = Column(Integer, default=1)
     gloss = Column(Unicode)

@@ -94,13 +94,16 @@ def main(args):
 
         md = submission.md
         if md is None:
+            print('no md', submission.id)
             continue
 
         if not md['date_published']:
+            print('no date', submission.id)
             continue
 
         id_ = submission.id
         if args.dict and args.dict != id_ and args.dict != 'all':
+            print('not selected', submission.id)
             continue
         lmd = md['language']
         props = md.get('properties', {})
@@ -111,6 +114,7 @@ def main(args):
             props['metalanguage_styles'][v] = s
         props['custom_fields'] = ['lang-' + f if f in props['metalanguage_styles'] else f
                                   for f in props['custom_fields']]
+        props.setdefault('choices', {})
 
         language = data['Variety'].get(lmd['glottocode'])
         if not language:
@@ -159,8 +163,6 @@ def main(args):
     transaction.commit()
 
     for did, lid, submission in submissions:
-        #if submission.id != 'sidaama':
-        #    continue
         transaction.begin()
         print('loading %s ...' % submission.id)
         dictdata = Data()
@@ -168,6 +170,7 @@ def main(args):
         submission.load_sources(Dictionary.get(did), dictdata)
         submission.load_examples(Dictionary.get(did), dictdata, lang)
         print(len(list(dictdata['Example'].keys())))
+        print(list(dictdata['Example'].keys()).pop())
         submission.dictionary.load(
             submission,
             dictdata,
