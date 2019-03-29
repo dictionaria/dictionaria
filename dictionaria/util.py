@@ -10,20 +10,26 @@ from clld.db.meta import DBSession
 from bs4 import BeautifulSoup
 from clldmpg import cdstar
 from clld.web.util.helpers import link
-from clld.web.util.htmllib import HTML
+from clld.web.util.htmllib import HTML, escape
 from clld.web.util import concepticon
 assert cdstar and link
 
 MULT_VALUE_SEP = ' ; '
-MARKDOWN_LINK_PATTERN = re.compile(r'\[(?P<label>[^\]]+)\]\((?P<uid>[^\)]+)\)')
+MARKDOWN_LINK_PATTERN = re.compile(r'\[(?P<label>[^\]]+)\]\((?P<uid>[^)]+)\)')
 
 
 def add_unit_links(req, contrib, text):
-    def repl(m):
-        return HTML.a(
+    res, pos = [], 0
+    for m in MARKDOWN_LINK_PATTERN.finditer(text):
+        if m.start() > pos:
+            res.append(escape(text[pos:m.start()]))
+        res.append(HTML.a(
             m.group('label'),
-            href=req.route_url('unit', id='{0}-{1}'.format(contrib.id, m.group('uid'))))
-    return MARKDOWN_LINK_PATTERN.sub(repl, text)
+            href=req.route_url('unit', id='{0}-{1}'.format(contrib.id, m.group('uid')))))
+        pos = m.end()
+    if pos < len(text):
+        res.append(escape(text[pos:]))
+    return HTML.p(*res)
 
 
 def add_links2(sid, ids, desc, type_):
