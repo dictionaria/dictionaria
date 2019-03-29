@@ -135,7 +135,11 @@ class Dictionary(BaseDictionary):
         sense2word = {}
         colmap = {k: self.cldf['SenseTable', k].name
                   for k in ['id', 'entryReference', 'description']}
-        slabels = get_labels(self.cldf['SenseTable'], colmap, submission)
+        slabels = get_labels(
+            self.cldf['SenseTable'],
+            colmap,
+            submission,
+            exclude=['alt_translation1', 'alt_translation2'])
 
         for sense in self.cldf['SenseTable']:
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
