@@ -131,6 +131,7 @@ RELATIONS = {
     'main entry': 'subentry',
     'synonym': '(part of) synonym (for)',
     'antonym': '(part of) antonym (for)',
+    'Contains': 'is part of',
 }
 
 
