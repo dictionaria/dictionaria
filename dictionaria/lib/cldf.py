@@ -30,7 +30,7 @@ def get_foreign_keys(ds, from_table):
     return res
 
 
-def get_labels(table, colmap, submission, exclude=None):
+def get_labels(type_, table, colmap, submission, exclude=None):
     labels = OrderedDict(submission.props.get('labels', []))
     exclude = exclude or []
     exclude.extend(['Media_IDs', 'ZCom1'])
@@ -38,11 +38,15 @@ def get_labels(table, colmap, submission, exclude=None):
     for col in table.tableSchema.columns:
         if col.name not in exclude and col.name not in colmap.values():
             res[col.name] = (col.titles.getfirst() if col.titles else col.name, False)
-    if submission.props.get('entry_map'):
+    map_name = '{0}_map'.format(type_)
+    if submission.props.get(map_name):
         for key, label in labels.items():
-            if key in submission.props['entry_map']:
-                res[submission.props['entry_map'][key]] = (
+            if key in submission.props[map_name]:
+                res[submission.props[map_name][key]] = (
                     label, key in submission.props.get('process_links_in_labels', []))
+    order_name = '{0}_custom_order'.format(type_)
+    if submission.props.get(order_name):
+        res = OrderedDict([(k, res[k]) for k in submission.props[order_name] if k in res])
     return res
 
 
@@ -74,7 +78,7 @@ class Dictionary(BaseDictionary):
         colmap = {k: self.cldf['EntryTable', k].name
                   for k in ['id', 'headword', 'partOfSpeech', 'languageReference']}
         fks = get_foreign_keys(self.cldf, entries)
-        elabels = get_labels(entries, colmap, submission, exclude=fks['EntryTable'][:])
+        elabels = get_labels('entry', entries, colmap, submission, exclude=fks['EntryTable'][:])
 
         for lemma in entries:
             #
@@ -136,6 +140,7 @@ class Dictionary(BaseDictionary):
         colmap = {k: self.cldf['SenseTable', k].name
                   for k in ['id', 'entryReference', 'description']}
         slabels = get_labels(
+            'sense',
             self.cldf['SenseTable'],
             colmap,
             submission,
