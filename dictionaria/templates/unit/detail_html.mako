@@ -45,7 +45,7 @@
     % endfor
 </%def>
 
-<h2>${ctx.label} <span class="meanings-in-title">${u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings))}</span></h2>
+<h2>${ctx.label} <span class="meanings-in-title">${u.add_unit_links(req, ctx.dictionary, u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings)))|n}</span></h2>
 
 ${dutil.word_details()}
 

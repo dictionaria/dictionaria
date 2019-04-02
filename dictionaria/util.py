@@ -29,7 +29,7 @@ def add_unit_links(req, contrib, text):
         pos = m.end()
     if pos < len(text):
         res.append(escape(text[pos:]))
-    return HTML.p(*res)
+    return HTML.span(*res)
 
 
 def add_links2(sid, ids, desc, type_):

@@ -158,7 +158,7 @@
                         % for w in words:
                             <li>
                                 <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
-                                <strong>${'; '.join(w.description_list)}</strong>
+                                <strong>${u.add_unit_links(req, ctx.dictionary, '; '.join(w.description_list))|n}</strong>
                             </li>
                         % endfor
                     </ul>
