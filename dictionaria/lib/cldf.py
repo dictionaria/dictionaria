@@ -129,6 +129,7 @@ class Dictionary(BaseDictionary):
                 label = col.titles.getfirst() if col.titles else col.name
                 if label == 'Entry_IDs':
                     label = 'See also'
+                label = label.replace('_', ' ')
                 for lid in lemma[col.name] or []:
                     if lid not in data['Word']:
                         print('missing entry ID: {0}'.format(lid))
