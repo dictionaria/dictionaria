@@ -4,6 +4,6 @@
     <a href="${request.resource_url(request.dataset)}" class="brand">Dictionaria</a>
 </%block>
 
-<%block name="title">(beta)</%block>
+<%block name="title"></%block>
 
 ${next.body()}
