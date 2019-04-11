@@ -96,7 +96,7 @@ class WordCol(LinkCol):
         return dict(title=item.name, label=item.label)
 
     def order(self):
-        return Word.name, Word.number
+        return collkey(Word.name), Word.number
 
     def search(self, qs):
         return or_(

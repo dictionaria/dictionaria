@@ -7,11 +7,13 @@ import re
 import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
+from sqlalchemy import Index
 from clldutils.misc import slug, nfilter, UnicodeMixin
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
 from clld.db.models import common
+from clld.db.util import collkey, with_collkey_ddl
 from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
@@ -22,10 +24,15 @@ from dictionaria.lib.submission import REPOS, Submission
 from dictionaria.util import join, Link
 
 
+with_collkey_ddl()
+
+
 def main(args):
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
 
+    if DBSession.bind.dialect.name == 'postgresql':
+        Index('ducet', collkey(common.Unit.name)).create(DBSession.bind)
     data = Data()
 
     dataset = common.Dataset(
@@ -169,8 +176,6 @@ def main(args):
         lang = Variety.get(lid)
         submission.load_sources(Dictionary.get(did), dictdata)
         submission.load_examples(Dictionary.get(did), dictdata, lang)
-        print(len(list(dictdata['Example'].keys())))
-        print(list(dictdata['Example'].keys()).pop())
         submission.dictionary.load(
             submission,
             dictdata,
