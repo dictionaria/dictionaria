@@ -1,5 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 from collections import defaultdict, OrderedDict
 
 from pycldf import Dictionary as CldfDictionary
@@ -55,6 +53,20 @@ class Dictionary(BaseDictionary):
     def cldf(self):
         return CldfDictionary.from_metadata(self.dir / 'cldf-md.json')
 
+    def add_refs(self, data, table, row, obj):
+        if table == 'EntryTable':
+            model, kw = models.WordReference, dict(word=obj)
+        elif table == 'SenseTable':
+            model, kw = models.MeaningReference, dict(meaning=obj)
+        else:
+            raise ValueError(table)
+        refs_col = self.cldf.get((table, 'source'))
+        if refs_col:
+            for sid, context in map(self.cldf.sources.parse, row.get(refs_col.name, [])):
+                if sid in data['DictionarySource']:
+                    DBSession.add(model(
+                        source=data['DictionarySource'][sid], description=context, **kw))
+
     def load(self,
              submission,
              data,
@@ -76,14 +88,12 @@ class Dictionary(BaseDictionary):
 
         entries = self.cldf['EntryTable']
         colmap = {k: self.cldf['EntryTable', k].name
-                  for k in ['id', 'headword', 'partOfSpeech', 'languageReference']}
+                  for k in ['id', 'headword', 'partOfSpeech', 'languageReference', 'source']
+                  if self.cldf.get(('EntryTable', k))}
         fks = get_foreign_keys(self.cldf, entries)
         elabels = get_labels('entry', entries, colmap, submission, exclude=fks['EntryTable'][:])
 
         for lemma in entries:
-            #
-            # FIXME: handle Sources!
-            #
             if not lemma[colmap['headword']]:
                 continue
             oid = lemma.pop(colmap['id'])
@@ -103,6 +113,8 @@ class Dictionary(BaseDictionary):
                 key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
             ):
                 submission.add_file(None, md5, common.Unit_files, word, spec)
+
+            self.add_refs(data, 'EntryTable', lemma, word)
 
             for index, (key, label) in enumerate(elabels.items()):
                 label, with_links = label
@@ -139,7 +151,8 @@ class Dictionary(BaseDictionary):
 
         sense2word = {}
         colmap = {k: self.cldf['SenseTable', k].name
-                  for k in ['id', 'entryReference', 'description']}
+                  for k in ['id', 'entryReference', 'description', 'source']
+                  if self.cldf.get(('SenseTable', k))}
         slabels = get_labels(
             'sense',
             self.cldf['SenseTable'],
@@ -170,6 +183,8 @@ class Dictionary(BaseDictionary):
                 kw['alt_translation_language2'] = metalanguages.get('gxy')
             m = data.add(models.Meaning, sense[colmap['id']], **kw)
             DBSession.flush()
+
+            self.add_refs(data, 'SenseTable', sense, m)
 
             for index, (key, label) in enumerate(slabels.items()):
                 label, with_links = label

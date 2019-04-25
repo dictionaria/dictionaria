@@ -11,6 +11,13 @@
                 % if links and _d.key in links:
                     <small>${links[_d.key]|n}</small>
                 % endif
+                % if _d.key in obj.sourcedict:
+                    <ul class="unstyled">
+                        % for src in obj.sourcedict[_d.key]:
+                            [${h.link(req, src)}]
+                        % endfor
+                    </ul>
+                % endif
             </td>
         </tr>
     % endif

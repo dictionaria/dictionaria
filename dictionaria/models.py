@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from itertools import groupby
+from collections import defaultdict
 
 from zope.interface import implementer
 from sqlalchemy import (
@@ -56,8 +57,17 @@ class ComparisonMeaning(CustomModelMixin, common.Parameter):
     representation = Column(Integer)
 
 
+class SourcesForDataMixin(object):
+    @property
+    def sourcedict(self):
+        res = defaultdict(list)
+        for ref in self.references:
+            res[ref.description].append(ref.source)
+        return res
+
+
 @implementer(interfaces.IUnit)
-class Word(CustomModelMixin, common.Unit):
+class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
     """Words are units of a particular language, but are still considered part of a
     dictionary, i.e. part of a contribution.
     """
@@ -153,7 +163,7 @@ class Meaning_data(Base, common.DataMixin):
     pass
 
 
-class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDescriptionMixin):
+class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDescriptionMixin, SourcesForDataMixin):
     word_pk = Column(Integer, ForeignKey('word.pk'))
     ord = Column(Integer, default=1)
     gloss = Column(Unicode)
@@ -178,6 +188,11 @@ class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDesc
         if self.semantic_domain:
             return split(self.semantic_domain)
         return []
+
+
+class MeaningReference(Base, common.HasSourceMixin):
+    meaning_pk = Column(Integer, ForeignKey('meaning.pk'))
+    meaning = relationship(Meaning, backref="references")
 
 
 #
