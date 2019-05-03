@@ -97,7 +97,7 @@ class Submission(object):
                     id='%s-%s' % (self.id, ex[colmap['id']].replace('.', '_')),
                     name=ex[colmap['primaryText']],
                     number='{0}'.format(i + 1),
-                    source=None,
+                    source=ex.get('Corpus_Reference', []),
                     language=lang,
                     serialized='{0}'.format(ex),
                     dictionary=dictionary,
