@@ -91,7 +91,8 @@ class Submission(object):
                     pass
 
             for i, ex in enumerate(self.dictionary.cldf['ExampleTable']):
-                obj = data.add(
+                try:
+                    obj = data.add(
                     models.Example,
                     ex[colmap['id']],
                     id='%s-%s' % (self.id, ex[colmap['id']].replace('.', '_')),
@@ -102,7 +103,7 @@ class Submission(object):
                     serialized='{0}'.format(ex),
                     dictionary=dictionary,
                     analyzed='\t'.join(nfilter(ex[colmap['analyzedWord']] or [])) if 'analyzedWord' in colmap else None,
-                    gloss='\t'.join([abbr_p.sub(lambda m: m.group('abbr').upper(), g) for g in ex[colmap['gloss']]]) \
+                    gloss='\t'.join([abbr_p.sub(lambda m: m.group('abbr').upper(), g or '') for g in ex[colmap['gloss']]]) \
                         if 'gloss' in colmap and ex[colmap['gloss']] \
                         else ((ex[colmap['gloss']] or None) if 'gloss' in colmap else None),
                     description=ex[colmap['translatedText']],
@@ -110,7 +111,10 @@ class Submission(object):
                     alt_translation_language1=self.props.get('metalanguages', {}).get('gxx'),
                     alt_translation2=ex.get('alt_translation2'),
                     alt_translation_language2=self.props.get('metalanguages', {}).get('gxy'),
-                )
+                    )
+                except TypeError:
+                    print(ex)
+                    raise
                 DBSession.flush()
                 for md5 in sorted(set(ex.get('Media_IDs', []))):
                     self.add_file(None, md5, common.Sentence_files, obj)

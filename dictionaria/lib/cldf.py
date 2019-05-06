@@ -174,6 +174,7 @@ class Dictionary(BaseDictionary):
             kw = dict(
                 id=id_(sense[colmap['id']]),
                 name='; '.join(nfilter(dsc)),
+                semantic_domain=sense.pop('Semantic_Domain', None),
                 word=w)
             if 'alt_translation1' in sense and metalanguages.get('gxx'):
                 kw['alt_translation1'] = sense['alt_translation1']
