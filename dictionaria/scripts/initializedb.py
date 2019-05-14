@@ -207,16 +207,20 @@ def prime_cache(args):
             sid, _, lid = r[0].partition('-')
             labels[type_][sid][lid] = r[1]
 
+    link_map = {'entry': 'unit', 'source': 'source'}
+
     for d in DBSession.query(Dictionary):
         if d.description:
             soup = BeautifulSoup(markdown(d.description), 'html.parser')
-            for type_ in ['source', 'unit']:
-                for a in soup.find_all('a', href=True):
-                    if a['href'] == a.string and a.string in labels[type_][d.id]:
-                        print(a.string, '->', labels[type_][d.id][a.string])
+            for a in soup.find_all('a', href=True):
+                if a['href'] in link_map:
+                    type_ = link_map[a['href']]
+                    if a.string in labels[type_][d.id]:
                         a['href'] = args.env['request'].route_url(
                             type_, id='{0}-{1}'.format(d.id, a.string))
                         a.string = labels[type_][d.id][a.string]
+                        if type_ == 'unit':
+                            a['class'] = 'lemma'
             d.description, d.toc = toc(soup)
 
     for meaning in DBSession.query(ComparisonMeaning).options(
