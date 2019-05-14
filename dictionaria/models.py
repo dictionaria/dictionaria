@@ -43,6 +43,7 @@ class Dictionary(CustomModelMixin, common.Contribution):
     count_audio = Column(Integer)
     count_image = Column(Integer)
     semantic_domains = Column(Unicode)
+    toc = Column(Unicode)
 
     def metalanguage_label(self, lang):
         style = self.jsondata['metalanguage_styles'].get(lang)

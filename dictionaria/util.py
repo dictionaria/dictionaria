@@ -106,10 +106,7 @@ def add_links(req, s):
     return s
 
 
-def toc(s):
-    if not s:
-        return '', ''
-
+def toc(soup):
     def link(id_, label):
         return HTML.a(label, href='#{0}'.format(id_))
 
@@ -133,15 +130,14 @@ def toc(s):
         return a
 
     toc_, count = [], 0
-    text = BeautifulSoup(s, 'html5lib')
-    for d in text.descendants:
+    for d in soup.descendants:
         if d.name in ['h1', 'h2', 'h3', 'h4', 'h5']:
             count += 1
             id_ = 'section{0}'.format(count)
             toc_.append((id_, int(d.name[1:]), d.get_text()))
-            d.insert(0, text.new_tag('a', id=id_))
-            d.append(toplink(text))
-            d.append(permalink(text, id_))
+            d.insert(0, soup.new_tag('a', id=id_))
+            d.append(toplink(soup))
+            d.append(permalink(soup, id_))
 
     if toc_:
         top_level = min(t[1] for t in toc_)
@@ -156,4 +152,4 @@ def toc(s):
                          for t, ns in nt.items()])
     else:
         toc_ = ''
-    return '{0}'.format(text), toc_
+    return '{0}'.format(soup), toc_

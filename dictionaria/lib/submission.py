@@ -28,7 +28,7 @@ class Submission(object):
         self.cdstar = load(REPOS.joinpath('cdstar.json'))
         print(self.dir)
         assert self.dir.exists()
-        desc = self.dir.joinpath('md.html')
+        desc = self.dir.joinpath('md.md')
         if desc.exists():
             with desc.open(encoding='utf8') as fp:
                 self.description = fp.read()

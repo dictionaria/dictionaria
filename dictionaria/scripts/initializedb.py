@@ -17,11 +17,13 @@ from clld.db.util import collkey, with_collkey_ddl
 from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
+from bs4 import BeautifulSoup
+from markdown import markdown
 
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning
 from dictionaria.lib.submission import REPOS, Submission
-from dictionaria.util import join, Link
+from dictionaria.util import join, toc
 
 
 with_collkey_ddl()
@@ -193,23 +195,29 @@ def main(args):
         glottolog_repos='../../glottolog/glottolog')
 
 
-def prime_cache(cfg):
+def prime_cache(args):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
     it will have to be run periodically whenever data has been updated.
     """
-    from dictionaria.util import add_links2
-
     labels = {}
     for type_, cls in [('source', common.Source), ('unit', common.Unit)]:
-        labels[type_] = defaultdict(set)
-        for r in DBSession.query(cls.id):
+        labels[type_] = defaultdict(dict)
+        for r in DBSession.query(cls.id, cls.name):
             sid, _, lid = r[0].partition('-')
-            labels[type_][sid].add(lid)
+            labels[type_][sid][lid] = r[1]
 
     for d in DBSession.query(Dictionary):
-        for type_ in ['source', 'unit']:
-            d.description = add_links2(d.id, labels[type_][d.id], d.description, type_)
+        if d.description:
+            soup = BeautifulSoup(markdown(d.description), 'html.parser')
+            for type_ in ['source', 'unit']:
+                for a in soup.find_all('a', href=True):
+                    if a['href'] == a.string and a.string in labels[type_][d.id]:
+                        print(a.string, '->', labels[type_][d.id][a.string])
+                        a['href'] = args.env['request'].route_url(
+                            type_, id='{0}-{1}'.format(d.id, a.string))
+                        a.string = labels[type_][d.id][a.string]
+            d.description, d.toc = toc(soup)
 
     for meaning in DBSession.query(ComparisonMeaning).options(
         joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
@@ -292,4 +300,4 @@ if __name__ == '__main__':
         (("--internal",), dict(action='store_true')),
         (("--no-concepts",), dict(action='store_true')),
         (("--dict",), dict()),
-        create=main, prime_cache=prime_cache)
+        create=main, prime_cache=prime_cache, bootstrap=True)

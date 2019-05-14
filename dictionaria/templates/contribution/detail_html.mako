@@ -22,15 +22,14 @@ ${util.codes(ctx.language)}
     </ul>
     <div class="tab-content">
         <div id="about" class="tab-pane active">
-            <% html, toc = u.toc(ctx.description) %>
             <div class="span8">
                 ${util.files()}
                 ${util.data()}
-                ${u.add_links(request, html)|n}
+                ${ctx.description|n}
             </div>
             <div class="span4">
                 <div class="well well-small">
-                    ${toc}
+                    ${ctx.toc|n}
                 </div>
             </div>
         </div>
