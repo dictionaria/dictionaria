@@ -41,6 +41,7 @@ class Dictionary(CustomModelMixin, common.Contribution):
     published = Column(Date)
     count_words = Column(Integer)
     count_audio = Column(Integer)
+    count_example_audio = Column(Integer)
     count_image = Column(Integer)
     semantic_domains = Column(Unicode)
     toc = Column(Unicode)

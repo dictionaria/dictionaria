@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from markdown import markdown
 
 import dictionaria
-from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning
+from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning, Example
 from dictionaria.lib.submission import REPOS, Submission
 from dictionaria.util import join, toc
 
@@ -254,17 +254,23 @@ def prime_cache(args):
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
 
-    def count_unit_media_files(contrib, mtype):
-        return DBSession.query(common.Unit_files)\
-            .join(Word, common.Unit_files.object_pk == Word.pk)\
-            .filter(Word.dictionary_pk == contrib.pk)\
-            .filter(common.Unit_files.mime_type.ilike(mtype + '/%'))\
-            .count() + \
-            DBSession.query(Meaning_files)\
-            .join(Meaning, Meaning_files.object_pk == Meaning.pk)\
-            .join(Word, Meaning.word_pk == Word.pk)\
-            .filter(Word.dictionary_pk == contrib.pk)\
-            .filter(Meaning_files.mime_type.ilike(mtype + '/%'))\
+    def count_unit_media_files(contrib, mtype, cls=common.Unit_files):
+        if cls == common.Unit_files:
+            return DBSession.query(common.Unit_files)\
+                .join(Word, common.Unit_files.object_pk == Word.pk)\
+                .filter(Word.dictionary_pk == contrib.pk)\
+                .filter(common.Unit_files.mime_type.ilike(mtype + '/%'))\
+                .count() + \
+                DBSession.query(Meaning_files)\
+                .join(Meaning, Meaning_files.object_pk == Meaning.pk)\
+                .join(Word, Meaning.word_pk == Word.pk)\
+                .filter(Word.dictionary_pk == contrib.pk)\
+                .filter(Meaning_files.mime_type.ilike(mtype + '/%'))\
+                .count()
+        return DBSession.query(common.Sentence_files)\
+            .join(common.Sentence, common.Sentence_files.object_pk == common.Sentence.pk)\
+            .filter(Example.dictionary_pk == contrib.pk)\
+            .filter(common.Sentence_files.mime_type.ilike(mtype + '/%'))\
             .count()
 
     for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
@@ -272,6 +278,7 @@ def prime_cache(args):
         sds = set(chain(*[w.semantic_domain_list for w in d.words]))
         d.semantic_domains = join(sorted(sds))
         d.count_audio = count_unit_media_files(d, 'audio')
+        d.count_example_audio = count_unit_media_files(d, 'audio', cls=common.Sentence_files)
         d.count_image = count_unit_media_files(d, 'image')
 
         word_pks = [w.pk for w in d.words]

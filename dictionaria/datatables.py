@@ -451,8 +451,10 @@ class Examples(Sentences):
                 'description',
                 sTitle=self.req.translate('translation'),
                 sClass="translation"),
-            DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT'),
         ]
+        if self.dictionary and self.dictionary.count_example_audio:
+            res.append(MediaCol(self, 'exaudio', 'audio', sTitle=''))
+        res.append(DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT'))
         if not self.dictionary:
             res.insert(-1, LinkCol(
                 self,
