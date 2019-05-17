@@ -343,6 +343,11 @@ class YearCol(Col):
         return item.published.year
 
 
+class NoWrapLinkCol(LinkCol):
+    def get_attrs(self, item):
+        return {'style': 'white-space: nowrap; font-weight: bold;'}
+
+
 class Dictionaries(datatables.Contributions):
     def get_options(self):
         opts = super(Dictionaries, self).get_options()
@@ -357,7 +362,7 @@ class Dictionaries(datatables.Contributions):
                 sTitle='number',
                 model_col=Dictionary.number,
                 input_size='mini'),
-            LinkCol(
+            NoWrapLinkCol(
                 self,
                 'dictionary',
                 sTitle='dictionary'),
@@ -369,6 +374,7 @@ class Dictionaries(datatables.Contributions):
                 'entries',
                 sTitle='entries',
                 sClass='right',
+                input_size='mini',
                 model_col=Dictionary.count_words),
             YearCol(
                 self,
