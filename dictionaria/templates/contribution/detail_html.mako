@@ -25,11 +25,11 @@ ${util.codes(ctx.language)}
             <div class="span8">
                 ${util.files()}
                 ${util.data()}
-                ${ctx.description|n}
+                ${ctx.description or ''|n}
             </div>
             <div class="span4">
                 <div class="well well-small">
-                    ${ctx.toc|n}
+                    ${ctx.toc or ''|n}
                 </div>
             </div>
         </div>
