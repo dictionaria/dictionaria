@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 import re
 
-from clldutils.path import Path, md5
+from clldutils.path import Path
 from clldutils.jsonlib import load
 from clldutils.misc import nfilter
 from clld.db.meta import DBSession
@@ -10,7 +10,6 @@ from clld.db.models import common
 from clld.lib import bibtex
 from clld.scripts.util import bibtex2source
 
-from dictionaria.lib import sfm
 from dictionaria.lib import cldf
 from dictionaria.lib.ingest import Examples
 from dictionaria import models
@@ -45,8 +44,6 @@ class Submission(object):
         d = self.dir.joinpath('processed')
         if d.joinpath('cldf-md.json').exists():
             impl = cldf.Dictionary
-        elif d.joinpath('db.sfm').exists():
-            impl = sfm.Dictionary
         else:
             raise ValueError('unknown dictionary format')
         return impl(d)

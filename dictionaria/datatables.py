@@ -382,6 +382,12 @@ class Dictionaries(datatables.Contributions):
                 bSearchable=False,
                 sTitle='year',
                 model_col=Dictionary.published),
+            Col(self,
+                'doi',
+                bSearchable=False,
+                bSortable=False,
+                sTitle='DOI',
+                format=lambda i: i.doi_link()),
             CitationCol(self, 'cite', sTitle='cite'),
         ]
 

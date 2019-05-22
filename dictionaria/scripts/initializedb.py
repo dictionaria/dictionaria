@@ -142,6 +142,7 @@ def main(args):
             description=submission.description,
             language=language,
             published=date(*map(int, md['date_published'].split('-'))),
+            doi=md.get('doi'),
             jsondata=props)
 
         for i, spec in enumerate(md['authors']):

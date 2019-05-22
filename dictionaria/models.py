@@ -20,6 +20,7 @@ from clld import interfaces
 from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 from clld.web.util.htmllib import HTML
+from clld.web.util.helpers import external_link
 from clld_glottologfamily_plugin.models import HasFamilyMixin
 
 from dictionaria.util import split
@@ -45,11 +46,18 @@ class Dictionary(CustomModelMixin, common.Contribution):
     count_image = Column(Integer)
     semantic_domains = Column(Unicode)
     toc = Column(Unicode)
+    doi = Column(Unicode)
 
     def metalanguage_label(self, lang):
         style = self.jsondata['metalanguage_styles'].get(lang)
         style = "label label-{0}".format(style) if style else lang
         return HTML.span(lang, class_=style)
+
+    def doi_link(self):
+        if self.doi:
+            return external_link(
+                'https://doi.org/{0.doi}'.format(self), label='DOI: {0.doi}'.format(self))
+        return ''
 
 
 @implementer(interfaces.IParameter)

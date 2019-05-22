@@ -1,2 +1,2 @@
 ${' and '.join(c.last_first() for c in list(ctx.primary_contributors))}${' (with ' + ', '.join(c.name for c in list(ctx.secondary_contributors)) + ')' if ctx.secondary_contributors else ''}. ${ctx.published.year}. ${ctx.name}.
-${request.dataset.name} ${ctx.number}. 1-${len(ctx.words)} (Available online at ${request.resource_url(ctx)}, Accessed on ${h.datetime.date.today()}.)
+${request.dataset.name} ${ctx.number}. 1-${len(ctx.words)}${'. DOI: {0}'.format(ctx.doi) if ctx.doi else ''} (Available online at ${request.resource_url(ctx)}, Accessed on ${h.datetime.date.today()}.)
