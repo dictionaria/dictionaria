@@ -3,4 +3,4 @@ dictionaria
 
 Cross-Linguistic Dictionary Journal
 
-![img](icon.svg)
+![img](https://raw.githubusercontent.com/clld/dictionaria/master/icon.svg)
