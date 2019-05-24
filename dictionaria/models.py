@@ -199,15 +199,27 @@ class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDesc
             return split(self.semantic_domain)
         return []
 
+    @property
+    def related(self):
+        for desc, assocs in groupby(
+                sorted(self.nyms, key=lambda a: a.description),
+                lambda s: s.description):
+            yield RELATIONS.get(desc, desc), [a.target for a in assocs]
+
 
 class MeaningReference(Base, common.HasSourceMixin):
     meaning_pk = Column(Integer, ForeignKey('meaning.pk'))
     meaning = relationship(Meaning, backref="references")
 
 
-#
-# FIXME: need relations between senses as well!
-#
+class Nym(Base):
+    source_pk = Column(Integer, ForeignKey('meaning.pk'))
+    target_pk = Column(Integer, ForeignKey('word.pk'))
+    description = Column(Unicode())
+    ord = Column(Integer, default=1)
+
+    source = relationship(Meaning, foreign_keys=[source_pk], backref='nyms')
+    target = relationship(Word, foreign_keys=[target_pk])
 
 
 class MeaningSentence(Base):

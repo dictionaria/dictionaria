@@ -153,12 +153,14 @@ class Dictionary(BaseDictionary):
         colmap = {k: self.cldf['SenseTable', k].name
                   for k in ['id', 'entryReference', 'description', 'source']
                   if self.cldf.get(('SenseTable', k))}
+        fks = get_foreign_keys(self.cldf, self.cldf['SenseTable'])
+
         slabels = get_labels(
             'sense',
             self.cldf['SenseTable'],
             colmap,
             submission,
-            exclude=['alt_translation1', 'alt_translation2'])
+            exclude=['alt_translation1', 'alt_translation2'] + fks['EntryTable'][:])
 
         for sense in self.cldf['SenseTable']:
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
@@ -224,6 +226,23 @@ class Dictionary(BaseDictionary):
                 key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
             ):
                 submission.add_file(None, md5, models.Meaning_files, m, spec)
+
+            for col in fks['EntryTable']:
+                col = self.cldf['SenseTable', col]
+                if col.name == colmap['entryReference']:
+                    continue
+                label = col.titles.getfirst() if col.titles else col.name
+                label = label.replace('_', ' ')
+                entry_ids = sense[col.name]
+                if entry_ids:
+                    if not isinstance(entry_ids, list):
+                        entry_ids = [entry_ids]
+                    for eid in entry_ids:
+                        if eid not in data['Word']:
+                            print('missing entry ID: {0}'.format(eid))
+                        else:
+                            DBSession.add(models.Nym(
+                                source_pk=m.pk, target_pk=data['Word'][eid].pk, description=label))
 
         colmap = {k: self.cldf['ExampleTable', k].name
                   for k in ['id', 'primaryText', 'translatedText']}

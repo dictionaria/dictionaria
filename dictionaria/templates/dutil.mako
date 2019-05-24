@@ -143,6 +143,18 @@
                 % endif
                 <table class="table table-condensed table-nonfluid borderless">
                     ${data_tr(m)}
+                    % for label, entries in m.related:
+                        <tr>
+                            <td><small>${label}</small></td>
+                            <td>
+                                <ul class="inline">
+                                % for entry in entries:
+                                    <li>${h.link(req, entry)}</li>
+                                % endfor
+                                </ul>
+                            </td>
+                        </tr>
+                    % endfor
                 </table>
                 % if m.sentence_assocs:
                     <li>${sentences(m)}</li>
