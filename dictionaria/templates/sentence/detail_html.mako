@@ -60,4 +60,8 @@ ${h.rendered_sentence(ctx)|n}
 <dd>${h.linked_references(request, ctx)|n}</dd>
 % endif
 % endif
+    % for k, v in ctx.datadict().items():
+        <dt>${k}</dt>
+        <dd>${v}</dd>
+    % endfor
 </dl>

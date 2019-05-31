@@ -81,41 +81,61 @@ class Submission(object):
             #ID,Language_ID,Primary_Text,Analyzed_Word,Gloss,Translated_Text,Meta_Language_ID,Comment,Sense_IDs,Analyzed,Media_IDs
             #XV000001,tzh,lek a lok',,,salió bien,,,SN000001,,
             colmap = {}
-            for k in ['id', 'primaryText', 'analyzedWord', 'gloss', 'translatedText']:
+            for k in [
+                'id',
+                'primaryText',
+                'analyzedWord',
+                'gloss',
+                'translatedText',
+                'languageReference',
+                'metaLanguageReference',
+                'comment',
+            ]:
                 try:
                     colmap[k] = self.dictionary.cldf['ExampleTable', k].name
                 except KeyError:
                     pass
 
             for i, ex in enumerate(self.dictionary.cldf['ExampleTable']):
-                try:
-                    obj = data.add(
+                obj = data.add(
                     models.Example,
                     ex[colmap['id']],
-                    id='%s-%s' % (self.id, ex[colmap['id']].replace('.', '_')),
-                    name=ex[colmap['primaryText']],
+                    id='%s-%s' % (self.id, ex.pop(colmap['id']).replace('.', '_')),
+                    name=ex.pop(colmap['primaryText']),
                     number='{0}'.format(i + 1),
-                    source=ex.get('Corpus_Reference'),
+                    source=ex.pop('Corpus_Reference', None),
+                    comment=ex.pop(colmap['comment'], None) if 'comment' in colmap else None,
+                    original_script=ex.pop('original_script', None),
                     language=lang,
                     serialized='{0}'.format(ex),
                     dictionary=dictionary,
-                    analyzed='\t'.join(nfilter(ex[colmap['analyzedWord']] or [])) if 'analyzedWord' in colmap else None,
-                    gloss='\t'.join([abbr_p.sub(lambda m: m.group('abbr').upper(), g or '') for g in ex[colmap['gloss']]]) \
-                        if 'gloss' in colmap and ex[colmap['gloss']] \
-                        else ((ex[colmap['gloss']] or None) if 'gloss' in colmap else None),
-                    description=ex[colmap['translatedText']],
-                    alt_translation1=ex.get('alt_translation1'),
+                    analyzed='\t'.join(
+                        nfilter(ex.pop(colmap['analyzedWord'], []) or []))
+                    if 'analyzedWord' in colmap else None,
+                    gloss='\t'.join(
+                        [abbr_p.sub(lambda m: m.group('abbr').upper(), g or '') for g in ex[colmap['gloss']]])
+                    if 'gloss' in colmap and ex[colmap['gloss']] \
+                    else ((ex[colmap['gloss']] or None) if 'gloss' in colmap else None),
+                    description=ex.pop(colmap['translatedText'], None),
+                    alt_translation1=ex.pop('alt_translation1', None),
                     alt_translation_language1=self.props.get('metalanguages', {}).get('gxx'),
-                    alt_translation2=ex.get('alt_translation2'),
+                    alt_translation2=ex.pop('alt_translation2', None),
                     alt_translation_language2=self.props.get('metalanguages', {}).get('gxy'),
-                    )
-                except TypeError:
-                    print(ex)
-                    raise
+                )
+                for col in ['languageReference', 'metaLanguageReference', 'gloss']:
+                    if col in colmap:
+                        del ex[colmap[col]]
                 DBSession.flush()
-                for md5 in sorted(set(ex.get('Media_IDs', []))):
+                for md5 in sorted(set(ex.pop('Media_IDs', []))):
                     self.add_file(None, md5, common.Sentence_files, obj)
 
+                for k, v in ex.items():
+                    if v and (k not in ['Sense_IDs']):
+                        DBSession.add(common.Sentence_data(
+                            object_pk=obj.pk,
+                            key=k,
+                            value=ex[k],
+                        ))
         elif self.dir.joinpath('processed', 'examples.sfm').exists():
             for i, ex in enumerate(
                     Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):
