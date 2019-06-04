@@ -1,6 +1,6 @@
 from collections import defaultdict, OrderedDict
 
-from pycldf import Dictionary as CldfDictionary
+from pycldf import Dictionary as CldfDictionary, Sources
 from clldutils.misc import lazyproperty, nfilter
 from clld.db.models import common
 from clld.db.fts import tsvector
@@ -53,7 +53,7 @@ class Dictionary(BaseDictionary):
     def cldf(self):
         return CldfDictionary.from_metadata(self.dir / 'cldf-md.json')
 
-    def add_refs(self, data, table, row, obj):
+    def add_refs(self, data, table, row, obj, labels):
         if table == 'EntryTable':
             model, kw = models.WordReference, dict(word=obj)
         elif table == 'SenseTable':
@@ -65,7 +65,8 @@ class Dictionary(BaseDictionary):
             for sid, context in map(self.cldf.sources.parse, row.get(refs_col.name, [])):
                 if sid in data['DictionarySource']:
                     DBSession.add(model(
-                        source=data['DictionarySource'][sid], description=context, **kw))
+                        source=data['DictionarySource'][sid],
+                        description=labels.get(context, (context, None))[0], **kw))
 
     def load(self,
              submission,
@@ -85,7 +86,6 @@ class Dictionary(BaseDictionary):
             media = {}
 
         metalanguages = submission.props.get('metalanguages', {})
-
         entries = self.cldf['EntryTable']
         colmap = {k: self.cldf['EntryTable', k].name
                   for k in ['id', 'headword', 'partOfSpeech', 'languageReference', 'source']
@@ -114,7 +114,7 @@ class Dictionary(BaseDictionary):
             ):
                 submission.add_file(None, md5, common.Unit_files, word, spec)
 
-            self.add_refs(data, 'EntryTable', lemma, word)
+            self.add_refs(data, 'EntryTable', lemma, word, elabels)
 
             for index, (key, label) in enumerate(elabels.items()):
                 label, with_links = label
@@ -187,7 +187,7 @@ class Dictionary(BaseDictionary):
             m = data.add(models.Meaning, sense[colmap['id']], **kw)
             DBSession.flush()
 
-            self.add_refs(data, 'SenseTable', sense, m)
+            self.add_refs(data, 'SenseTable', sense, m, slabels)
 
             for index, (key, label) in enumerate(slabels.items()):
                 label, with_links = label

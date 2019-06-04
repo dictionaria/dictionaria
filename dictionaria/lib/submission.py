@@ -69,6 +69,7 @@ class Submission(object):
 
     def load_sources(self, dictionary, data):
         if self.bib:
+            print('loading sources ...')
             for rec in self.bib.records:
                 src = bibtex2source(rec, models.DictionarySource)
                 src.dictionary = dictionary
