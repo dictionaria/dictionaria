@@ -45,7 +45,9 @@ ${h.rendered_sentence(ctx)|n}
 <dl>
 % if ctx.comment:
 <dt>Comment:</dt>
-<dd>${ctx.markup_comment or ctx.comment|n}</dd>
+<dd>
+   ${u.add_unit_links(req, ctx.dictionary, ctx.comment)|n}
+</dd>
 % endif
 % if ctx.type:
 <dt>${_('Type')}:</dt>
