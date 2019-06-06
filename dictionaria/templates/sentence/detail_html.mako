@@ -1,5 +1,6 @@
 <%inherit file="../${context.get('request').registry.settings.get('clld.app_template', 'app.mako')}"/>
 <%namespace name="util" file="../util.mako"/>
+<%namespace name="dutil" file="../dutil.mako"/>
 <%! active_menu_item = "sentences" %>
 
 <%def name="sidebar()">
@@ -17,53 +18,9 @@
         <li>
             <span class="lemma">${wa.meaning.word.name}</span>
             &nbsp;
-            <span class="translation">${h.link(request, wa.meaning.word, label=wa.meaning.name)}</span>
+            <span class="translation">${h.link(request, wa.meaning.word, label=u.drop_unit_links(wa.meaning.name))}</span>
         </li>
     % endfor
 </ul>
 
-${h.rendered_sentence(ctx)|n}
-% if ctx.alt_translation1:
-    <div class="alt_translation">
-        <span class="translation alt-translation alt-translation1">${ctx.alt_translation1}</span>
-        <span class="alt-translation1">[${ctx.alt_translation_language1}]</span>
-    </div>
-% endif
-% if ctx.alt_translation2:
-    <div class="alt_translation">
-        <span class="translation alt-translation alt-translation2">${ctx.alt_translation2}</span>
-        <span class="alt-translation2">[${ctx.alt_translation_language2}]</span>
-    </div>
-% endif
-
-% if getattr(ctx, 'audio'):
-<div style="margin-top: 20px;">
-    ${u.cdstar.audio(ctx.audio)}
-</div>
-% endif
-
-<dl>
-% if ctx.comment:
-<dt>Comment:</dt>
-<dd>
-   ${u.add_unit_links(req, ctx.dictionary, ctx.comment)|n}
-</dd>
-% endif
-% if ctx.type:
-<dt>${_('Type')}:</dt>
-<dd>${ctx.type}</dd>
-% endif
-% if ctx.references or ctx.source:
-<dt>${_('Source')}:</dt>
-% if ctx.source:
-<dd><span class="muted">${ctx.source}</span></dd>
-% endif
-% if ctx.references:
-<dd>${h.linked_references(request, ctx)|n}</dd>
-% endif
-% endif
-    % for k, v in ctx.datadict().items():
-        <dt>${k}</dt>
-        <dd>${v}</dd>
-    % endfor
-</dl>
+${dutil.sentence(ctx)}

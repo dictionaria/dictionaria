@@ -32,6 +32,10 @@ def add_unit_links(req, contrib, text):
     return HTML.span(*res)
 
 
+def drop_unit_links(text):
+    return MARKDOWN_LINK_PATTERN.sub(lambda m: m.group('label'), text)
+
+
 def add_links2(sid, ids, desc, type_):
     if not desc:
         return

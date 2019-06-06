@@ -25,6 +25,55 @@
 </%def>
 
 
+<%def name="sentence(obj, fmt='long')">
+    ${h.rendered_sentence(obj, fmt=fmt)}
+    % if obj.alt_translation1:
+        <div class="alt_translation">
+            <span class="alt-translation alt-translation1 translation">${obj.alt_translation1}</span>
+            <span class="alt-translation alt-translation1">[${obj.alt_translation_language1}]</span>
+        </div>
+    % endif
+    % if obj.alt_translation2:
+        <div class="alt_translation">
+            <span class="alt-translation alt-translation2 translation">${obj.alt_translation2}</span>
+            <span class="alt-translation alt-translation2">[${obj.alt_translation_language2}]</span>
+        </div>
+    % endif
+    % if obj.audio:
+        <div>
+            ${u.cdstar.audio(obj.audio)}
+        </div>
+    % endif
+    % if (obj.references or obj.source) and fmt == 'long':
+        Source: ${h.linked_references(request, obj)|n} <span class="muted">${obj.source}</span>
+    % endif
+    <dl>
+        % if obj.comment:
+            <dt>Comment:</dt>
+            <dd>
+                ${u.add_unit_links(req, obj.dictionary, obj.comment)|n}
+            </dd>
+        % endif
+        % if obj.type:
+            <dt>${_('Type')}:</dt>
+            <dd>${obj.type}</dd>
+        % endif
+        % if obj.references or obj.source:
+            <dt>${_('Source')}:</dt>
+        % if obj.source:
+            <dd><span class="muted">${obj.source}</span></dd>
+        % endif
+        % if obj.references:
+            <dd>${h.linked_references(request, obj)|n}</dd>
+        % endif
+        % endif
+        % for k, v in obj.datadict().items():
+            <dt>${k}</dt>
+            <dd>${v}</dd>
+        % endfor
+    </dl>
+</%def>
+
 <%def name="sentences(obj=None, fmt='long')">
     <% obj = obj or ctx %>
     <ul id="sentences-${obj.pk}" class="unstyled">
@@ -35,27 +84,7 @@
                     % if a.description and fmt == 'long':
                         <p>${a.description}</p>
                     % endif
-                    ${h.rendered_sentence(a.sentence, fmt=fmt)}
-                    % if a.sentence.alt_translation1:
-                        <div class="alt_translation">
-                            <span class="alt-translation alt-translation1 translation">${a.sentence.alt_translation1}</span>
-                            <span class="alt-translation alt-translation1">[${a.sentence.alt_translation_language1}]</span>
-                        </div>
-                    % endif
-                    % if a.sentence.alt_translation2:
-                        <div class="alt_translation">
-                            <span class="alt-translation alt-translation2 translation">${a.sentence.alt_translation2}</span>
-                            <span class="alt-translation alt-translation2">[${a.sentence.alt_translation_language2}]</span>
-                        </div>
-                    % endif
-                    % if a.sentence.audio:
-                        <div>
-                            ${u.cdstar.audio(a.sentence.audio)}
-                        </div>
-                    % endif
-                    % if (a.sentence.references or a.sentence.source) and fmt == 'long':
-                        Source: ${h.linked_references(request, a.sentence)|n} <span class="muted">${a.sentence.source}</span>
-                    % endif
+                    ${sentence(a.sentence, fmt=fmt)}
                 </blockquote>
             </li>
         % endfor
