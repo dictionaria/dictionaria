@@ -50,7 +50,6 @@ def main(global_config, **settings):
     config.register_menu(
         ('dataset', partial(menu_item, 'dataset', label='Home')),
         ('contributions', partial(menu_item, 'contributions')),
-        ('parameters', partial(menu_item, 'parameters')),
         ('sentences', partial(menu_item, 'sentences')),
         ('help', lambda ctx, rq: (rq.route_url('help'), u'Help')),
     )
