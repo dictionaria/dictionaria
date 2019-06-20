@@ -58,15 +58,6 @@
             <dt>${_('Type')}:</dt>
             <dd>${obj.type}</dd>
         % endif
-        % if obj.references or obj.source:
-            <dt>${_('Source')}:</dt>
-        % if obj.source:
-            <dd><span class="muted">${obj.source}</span></dd>
-        % endif
-        % if obj.references:
-            <dd>${h.linked_references(request, obj)|n}</dd>
-        % endif
-        % endif
         % for k, v in obj.datadict().items():
             <dt>${k}</dt>
             <dd>${v}</dd>
