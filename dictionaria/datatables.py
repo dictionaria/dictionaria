@@ -172,6 +172,10 @@ class Words(datatables.Units):
                     name = 'lang-{0}'.format(name)
                 self.vars[name] = aliased(common.Unit_data, name=name)
 
+    def toolbar(self):
+        return HTML.a(
+            'Help', class_="btn btn-warning", href=self.req.route_url('help'), target="_blank")
+
     def base_query(self, query):
         if self.second_tab:
             query = query.filter(Word.dictionary_pk == self.contribution.pk) \
@@ -436,6 +440,10 @@ class DictionarySources(Sources):
 
 class Examples(Sentences):
     __constraints__ = [Dictionary]
+
+    def toolbar(self):
+        return HTML.a(
+            'Help', class_="btn btn-warning", href=self.req.route_url('help'), target="_blank")
 
     def base_query(self, query):
         from clld.db.models.sentence import Sentence_files
