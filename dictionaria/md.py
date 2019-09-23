@@ -1,5 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 from itertools import chain
 
 from zope.interface import implementer
@@ -7,6 +5,8 @@ from zope.interface import implementer
 from clld import interfaces
 from clld.web.adapters.md import MetadataFromRec as Base
 from clld.lib import bibtex
+
+from dictionaria.util import last_first
 
 
 class MetadataFromRec(Base):
@@ -28,7 +28,7 @@ class MetadataFromRec(Base):
             'article',
             '{0}-{1}'.format(req.dataset.id, ctx.id),
             author=[
-                c.last_first() for c in
+                last_first(c) for c in
                 chain(ctx.primary_contributors, ctx.secondary_contributors)],
             title=getattr(ctx, 'citation_name', ctx.__unicode__()),
             url=req.resource_url(ctx),

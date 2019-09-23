@@ -1,5 +1,6 @@
+from pathlib import Path
+
 from clld.web.assets import environment
-from clldutils.path import Path
 
 import dictionaria
 

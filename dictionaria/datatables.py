@@ -1,13 +1,11 @@
-from __future__ import unicode_literals
-
 from collections import OrderedDict
 
 from sqlalchemy import and_, or_, func
-from sqlalchemy.orm import joinedload_all, joinedload, aliased
+from sqlalchemy.orm import joinedload, aliased
 
 from clld.web import datatables
 from clld.web.datatables.base import (
-    DataTable, LinkToMapCol, Col, LinkCol, IdCol, filter_number, DetailsRowLinkCol,
+    DataTable, LinkToMapCol, Col, LinkCol, filter_number, DetailsRowLinkCol,
 )
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages

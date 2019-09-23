@@ -1,8 +1,6 @@
-# coding: utf8
-from __future__ import unicode_literals
 import re
+from pathlib import Path
 
-from clldutils.path import Path
 from clldutils.jsonlib import load
 from clldutils.misc import nfilter
 from clld.db.meta import DBSession

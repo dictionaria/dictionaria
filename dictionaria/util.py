@@ -18,6 +18,14 @@ MULT_VALUE_SEP = ' ; '
 MARKDOWN_LINK_PATTERN = re.compile(r'\[(?P<label>[^\]]+)\]\((?P<uid>[^)]+)\)')
 
 
+def last_first(contrib):
+    if contrib.id == 'baezgabriela':
+        return '{0}, {1}'.format(
+            ' '.join(contrib.name.split()[1:]),
+            contrib.name.split()[0])
+    return contrib.last_first()
+
+
 def add_unit_links(req, contrib, text):
     res, pos = [], 0
     for m in MARKDOWN_LINK_PATTERN.finditer(text):

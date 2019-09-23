@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from datetime import date
 from itertools import groupby, chain
 from collections import OrderedDict, defaultdict
@@ -8,7 +7,7 @@ import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
-from clldutils.misc import slug, nfilter, UnicodeMixin
+from clldutils.misc import slug, nfilter
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession

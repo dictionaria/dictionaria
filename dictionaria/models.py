@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from itertools import groupby
 from collections import defaultdict
 
@@ -9,8 +8,6 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Date,
-    Boolean,
-    func,
 )
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declared_attr

@@ -1,12 +1,9 @@
-# coding: utf8
-from __future__ import unicode_literals
 from hashlib import md5
-from collections import OrderedDict, defaultdict
-import re
+from collections import OrderedDict
+from pathlib import Path
 
 from clldutils.sfm import SFM, Entry
 from clldutils.misc import lazyproperty, slug, UnicodeMixin
-from clldutils.path import Path
 from clldutils.jsonlib import load
 from clldutils.text import split_text
 
