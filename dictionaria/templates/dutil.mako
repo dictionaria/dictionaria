@@ -138,10 +138,13 @@
             <ul class="unstyled">
                 <li>
                     <strong>${u.add_unit_links(req, ctx.dictionary, m.name)|n}</strong>
+                    % if 'Description' in m.sourcedict and m.sourcedict['Description']:
+                        [${'; '.join(h.link(req, src) for src in m.sourcedict['Description']) | n}]
+                    % endif
                     ##% if m.gloss and m.name != m.gloss:
-                ##    [${m.gloss}]
-                ##% endif
-                    </li>
+                    ##    [${m.gloss}]
+                    ##% endif
+                </li>
                 % if m.alt_translation1:
                     <li>
                         <span class="alt-translation alt-translation1">${m.alt_translation1} [${m.alt_translation_language1}]</span>
