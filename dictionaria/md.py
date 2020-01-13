@@ -30,7 +30,7 @@ class MetadataFromRec(Base):
             author=[
                 last_first(c) for c in
                 chain(ctx.primary_contributors, ctx.secondary_contributors)],
-            title=getattr(ctx, 'citation_name', ctx.__unicode__()),
+            title=getattr(ctx, 'citation_name', str(ctx)),
             url=req.resource_url(ctx),
             journal=req.dataset.name,
             number='{0}'.format(ctx.number),
@@ -52,7 +52,7 @@ class BibTex(MetadataFromRec):
     mimetype = 'text/x-bibtex'
 
     def render(self, ctx, req):
-        return self.rec(ctx, req).__unicode__()
+        return str(self.rec(ctx, req))
 
 
 @implementer(interfaces.IRepresentation, interfaces.IMetadata)
