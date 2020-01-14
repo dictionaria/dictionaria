@@ -216,7 +216,7 @@ def prime_cache(args):
                 if a['href'] in link_map:
                     type_ = link_map[a['href']]
                     if a.string in labels[type_][d.id]:
-                        a['href'] = args.env['request'].route_url(
+                        a['href'] = args.env['request'].route_path(
                             type_, id='{0}-{1}'.format(d.id, a.string))
                         a.string = labels[type_][d.id][a.string]
                         if type_ == 'unit':
