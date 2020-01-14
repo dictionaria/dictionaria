@@ -10,7 +10,7 @@ from clld.web.datatables.base import (
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
 from clld.web.datatables.sentence import Sentences, TsvCol
-from clld.web.datatables.source import Sources
+from clld.web.datatables.source import Sources, TypeCol
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -227,7 +227,8 @@ class Words(datatables.Units):
                 res.append(Col(self,
                     'examples',
                     input_size='mini',
-                    model_col=Word.example_count))
+                    model_col=Word.example_count,
+                    sTitle='examples'))
             if self.contribution.semantic_domains:
                 res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
             if self.contribution.count_audio:
@@ -435,6 +436,16 @@ class DictionarySources(Sources):
 
         return query
 
+    def col_defs(self):
+        return [
+            DetailsRowLinkCol(self, 'd', sTitle='details'),
+            LinkCol(self, 'name', sTitle='name'),
+            Col(self, 'description', sTitle='title', format=lambda i: HTML.span(i.description)),
+            Col(self, 'year', sTitle='year'),
+            Col(self, 'author', sTitle='author'),
+            TypeCol(self, 'bibtex_type'),
+        ]
+
 
 class Examples(Sentences):
     __constraints__ = [Dictionary]
@@ -479,7 +490,8 @@ class Examples(Sentences):
                 'dictionary',
                 model_col=Dictionary.name,
                 get_obj=lambda i: i.dictionary,
-                choices=get_distinct_values(Dictionary.name)))
+                choices=get_distinct_values(Dictionary.name),
+                sTitle='dictionary'))
         return res
 
     def get_options(self):
