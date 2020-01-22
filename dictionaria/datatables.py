@@ -221,7 +221,10 @@ class Words(datatables.Units):
             ]
             if self.second_tab:
                 for name in self.vars:
-                    res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+                    if name == 'comparison meanings':
+                        res.append(MeaningsCol(self, name, sTitle='comparison meanings'))
+                    else:
+                        res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
                 return res
             else:
                 res.append(Col(self,
@@ -237,7 +240,10 @@ class Words(datatables.Units):
                 res.append(ThumbnailCol(self, 'image', sTitle=''))
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
-                col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
+                if name == 'comparison meanings':
+                    col = MeaningsCol(self, name, sTitle='comparison meanings')
+                else:
+                    col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
                 if name in self.contribution.jsondata['choices']:
                     col.choices = self.contribution.jsondata['choices'][name]
                 res.append(col)
