@@ -1,4 +1,5 @@
 from collections import defaultdict, OrderedDict
+import re
 
 from pycldf import Dictionary as CldfDictionary, Sources
 from clldutils.misc import lazyproperty, nfilter
@@ -199,12 +200,19 @@ class Dictionary(BaseDictionary):
                         ord=index,
                         jsondata=dict(with_links=with_links)))
 
-            for i, md in enumerate(nfilter(sense[colmap['description']]), start=1):
-                key = md.lower()
-                if key in comparison_meanings:
-                    concept = comparison_meanings[key]
-                else:
+            concepticon_field = sense.get('Concepticon_ID') or ''
+            concepticon_ids = [
+                elem.strip()
+                for elem in concepticon_field.split(';')
+                if elem.strip()]
+            for i, concepticon_id in enumerate(concepticon_ids):
+                match = re.fullmatch(r'([^]]*)\s*\[(\d+)\]', concepticon_id)
+                if not match:
                     continue
+                _, cid = match.groups()
+                if cid not in comparison_meanings:
+                    continue
+                concept = comparison_meanings[cid]
 
                 vsid = '%s-%s' % (lang.id, concept)
                 vs = data['ValueSet'].get(vsid)
