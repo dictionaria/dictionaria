@@ -200,7 +200,12 @@ class Dictionary(BaseDictionary):
                         ord=index,
                         jsondata=dict(with_links=with_links)))
 
-            for i, concepticon_id in enumerate(sense.get('Concepticon_IDs', ())):
+            concepticon_field = sense.get('Concepticon_ID') or ''
+            concepticon_ids = [
+                elem.strip()
+                for elem in concepticon_field.split(';')
+                if elem.strip()]
+            for i, concepticon_id in enumerate(concepticon_ids):
                 match = re.fullmatch(r'([^]]*)\s*\[(\d+)\]', concepticon_id)
                 if not match:
                     continue
