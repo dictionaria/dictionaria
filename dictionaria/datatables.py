@@ -222,7 +222,7 @@ class Words(datatables.Units):
             if self.second_tab:
                 for name in self.vars:
                     if name == 'comparison meanings':
-                        res.append(MeaningsCol(self, name, sTitle='comparison meanings'))
+                        res.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
                     else:
                         res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
                 return res
@@ -241,7 +241,7 @@ class Words(datatables.Units):
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
             for name in self.vars:
                 if name == 'comparison meanings':
-                    col = MeaningsCol(self, name, sTitle='comparison meanings')
+                    col = MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning')
                 else:
                     col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
                     if name in self.contribution.jsondata['choices']:
