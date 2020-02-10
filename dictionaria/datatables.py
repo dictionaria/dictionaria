@@ -244,8 +244,8 @@ class Words(datatables.Units):
                     col = MeaningsCol(self, name, sTitle='comparison meanings')
                 else:
                     col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
-                if name in self.contribution.jsondata['choices']:
-                    col.choices = self.contribution.jsondata['choices'][name]
+                    if name in self.contribution.jsondata['choices']:
+                        col.choices = self.contribution.jsondata['choices'][name]
                 res.append(col)
             return res
         return [
