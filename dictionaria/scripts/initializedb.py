@@ -233,26 +233,35 @@ def prime_cache(args):
     def joined(iterable):
         return ' / '.join(sorted(nfilter(set(iterable))))
 
-    q = DBSession.query(Word)\
-        .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
-        .options(joinedload(Word.meanings), joinedload(Word.dictionary))
-    for _, words in groupby(q, lambda u: u.name):
-        words = list(words)
-        for i, word in enumerate(words):
-            word.description = ' / '.join(m.name for m in word.meanings)
-            word.comparison_meanings = joined(m.reverse for m in word.meanings)
-            word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
-            word.number = i + 1 if len(words) > 1 else 0
+    def denormalize_dictionary(contrib):
+        q = DBSession.query(Word)\
+            .filter_by(dictionary=contrib)\
+            .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
+            .options(joinedload(Word.meanings), joinedload(Word.dictionary))
+        for _, words in groupby(q, lambda u: u.name):
+            words = list(words)
+            for i, word in enumerate(words):
+                word.description = ' / '.join(m.name for m in word.meanings)
+                word.comparison_meanings = joined(m.reverse for m in word.meanings)
+                word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
+                word.number = i + 1 if len(words) > 1 else 0
 
-            for suffix in ['1', '2']:
-                alt_t, alt_l = [], []
-                for m in word.meanings:
-                    if getattr(m, 'alt_translation' + suffix):
-                        alt_l.append(getattr(m, 'alt_translation_language' + suffix))
-                        alt_t.append(getattr(m, 'alt_translation' + suffix))
-                if alt_t and len(set(alt_l)) == 1:
-                    DBSession.add(common.Unit_data(
-                        object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
+                for suffix in ['1', '2']:
+                    alt_t, alt_l = [], []
+                    for m in word.meanings:
+                        if getattr(m, 'alt_translation' + suffix):
+                            alt_l.append(getattr(m, 'alt_translation_language' + suffix))
+                            alt_t.append(getattr(m, 'alt_translation' + suffix))
+                    if alt_t and len(set(alt_l)) == 1:
+                        DBSession.add(common.Unit_data(
+                            object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
+        DBSession.flush()
+
+    DBSession.flush()
+    for d in DBSession.query(Dictionary):
+        print('Denormalizing dictionary {} ...'.format(d.id))
+        denormalize_dictionary(d)
+        print('... done')
 
     def count_unit_media_files(contrib, mtype, cls=common.Unit_files):
         if cls == common.Unit_files:
@@ -273,9 +282,11 @@ def prime_cache(args):
             .filter(common.Sentence_files.mime_type.ilike(mtype + '/%'))\
             .count()
 
-    for d in DBSession.query(Dictionary).options(joinedload(Dictionary.words)):
-        d.count_words = len(d.words)
-        sds = set(chain(*[w.semantic_domain_list for w in d.words]))
+    print('counting media files ...')
+    for d in DBSession.query(Dictionary):
+        q = DBSession.query(Word).filter(Word.dictionary_pk == d.pk)
+        d.count_words = q.count()
+        sds = set(chain(*[w.semantic_domain_list for w in q]))
         d.semantic_domains = join(sorted(sds))
         d.count_audio = count_unit_media_files(d, 'audio')
         d.count_example_audio = count_unit_media_files(d, 'audio', cls=common.Sentence_files)
@@ -292,6 +303,8 @@ def prime_cache(args):
             if len(values) < 40:
                 choices[col] = sorted(values)
         d.update_jsondata(choices=choices)
+        DBSession.flush()
+    print('... done')
 
     DBSession.execute("""
     UPDATE word
