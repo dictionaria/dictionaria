@@ -147,12 +147,12 @@
                 </li>
                 % if m.alt_translation1:
                     <li>
-                        <span class="alt-translation alt-translation1">${m.alt_translation1} [${m.alt_translation_language1}]</span>
+                        <span class="alt-translation alt-translation1">${u.add_unit_links(req, ctx.dictionary, m.alt_translation1)|n} [${m.alt_translation_language1}]</span>
                     </li>
                 % endif
                 % if m.alt_translation2:
                     <li>
-                        <span class="alt-translation alt-translation2">${m.alt_translation2} [${m.alt_translation_language2}]</span>
+                        <span class="alt-translation alt-translation2">${u.add_unit_links(req, ctx.dictionary, m.alt_translation2)|n} [${m.alt_translation_language2}]</span>
                     </li>
                 % endif
                 % if m.semantic_domain_list:
