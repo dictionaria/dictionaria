@@ -25,6 +25,11 @@ table caption {
     caption-side: bottom;
     text-align: left;
 }
+/* Data tables are just a tiny bit too wide for the tab-content div,
+   which makes it scroll horizontally in Firefox. */
+div.tab-content table.dataTable {
+    width: 99.5%;
+}
 span.lemma {font-style: italic;}
 ul.semantic_domains_inline:before {content: "semantic domain: "}
 span.alt-translation {}
