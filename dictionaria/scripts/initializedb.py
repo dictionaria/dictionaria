@@ -211,7 +211,9 @@ def prime_cache(args):
 
     for d in DBSession.query(Dictionary):
         if d.description:
-            soup = BeautifulSoup(markdown(d.description), 'html.parser')
+            soup = BeautifulSoup(
+                markdown(d.description, extensions=['tables']),
+                'html.parser')
             for a in soup.find_all('a', href=True):
                 if a['href'] in link_map:
                     type_ = link_map[a['href']]
