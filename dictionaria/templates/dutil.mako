@@ -95,22 +95,6 @@
                 </td>
             </tr>
         % endif
-        % if [m for m in ctx.meanings if m.reverse]:
-            <tr>
-                <td><small>comparison meanings</small></td>
-                <td>
-                    <ul class="unstyled">
-                        % for m in ctx.meanings:
-                            % for re in m.reverse_list:
-                                % if re not in [c.valueset.parameter.name for c in ctx.counterparts]:
-                                    <li>${re}</li>
-                                % endif
-                            % endfor
-                        % endfor
-                    </ul>
-                </td>
-            </tr>
-        % endif
         % for value in ctx.unitvalues:
             <tr>
                 <td>${h.link(request, value.unitparameter)}</td>
