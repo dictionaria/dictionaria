@@ -107,7 +107,9 @@ class CustomCol(Col):
         return icontains(self.dt.vars[self.name].value, qs)
 
     def format(self, item):
-        return HTML.p(item.datadict().get(self.name, ''))
+        value = item.datadict().get(self.name, '')
+        value = add_unit_links(self.dt.req, item.dictionary, value)
+        return HTML.p(value)
 
     def order(self):
         return self.dt.vars[self.name].value
