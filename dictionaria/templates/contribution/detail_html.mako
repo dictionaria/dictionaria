@@ -15,7 +15,9 @@ ${util.codes(ctx.language)}
         % if ctx.jsondata.get('second_tab'):
             <li><a href="#words2" data-toggle="tab">Words extra</a></li>
         % endif
+        % if ctx.examples:
         <li><a href="#examples" data-toggle="tab">Examples</a></li>
+        % endif
         % if ctx.sources:
             <li><a href="#sources" data-toggle="tab">Sources</a></li>
         % endif
@@ -41,9 +43,11 @@ ${util.codes(ctx.language)}
                 ${request.get_datatable('units', h.models.Value, contribution=ctx, second_tab=True).render()}
             </div>
         % endif
+        % if ctx.examples:
         <div id="examples" class="tab-pane">
             ${request.get_datatable('sentences', h.models.Sentence, dictionary=ctx).render()}
         </div>
+        % endif
         % if ctx.sources:
             <div id="sources" class="tab-pane">
                 ${request.get_datatable('sources', h.models.Source, dictionary=ctx).render()}
