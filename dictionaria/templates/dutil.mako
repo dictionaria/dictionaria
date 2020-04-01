@@ -196,7 +196,7 @@
                     % if desc:
                         <span>${desc}:</span>
                     % endif
-                    <ul class="inline">
+                    <ul class="unstyled">
                         % for w in words:
                             <li>
                                 <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
