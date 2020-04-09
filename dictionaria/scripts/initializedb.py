@@ -7,7 +7,7 @@ import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
-from clldutils.misc import slug, nfilter
+from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
@@ -199,6 +199,44 @@ def joined(iterable):
     return ' / '.join(sorted(nfilter(set(iterable))))
 
 
+class CustomFieldDenormalizer:
+    """Denormalize custom fields for the first and second tab of a word."""
+
+    custom_attribs = ('custom_field1', 'custom_field2')
+    second_tab_attribs = ('second_tab1', 'second_tab2', 'second_tab3')
+
+    def __init__(self, word):
+        self.word = word
+
+    @lazyproperty
+    def word_datadict(self):
+        return self.word.datadict()
+
+    @lazyproperty
+    def meaning_datadicts(self):
+        return [m.datadict() for m in self.word.meanings]
+
+    @lazyproperty
+    def meaning_keys(self):
+        return {k for d in self.meaning_datadicts for k in d}
+
+    def set_custom_fields(self, custom_fields):
+        self._denormalise_custom_fields(self.custom_attribs, custom_fields)
+
+    def set_second_tab(self, second_tab):
+        self._denormalise_custom_fields(self.second_tab_attribs, second_tab)
+
+    def _denormalise_custom_fields(self, attribs, colnames):
+        for attrib, name in zip(attribs, colnames):
+            if name in self.word_datadict:
+                setattr(self.word, attrib, self.word_datadict[name])
+            elif name in self.meaning_keys:
+                val = ' / '.join(
+                    d.get(name) for d in self.meaning_datadicts if d.get(name))
+                if val:
+                    setattr(self.word, attrib, val)
+
+
 def denormalize_dictionary(contrib):
     query = DBSession.query(Word)\
         .filter_by(dictionary=contrib)\
@@ -206,6 +244,9 @@ def denormalize_dictionary(contrib):
         .options(joinedload(Word.meanings), joinedload(Word.dictionary))
 
     jsondata = contrib.jsondata
+    custom_fields = jsondata.get('custom_fields') or ()
+    second_tab = jsondata.get('second_tab') or ()
+
     for _, words in groupby(query, lambda u: u.name):
         words = list(words)
         for i, word in enumerate(words):
@@ -213,33 +254,9 @@ def denormalize_dictionary(contrib):
             word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
             word.number = i + 1 if len(words) > 1 else 0
 
-            word_data = word.datadict()
-            # XXX Maybe make these lazier? (for dicts without sense fields in the word table)
-            meaning_datas = [m.datadict() for m in word.meanings]
-            meaning_keys = {k for d in meaning_datas for k in d}
-
-            custom_fields = jsondata.get('custom_fields') or ()
-            custom_attribs = ('custom_field1', 'custom_field2')
-            second_tab = jsondata.get('second_tab') or ()
-            second_tab_attribs = ('second_tab1', 'second_tab2', 'second_tab3')
-            for attrib, name in zip(custom_attribs, custom_fields):
-                if name in word_data:
-                    setattr(word, attrib, word_data[name])
-                elif name in meaning_keys:
-                    val = ' / '.join(
-                        d.get(name)
-                        for d in meaning_datas
-                        if d.get(name))
-                    setattr(word, attrib, val)
-            for attrib, name in zip(second_tab_attribs, second_tab):
-                if name in word_data:
-                    setattr(word, attrib, word_data[name])
-                elif name in meaning_keys:
-                    val = ' / '.join(
-                        d.get(name)
-                        for d in meaning_datas
-                        if d.get(name))
-                    setattr(word, attrib, val)
+            custom_field_adder = CustomFieldDenormalizer(word)
+            custom_field_adder.set_custom_fields(custom_fields)
+            custom_field_adder.set_second_tab(second_tab)
 
             for suffix in ['1', '2']:
                 alt_t, alt_l = [], []
