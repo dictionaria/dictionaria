@@ -102,7 +102,7 @@ class WordCol(LinkCol):
             func.unaccent(Word.name).contains(func.unaccent(qs)))
 
 
-class CustomCol(Col):
+class AltTransCol(Col):
     def search(self, qs):
         return icontains(self.dt.vars[self.name].value, qs)
 
@@ -113,6 +113,18 @@ class CustomCol(Col):
 
     def order(self):
         return self.dt.vars[self.name].value
+
+
+class CustomCol(Col):
+
+    def search(self, qs):
+        db_column = getattr(Word, self.name)
+        return or_(
+            icontains(db_column, qs),
+            func.unaccent(db_column).contains(func.unaccent(qs)))
+
+    def order(self):
+        return func.unaccent(getattr(Word, self.name))
 
 
 class SemanticDomainCol(Col):
@@ -232,10 +244,10 @@ class Words(datatables.Units):
                 if name == 'comparison meanings':
                     columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
                 elif name.startswith('lang-'):
-                    columns.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+                    columns.append(AltTransCol(self, name, sTitle=name.replace('lang-', '')))
                 else:
                     # TODO Implement search and, possibly, sorting
-                    columns.append(Col(self, attrib, sTitle=name, bSortable=False))
+                    columns.append(CustomCol(self, attrib, sTitle=name))
             return columns
 
         columns.append(Col(self,
@@ -255,12 +267,12 @@ class Words(datatables.Units):
             if name == 'comparison meanings':
                 columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
             elif name.startswith('lang-'):
-                col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
+                col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
                 if name in self.contribution.jsondata['choices']:
                     col.choices = self.contribution.jsondata['choices'][name]
                 columns.append(col)
             else:
-                col = Col(self, attrib, bSortable=False, sTitle=name)
+                col = CustomCol(self, attrib, sTitle=name)
                 if name in self.contribution.jsondata['choices']:
                     col.choices = self.contribution.jsondata['choices'][name]
                 # TODO Implement search and, possibly, sorting
