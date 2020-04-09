@@ -222,11 +222,16 @@ class Words(datatables.Units):
                     model_col=common.Unit.description),
             ]
             if self.second_tab:
+                col_no = 0
                 for name in self.vars:
                     if name == 'comparison meanings':
                         res.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
-                    else:
+                    elif name.startswith('lang-'):
                         res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
+                    elif col_no < 3:
+                        col_no += 1
+                        # Implement search and, possibly, sorting
+                        res.append(Col(self, 'second_tab%d' % col_no, sTitle=name, bSortable=False))
                 return res
             else:
                 res.append(Col(self,
@@ -241,14 +246,21 @@ class Words(datatables.Units):
             if self.contribution.count_image:
                 res.append(ThumbnailCol(self, 'image', sTitle=''))
                 #res.append(MediaCol(self, 'image', 'image', sTitle=''))
+            col_no = 0
             for name in self.vars:
                 if name == 'comparison meanings':
-                    col = MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning')
-                else:
+                    res.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
+                elif name.startswith('lang-'):
                     col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
                     if name in self.contribution.jsondata['choices']:
                         col.choices = self.contribution.jsondata['choices'][name]
-                res.append(col)
+                    res.append(col)
+                elif col_no < 2:
+                    col_no += 1
+                    col = Col(self, 'custom_field%d' % col_no, bSortable=False, sTitle=name)
+                    if name in self.contribution.jsondata['choices']:
+                        col.choices = self.contribution.jsondata['choices'][name]
+                    res.append(col)
             return res
         return [
             WordCol(self, 'word'),

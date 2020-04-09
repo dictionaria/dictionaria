@@ -93,6 +93,12 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
     number = Column(Integer, default=0)  # for disambiguation of words with the same name
     example_count = Column(Integer, default=0)
 
+    custom_field1 = Column(Unicode)
+    custom_field2 = Column(Unicode)
+    second_tab1 = Column(Unicode)
+    second_tab2 = Column(Unicode)
+    second_tab3 = Column(Unicode)
+
     def iterfiles(self):
         for file in self._files:
             yield file
