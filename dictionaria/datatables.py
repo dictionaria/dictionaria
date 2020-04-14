@@ -246,7 +246,6 @@ class Words(datatables.Units):
                 elif name.startswith('lang-'):
                     columns.append(AltTransCol(self, name, sTitle=name.replace('lang-', '')))
                 else:
-                    # TODO Implement search and, possibly, sorting
                     columns.append(CustomCol(self, attrib, sTitle=name))
             return columns
 
@@ -262,7 +261,7 @@ class Words(datatables.Units):
         if self.contribution.count_image:
             columns.append(ThumbnailCol(self, 'image', sTitle=''))
             #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
-        attribs = ('custom_column1', 'custom_column2')
+        attribs = ('custom_field1', 'custom_field2')
         for name, attrib in zip(self.vars, attribs):
             if name == 'comparison meanings':
                 columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
@@ -275,7 +274,6 @@ class Words(datatables.Units):
                 col = CustomCol(self, attrib, sTitle=name)
                 if name in self.contribution.jsondata['choices']:
                     col.choices = self.contribution.jsondata['choices'][name]
-                # TODO Implement search and, possibly, sorting
                 columns.append(col)
         return columns
 
