@@ -102,7 +102,7 @@ class WordCol(LinkCol):
             func.unaccent(Word.name).contains(func.unaccent(qs)))
 
 
-class CustomCol(Col):
+class AltTransCol(Col):
     def search(self, qs):
         return icontains(self.dt.vars[self.name].value, qs)
 
@@ -113,6 +113,18 @@ class CustomCol(Col):
 
     def order(self):
         return self.dt.vars[self.name].value
+
+
+class CustomCol(Col):
+
+    def search(self, qs):
+        db_column = getattr(Word, self.name)
+        return or_(
+            icontains(db_column, qs),
+            func.unaccent(db_column).contains(func.unaccent(qs)))
+
+    def order(self):
+        return func.unaccent(getattr(Word, self.name))
 
 
 class SemanticDomainCol(Col):
@@ -202,61 +214,68 @@ class Words(datatables.Units):
         return query.distinct()
 
     def col_defs(self):
-        poscol = Col(self, 'part_of_speech', model_col=Word.pos)
-        if self.contribution:
-            pos = sorted((c for c, in DBSession.query(Word.pos)
-                         .filter(Word.dictionary_pk == self.contribution.pk)
-                         .distinct() if c))
-            res = [
-                FtsCol(self, 'fts', sTitle='full entry', model_col=Word.fts),
-                WordCol(self, 'word', sTitle='headword', model_col=common.Unit.name),
-                Col(self,
-                    'part_of_speech',
-                    sTitle='part of speech',
-                    model_col=Word.pos,
-                    choices=pos,
-                    format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-                MeaningDescriptionCol2(self,
-                    'description',
-                    sTitle='meaning description',
-                    model_col=common.Unit.description),
-            ]
-            if self.second_tab:
-                for name in self.vars:
-                    if name == 'comparison meanings':
-                        res.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
-                    else:
-                        res.append(CustomCol(self, name, sTitle=name.replace('lang-', '')))
-                return res
-            else:
-                res.append(Col(self,
-                    'examples',
-                    input_size='mini',
-                    model_col=Word.example_count,
-                    sTitle='examples'))
-            if self.contribution.semantic_domains:
-                res.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
-            if self.contribution.count_audio:
-                res.append(MediaCol(self, 'audio', 'audio', sTitle=''))
-            if self.contribution.count_image:
-                res.append(ThumbnailCol(self, 'image', sTitle=''))
-                #res.append(MediaCol(self, 'image', 'image', sTitle=''))
-            for name in self.vars:
+        if not self.contribution:
+            return [
+                WordCol(self, 'word'),
+                Col(self, 'part_of_speech', model_col=Word.pos),
+                Col(self, 'description'),
+                MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison meaning'),
+                DictionaryCol(self, 'dictionary')]
+
+        pos_choices = sorted((c for c, in DBSession.query(Word.pos)
+                     .filter(Word.dictionary_pk == self.contribution.pk)
+                     .distinct() if c))
+        columns = [
+            FtsCol(self, 'fts', sTitle='full entry', model_col=Word.fts),
+            WordCol(self, 'word', sTitle='headword', model_col=common.Unit.name),
+            Col(self,
+                'part_of_speech',
+                sTitle='part of speech',
+                model_col=Word.pos,
+                choices=pos_choices,
+                format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
+            MeaningDescriptionCol2(self,
+                'description',
+                sTitle='meaning description',
+                model_col=common.Unit.description)]
+        if self.second_tab:
+            attribs = ('second_tab1', 'second_tab2', 'second_tab3')
+            for name, attrib in zip(self.vars, attribs):
                 if name == 'comparison meanings':
-                    col = MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning')
+                    columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
+                elif name.startswith('lang-'):
+                    columns.append(AltTransCol(self, name, sTitle=name.replace('lang-', '')))
                 else:
-                    col = CustomCol(self, name, sTitle=name.replace('lang-', ''))
-                    if name in self.contribution.jsondata['choices']:
-                        col.choices = self.contribution.jsondata['choices'][name]
-                res.append(col)
-            return res
-        return [
-            WordCol(self, 'word'),
-            poscol,
-            Col(self, 'description'),
-            MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison meaning'),
-            DictionaryCol(self, 'dictionary'),
-        ]
+                    columns.append(CustomCol(self, attrib, sTitle=name))
+            return columns
+
+        columns.append(Col(self,
+            'examples',
+            input_size='mini',
+            model_col=Word.example_count,
+            sTitle='examples'))
+        if self.contribution.semantic_domains:
+            columns.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
+        if self.contribution.count_audio:
+            columns.append(MediaCol(self, 'audio', 'audio', sTitle=''))
+        if self.contribution.count_image:
+            columns.append(ThumbnailCol(self, 'image', sTitle=''))
+            #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
+        attribs = ('custom_field1', 'custom_field2')
+        for name, attrib in zip(self.vars, attribs):
+            if name == 'comparison meanings':
+                columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
+            elif name.startswith('lang-'):
+                col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
+                if self.contribution.jsondata['choices'].get(name):
+                    col.choices = self.contribution.jsondata['choices'][name]
+                columns.append(col)
+            else:
+                col = CustomCol(self, attrib, sTitle=name)
+                if self.contribution.jsondata['choices'].get(name):
+                    col.choices = self.contribution.jsondata['choices'][name]
+                columns.append(col)
+        return columns
 
     def get_options(self):
         opts = DataTable.get_options(self)

@@ -79,12 +79,7 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
     dictionary, i.e. part of a contribution.
     """
     pk = Column(Integer, ForeignKey('unit.pk'), primary_key=True)
-    entry_comment = Column(Unicode)
     semantic_domain = Column(Unicode)
-    comparison_meanings = Column(Unicode)
-    phonetic = Column(Unicode)
-    #script = Column(Unicode)
-    #borrowed = Column(Unicode)
     fts = Column(TSVECTOR)
     serialized = Column(Unicode)
 
@@ -97,6 +92,12 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
     dictionary = relationship(Dictionary, backref='words')
     number = Column(Integer, default=0)  # for disambiguation of words with the same name
     example_count = Column(Integer, default=0)
+
+    custom_field1 = Column(Unicode)
+    custom_field2 = Column(Unicode)
+    second_tab1 = Column(Unicode)
+    second_tab2 = Column(Unicode)
+    second_tab3 = Column(Unicode)
 
     def iterfiles(self):
         for file in self._files:
@@ -129,10 +130,6 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
     @property
     def description_list(self):
         return split(self.description)
-
-    @property
-    def comparison_meanings_list(self):
-        return split(self.comparison_meanings)
 
     @property
     def semantic_domain_list(self):
@@ -176,7 +173,6 @@ class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDesc
     gloss = Column(Unicode)
     language = Column(Unicode, default='en')
     semantic_domain = Column(Unicode)
-    reverse = Column(Unicode)
     alt_translation1 = Column(Unicode)
     alt_translation_language1 = Column(Unicode)
     alt_translation2 = Column(Unicode)
@@ -185,10 +181,6 @@ class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDesc
     @declared_attr
     def word(cls):
         return relationship(Word, backref=backref('meanings', order_by=[cls.ord]))
-
-    @property
-    def reverse_list(self):
-        return split(self.reverse or '')
 
     @property
     def semantic_domain_list(self):

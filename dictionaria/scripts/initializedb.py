@@ -7,7 +7,7 @@ import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
-from clldutils.misc import slug, nfilter
+from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
 from clld.scripts.util import Data, initializedb
 from clld.db.meta import DBSession
@@ -195,6 +195,81 @@ def main(args):
         glottolog_repos='../../glottolog/glottolog')
 
 
+def joined(iterable):
+    return ' / '.join(sorted(nfilter(set(iterable))))
+
+
+class CustomFieldDenormalizer:
+    """Denormalize custom fields for the first and second tab of a word."""
+
+    custom_attribs = ('custom_field1', 'custom_field2')
+    second_tab_attribs = ('second_tab1', 'second_tab2', 'second_tab3')
+
+    def __init__(self, word):
+        self.word = word
+
+    @lazyproperty
+    def word_datadict(self):
+        return self.word.datadict()
+
+    @lazyproperty
+    def meaning_datadicts(self):
+        return [m.datadict() for m in self.word.meanings]
+
+    @lazyproperty
+    def meaning_keys(self):
+        return {k for d in self.meaning_datadicts for k in d}
+
+    def set_custom_fields(self, custom_fields):
+        self._denormalise_custom_fields(self.custom_attribs, custom_fields)
+
+    def set_second_tab(self, second_tab):
+        self._denormalise_custom_fields(self.second_tab_attribs, second_tab)
+
+    def _denormalise_custom_fields(self, attribs, colnames):
+        for attrib, name in zip(attribs, colnames):
+            if name in self.word_datadict:
+                setattr(self.word, attrib, self.word_datadict[name])
+            elif name in self.meaning_keys:
+                val = ' / '.join(
+                    d.get(name) for d in self.meaning_datadicts if d.get(name))
+                if val:
+                    setattr(self.word, attrib, val)
+
+
+def denormalize_dictionary(contrib):
+    query = DBSession.query(Word)\
+        .filter_by(dictionary=contrib)\
+        .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
+        .options(joinedload(Word.meanings), joinedload(Word.dictionary))
+
+    jsondata = contrib.jsondata
+    custom_fields = jsondata.get('custom_fields') or ()
+    second_tab = jsondata.get('second_tab') or ()
+
+    for _, words in groupby(query, lambda u: u.name):
+        words = list(words)
+        for i, word in enumerate(words):
+            word.description = ' / '.join(m.name for m in word.meanings)
+            word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
+            word.number = i + 1 if len(words) > 1 else 0
+
+            custom_field_adder = CustomFieldDenormalizer(word)
+            custom_field_adder.set_custom_fields(custom_fields)
+            custom_field_adder.set_second_tab(second_tab)
+
+            for suffix in ['1', '2']:
+                alt_t, alt_l = [], []
+                for m in word.meanings:
+                    if getattr(m, 'alt_translation' + suffix):
+                        alt_l.append(getattr(m, 'alt_translation_language' + suffix))
+                        alt_t.append(getattr(m, 'alt_translation' + suffix))
+                if alt_t and len(set(alt_l)) == 1:
+                    DBSession.add(common.Unit_data(
+                        object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
+    DBSession.flush()
+
+
 def prime_cache(args):
     """If data needs to be denormalized for lookup, do that here.
     This procedure should be separate from the db initialization, because
@@ -231,33 +306,6 @@ def prime_cache(args):
         meaning.representation = sum([len(vs.values) for vs in meaning.valuesets])
         if meaning.representation == 0:
             meaning.active = False
-
-    def joined(iterable):
-        return ' / '.join(sorted(nfilter(set(iterable))))
-
-    def denormalize_dictionary(contrib):
-        q = DBSession.query(Word)\
-            .filter_by(dictionary=contrib)\
-            .order_by(Word.dictionary_pk, common.Unit.name, common.Unit.pk)\
-            .options(joinedload(Word.meanings), joinedload(Word.dictionary))
-        for _, words in groupby(q, lambda u: u.name):
-            words = list(words)
-            for i, word in enumerate(words):
-                word.description = ' / '.join(m.name for m in word.meanings)
-                word.comparison_meanings = joined(m.reverse for m in word.meanings)
-                word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
-                word.number = i + 1 if len(words) > 1 else 0
-
-                for suffix in ['1', '2']:
-                    alt_t, alt_l = [], []
-                    for m in word.meanings:
-                        if getattr(m, 'alt_translation' + suffix):
-                            alt_l.append(getattr(m, 'alt_translation_language' + suffix))
-                            alt_t.append(getattr(m, 'alt_translation' + suffix))
-                    if alt_t and len(set(alt_l)) == 1:
-                        DBSession.add(common.Unit_data(
-                            object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
-        DBSession.flush()
 
     DBSession.flush()
     for d in DBSession.query(Dictionary):
@@ -310,7 +358,7 @@ def prime_cache(args):
 
     DBSession.execute("""
     UPDATE word
-      SET example_count = s.c 
+      SET example_count = s.c
       FROM (
         SELECT m.word_pk AS wpk, count(ms.sentence_pk) AS c
         FROM meaning AS m, meaningsentence AS ms
