@@ -267,12 +267,12 @@ class Words(datatables.Units):
                 columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
             elif name.startswith('lang-'):
                 col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
-                if name in self.contribution.jsondata['choices']:
+                if self.contribution.jsondata['choices'].get(name):
                     col.choices = self.contribution.jsondata['choices'][name]
                 columns.append(col)
             else:
                 col = CustomCol(self, attrib, sTitle=name)
-                if name in self.contribution.jsondata['choices']:
+                if self.contribution.jsondata['choices'].get(name):
                     col.choices = self.contribution.jsondata['choices'][name]
                 columns.append(col)
         return columns
