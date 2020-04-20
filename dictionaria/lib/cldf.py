@@ -122,7 +122,7 @@ class Dictionary(BaseDictionary):
                 if lemma.get(key):
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk,
-                        key=label,
+                        key=label.replace('_', ' '),
                         value=lemma[key],
                         ord=index,
                         jsondata=dict(with_links=with_links)))
