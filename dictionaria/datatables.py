@@ -128,7 +128,7 @@ class CustomCol(Col):
 
 
 class SemanticDomainCol(Col):
-    __kw__ = dict(bSortable=False, sTitle='semantic domain')
+    __kw__ = dict(bSortable=False, sTitle='Semantic Domain')
 
     def __init__(self, dt, name, sds, **kw):
         kw['choices'] = sds
@@ -217,32 +217,32 @@ class Words(datatables.Units):
         if not self.contribution:
             return [
                 WordCol(self, 'word'),
-                Col(self, 'part_of_speech', model_col=Word.pos),
+                Col(self, 'part_of_speech', model_col=Word.pos, sTitle='Part of Speech'),
                 Col(self, 'description'),
-                MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison meaning'),
+                MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'),
                 DictionaryCol(self, 'dictionary')]
 
         pos_choices = sorted((c for c, in DBSession.query(Word.pos)
                      .filter(Word.dictionary_pk == self.contribution.pk)
                      .distinct() if c))
         columns = [
-            FtsCol(self, 'fts', sTitle='full entry', model_col=Word.fts),
-            WordCol(self, 'word', sTitle='headword', model_col=common.Unit.name),
+            FtsCol(self, 'fts', sTitle='Full Entry', model_col=Word.fts),
+            WordCol(self, 'word', sTitle='Headword', model_col=common.Unit.name),
             Col(self,
                 'part_of_speech',
-                sTitle='part of speech',
+                sTitle='Part of Speech',
                 model_col=Word.pos,
                 choices=pos_choices,
                 format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
             MeaningDescriptionCol2(self,
                 'description',
-                sTitle='meaning description',
+                sTitle='Meaning Description',
                 model_col=common.Unit.description)]
         if self.second_tab:
             attribs = ('second_tab1', 'second_tab2', 'second_tab3')
             for name, attrib in zip(self.vars, attribs):
-                if name == 'comparison meanings':
-                    columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
+                if name == 'Comparison Meanings':
+                    columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'))
                 elif name.startswith('lang-'):
                     columns.append(AltTransCol(self, name, sTitle=name.replace('lang-', '')))
                 else:
@@ -252,8 +252,7 @@ class Words(datatables.Units):
         columns.append(Col(self,
             'examples',
             input_size='mini',
-            model_col=Word.example_count,
-            sTitle='examples'))
+            model_col=Word.example_count))
         if self.contribution.semantic_domains:
             columns.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
         if self.contribution.count_audio:
@@ -264,7 +263,7 @@ class Words(datatables.Units):
         attribs = ('custom_field1', 'custom_field2')
         for name, attrib in zip(self.vars, attribs):
             if name == 'comparison meanings':
-                columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='comparison meaning'))
+                columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'))
             elif name.startswith('lang-'):
                 col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
                 if self.contribution.jsondata['choices'].get(name):
@@ -329,10 +328,10 @@ class Meanings(datatables.Parameters):
         return [
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
-            MeaningDescriptionCol(self, 'name', sTitle='comparison meaning'),
-            #Col(self, 'description', sTitle='description'),
+            MeaningDescriptionCol(self, 'name', sTitle='Comparison Meaning'),
+            #Col(self, 'description', sTitle='Description'),
             RepresentationCol(
-                self, 'representation', sTitle='representation', sClass='right'),
+                self, 'representation', sTitle='Representation', sClass='right'),
             ConcepticonLinkCol(self, 'concepticon', sTitle=''),
         ]
 
@@ -389,20 +388,16 @@ class Dictionaries(datatables.Contributions):
         return [
             Col(self,
                 'number',
-                sTitle='number',
                 model_col=Dictionary.number,
                 input_size='mini'),
             NoWrapLinkCol(
                 self,
-                'dictionary',
-                sTitle='dictionary'),
+                'dictionary'),
             ContributorsCol(
                 self,
-                name='author',
-                sTitle='author'),
+                name='author'),
             Col(self,
                 'entries',
-                sTitle='entries',
                 sClass='right',
                 input_size='mini',
                 model_col=Dictionary.count_words),
@@ -410,7 +405,6 @@ class Dictionaries(datatables.Contributions):
                 self,
                 'year',
                 bSearchable=False,
-                sTitle='year',
                 model_col=Dictionary.published),
             Col(self,
                 'doi',
@@ -418,7 +412,7 @@ class Dictionaries(datatables.Contributions):
                 bSortable=False,
                 sTitle='DOI',
                 format=lambda i: i.doi_link()),
-            CitationCol(self, 'cite', sTitle='cite'),
+            CitationCol(self, 'cite', sTitle='Cite'),
         ]
 
 
@@ -446,9 +440,9 @@ class DictionaryContributors(DataTable):
 
     def col_defs(self):
         return [
-            NameCol(self, 'name', sTitle='name'),
-            ContributionsCol(self, 'Contributions', sTitle='contributions'),
-            AddressCol(self, 'address', sTitle='affiliation'),
+            NameCol(self, 'name'),
+            ContributionsCol(self, 'Contributions'),
+            AddressCol(self, 'address', sTitle='Affiliation'),
         ]
 
 
@@ -462,16 +456,6 @@ class DictionarySources(Sources):
             query = query.join(Dictionary).options(joinedload(DictionarySource.dictionary))
 
         return query
-
-    def col_defs(self):
-        return [
-            DetailsRowLinkCol(self, 'd', sTitle='details'),
-            LinkCol(self, 'name', sTitle='name'),
-            Col(self, 'description', sTitle='title', format=lambda i: HTML.span(i.description)),
-            Col(self, 'year', sTitle='year'),
-            Col(self, 'author', sTitle='author'),
-            TypeCol(self, 'bibtex_type'),
-        ]
 
 
 class Examples(Sentences):
@@ -500,12 +484,12 @@ class Examples(Sentences):
 
     def col_defs(self):
         res = [
-            LinkCol(self, 'name', sTitle='primary text', sClass="object-language"),
-            TsvCol(self, 'analyzed', sTitle='analyzed text'),
-            TsvCol(self, 'gloss', sTitle='gloss', sClass="gloss"),
+            LinkCol(self, 'name', sTitle='Primary Text', sClass="object-language"),
+            TsvCol(self, 'analyzed', sTitle='Analyzed Text'),
+            TsvCol(self, 'gloss', sClass="gloss"),
             Col(self,
                 'description',
-                sTitle=self.req.translate('translation'),
+                sTitle=self.req.translate('Translation'),
                 sClass="translation"),
         ]
         if self.dictionary and self.dictionary.count_example_audio:
@@ -517,8 +501,7 @@ class Examples(Sentences):
                 'dictionary',
                 model_col=Dictionary.name,
                 get_obj=lambda i: i.dictionary,
-                choices=get_distinct_values(Dictionary.name),
-                sTitle='dictionary'))
+                choices=get_distinct_values(Dictionary.name)))
         return res
 
     def get_options(self):
