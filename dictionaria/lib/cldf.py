@@ -195,7 +195,7 @@ class Dictionary(BaseDictionary):
                 if sense.get(key):
                     DBSession.add(models.Meaning_data(
                         object_pk=m.pk,
-                        key=label,
+                        key=label.replace('_', ' '),
                         value=sense[key],
                         ord=index,
                         jsondata=dict(with_links=with_links)))
