@@ -262,7 +262,7 @@ class Words(datatables.Units):
             #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
         attribs = ('custom_field1', 'custom_field2')
         for name, attrib in zip(self.vars, attribs):
-            if name == 'comparison meanings':
+            if name == 'Comparison Meanings':
                 columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'))
             elif name.startswith('lang-'):
                 col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
@@ -329,9 +329,9 @@ class Meanings(datatables.Parameters):
             #IdsCodeCol2(self, 'code'),
             #LinkCol(self, 'name'),
             MeaningDescriptionCol(self, 'name', sTitle='Comparison Meaning'),
-            #Col(self, 'description', sTitle='Description'),
+            #Col(self, 'description'),
             RepresentationCol(
-                self, 'representation', sTitle='Representation', sClass='right'),
+                self, 'representation', sClass='right'),
             ConcepticonLinkCol(self, 'concepticon', sTitle=''),
         ]
 
