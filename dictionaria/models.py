@@ -142,10 +142,10 @@ class WordReference(Base, common.HasSourceMixin):
 
 
 RELATIONS = {
-    'main entry': 'subentry',
-    'synonym': '(part of) synonym (for)',
-    'antonym': '(part of) antonym (for)',
-    'contains': 'is part of',
+    'Main Entry': 'Subentry',
+    'Synonym': '(Part of) Synonym (for)',
+    'Antonym': '(Part of) Antonym (for)',
+    'Contains': 'Is Part of',
 }
 
 

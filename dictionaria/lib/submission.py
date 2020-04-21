@@ -95,6 +95,15 @@ class Submission(object):
                 except KeyError:
                     pass
 
+            examples = self.dictionary.cldf['ExampleTable']
+            colmap = {k: self.dictionary.cldf['ExampleTable', k].name
+                      for k in ['id', 'primaryText', 'translatedText']
+                      if self.dictionary.cldf.get(('ExampleTable', k))}
+            fks = cldf.get_foreign_keys(self.dictionary.cldf, examples)
+            exlabels = cldf.get_labels(
+                'example', examples, colmap, self,
+                exclude=['Sense_IDs', 'Media_IDs', 'Language_ID'])
+
             for i, ex in enumerate(self.dictionary.cldf['ExampleTable']):
                 obj = data.add(
                     models.Example,
@@ -128,13 +137,14 @@ class Submission(object):
                 for md5 in sorted(set(ex.pop('Media_IDs', []))):
                     self.add_file(None, md5, common.Sentence_files, obj)
 
-                for k, v in ex.items():
-                    if v and (k not in ['Sense_IDs']):
+                for index, (key, label) in enumerate(exlabels.items()):
+                    label, with_links = label
+                    if ex.get(key):
                         DBSession.add(common.Sentence_data(
                             object_pk=obj.pk,
-                            key=k,
-                            value=ex[k],
-                        ))
+                            key=label.replace('_', ' '),
+                            value=ex[key]))
+
         elif self.dir.joinpath('processed', 'examples.sfm').exists():
             for i, ex in enumerate(
                     Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):

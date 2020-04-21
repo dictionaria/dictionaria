@@ -86,7 +86,7 @@
     <table class="table table-condensed table-nonfluid borderless">
         % if ctx.pos:
             <tr>
-                <td><small>part of speech</small></td>
+                <td><small>Part of Speech</small></td>
                 <td>
                     <span class="vocabulary">${ctx.pos}</span>
                     % if links and 'pos' in links:
