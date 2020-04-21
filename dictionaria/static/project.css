@@ -31,7 +31,7 @@ div.tab-content table.dataTable {
     width: 99.5%;
 }
 span.lemma {font-style: italic;}
-ul.semantic_domains_inline:before {content: "semantic domain: "}
+ul.semantic_domains_inline:before {content: "Semantic Domain: "}
 span.alt-translation {}
 span.alt-translation1 {color: darkslateblue}
 span.alt-translation2 {color: darkgreen}
