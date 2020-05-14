@@ -77,10 +77,8 @@ class Submission(object):
     def load_examples(self, dictionary, data, lang):
         abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
         if hasattr(self.dictionary, 'cldf'):
-            #ID,Language_ID,Primary_Text,Analyzed_Word,Gloss,Translated_Text,Meta_Language_ID,Comment,Sense_IDs,Analyzed,Media_IDs
-            #XV000001,tzh,lek a lok',,,salió bien,,,SN000001,,
-            colmap = {}
-            for k in [
+            examples = self.dictionary.cldf['ExampleTable']
+            example_props = (
                 'id',
                 'primaryText',
                 'analyzedWord',
@@ -88,16 +86,9 @@ class Submission(object):
                 'translatedText',
                 'languageReference',
                 'metaLanguageReference',
-                'comment',
-            ]:
-                try:
-                    colmap[k] = self.dictionary.cldf['ExampleTable', k].name
-                except KeyError:
-                    pass
-
-            examples = self.dictionary.cldf['ExampleTable']
+                'comment')
             colmap = {k: self.dictionary.cldf['ExampleTable', k].name
-                      for k in ['id', 'primaryText', 'translatedText']
+                      for k in example_props
                       if self.dictionary.cldf.get(('ExampleTable', k))}
             fks = cldf.get_foreign_keys(self.dictionary.cldf, examples)
             exlabels = cldf.get_labels(
