@@ -127,6 +127,12 @@ class CustomCol(Col):
         return func.unaccent(getattr(Word, self.name))
 
 
+class ScientificNameCol(CustomCol):
+
+    def format(self, item):
+        return HTML.em(super().format(item))
+
+
 class SemanticDomainCol(Col):
     __kw__ = dict(bSortable=False, sTitle='Semantic Domain')
 
@@ -217,6 +223,8 @@ class Words(datatables.Units):
         if name == 'Comparison Meanings':
             return MeaningsCol(
                 self, 'meaning', bSortable=False, sTitle='Comparison Meaning')
+        elif name == 'Scientific Name':
+            return ScientificNameCol(self, attrib, sTitle=name)
         elif name.startswith('lang-'):
             col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
             if self.contribution.jsondata['choices'].get(name):
