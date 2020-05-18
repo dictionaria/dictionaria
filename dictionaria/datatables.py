@@ -213,6 +213,21 @@ class Words(datatables.Units):
 
         return query.distinct()
 
+    def _choose_custom_column(self, name, attrib):
+        if name == 'Comparison Meanings':
+            return MeaningsCol(
+                self, 'meaning', bSortable=False, sTitle='Comparison Meaning')
+        elif name.startswith('lang-'):
+            col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
+            if self.contribution.jsondata['choices'].get(name):
+                col.choices = self.contribution.jsondata['choices'][name]
+            return col
+        else:
+            col = CustomCol(self, attrib, sTitle=name)
+            if self.contribution.jsondata['choices'].get(name):
+                col.choices = self.contribution.jsondata['choices'][name]
+            return col
+
     def col_defs(self):
         if not self.contribution:
             return [
@@ -241,12 +256,7 @@ class Words(datatables.Units):
         if self.second_tab:
             attribs = ('second_tab1', 'second_tab2', 'second_tab3')
             for name, attrib in zip(self.vars, attribs):
-                if name == 'Comparison Meanings':
-                    columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'))
-                elif name.startswith('lang-'):
-                    columns.append(AltTransCol(self, name, sTitle=name.replace('lang-', '')))
-                else:
-                    columns.append(CustomCol(self, attrib, sTitle=name))
+                columns.append(self._choose_custom_column(name, attrib))
             return columns
 
         columns.append(Col(self,
@@ -262,18 +272,7 @@ class Words(datatables.Units):
             #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
         attribs = ('custom_field1', 'custom_field2')
         for name, attrib in zip(self.vars, attribs):
-            if name == 'Comparison Meanings':
-                columns.append(MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'))
-            elif name.startswith('lang-'):
-                col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
-                if self.contribution.jsondata['choices'].get(name):
-                    col.choices = self.contribution.jsondata['choices'][name]
-                columns.append(col)
-            else:
-                col = CustomCol(self, attrib, sTitle=name)
-                if self.contribution.jsondata['choices'].get(name):
-                    col.choices = self.contribution.jsondata['choices'][name]
-                columns.append(col)
+            columns.append(self._choose_custom_column(name, attrib))
         return columns
 
     def get_options(self):
