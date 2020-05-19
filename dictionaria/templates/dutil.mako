@@ -7,7 +7,14 @@
         <tr>
             <td><small>${_d.key.replace('_', ' ')}</small></td>
             <td>
+                ## FIXME there must be a better way
+                % if _d.key == 'Scientific Name':
+                <em>
+                % endif
                 ${u.add_unit_links(req, ctx.dictionary, _d.value)|n}
+                % if _d.key == 'Scientific Name':
+                </em>
+                % endif
                 % if links and _d.key in links:
                     <small>${links[_d.key]|n}</small>
                 % endif
