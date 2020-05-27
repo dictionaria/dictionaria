@@ -31,6 +31,11 @@
 % endfor
 </%def>
 
+<%def name="format_sentence_data(key, value)">
+    <% value = '; '.join(filter(None, value.split('\t'))) %>
+    <dt>${key}</dt>
+    <dd>${value}</dd>
+</%def>
 
 <%def name="sentence(obj, fmt='long')">
     ${h.rendered_sentence(obj, fmt=fmt)}
@@ -66,8 +71,7 @@
             <dd>${obj.type}</dd>
         % endif
         % for k, v in obj.datadict().items():
-            <dt>${k}</dt>
-            <dd>${v}</dd>
+            ${format_sentence_data(k, v)}
         % endfor
     </dl>
 </%def>
