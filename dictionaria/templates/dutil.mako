@@ -71,7 +71,9 @@
             <dd>${obj.type}</dd>
         % endif
         % for k, v in obj.datadict().items():
+            % if k not in ('Gloss POS', 'Lexical Entries'):
             ${format_sentence_data(k, v)}
+            % endif
         % endfor
     </dl>
 </%def>
