@@ -130,11 +130,14 @@ class Submission(object):
 
                 for index, (key, label) in enumerate(exlabels.items()):
                     label, with_links = label
-                    if ex.get(key):
+                    value = ex.get(key)
+                    if value:
+                        if type(value) == list:
+                            value = '\t'.join(e or '' for e in value)
                         DBSession.add(common.Sentence_data(
                             object_pk=obj.pk,
                             key=label.replace('_', ' '),
-                            value=ex[key]))
+                            value=value))
 
         elif self.dir.joinpath('processed', 'examples.sfm').exists():
             for i, ex in enumerate(
