@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
 from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
-from clld.scripts.util import Data, initializedb
+from clld.cliutil import Data
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.db.util import collkey, with_collkey_ddl
@@ -29,6 +29,10 @@ with_collkey_ddl()
 
 
 def main(args):
+    internal = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() == 'i'
+    dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
+    concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
+
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
 
@@ -69,7 +73,7 @@ def main(args):
     glosses = set()
     concepticon = Concepticon(
         REPOS.joinpath('..', '..', 'concepticon', 'concepticon-data'))
-    if not args.no_concepts:
+    if concepts:
         for conceptset in concepticon.conceptsets.values():
             if conceptset.gloss in glosses:
                 continue
@@ -91,7 +95,7 @@ def main(args):
     submissions = []
 
     for submission in REPOS.joinpath(
-            'submissions-internal' if args.internal else 'submissions').glob('*'):
+            'submissions-internal' if internal else 'submissions').glob('*'):
         if not submission.is_dir():
             continue
 
@@ -110,7 +114,7 @@ def main(args):
             continue
 
         id_ = submission.id
-        if args.dict and args.dict != id_ and args.dict != 'all':
+        if dict_id and dict_id != id_ and dict_id != 'all':
             print('not selected', submission.id)
             continue
         lmd = md['language']
@@ -367,11 +371,3 @@ def prime_cache(args):
       ) AS s
       WHERE word.pk = s.wpk
     """)
-
-
-if __name__ == '__main__':
-    initializedb(
-        (("--internal",), dict(action='store_true')),
-        (("--no-concepts",), dict(action='store_true')),
-        (("--dict",), dict()),
-        create=main, prime_cache=prime_cache, bootstrap=True)

@@ -6,7 +6,7 @@ from clldutils.misc import nfilter
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
-from clld.scripts.util import bibtex2source
+from clld.cliutil import bibtex2source
 
 from dictionaria.lib import cldf
 from dictionaria.lib.ingest import Examples
