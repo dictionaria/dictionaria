@@ -31,7 +31,7 @@ with_collkey_ddl()
 def main(args):
     internal = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() == 'i'
     dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
-    concepts = input('comparison meanings? [y]es/[n]no (default: y)').strip().lower() != 'n'
+    concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
 
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
