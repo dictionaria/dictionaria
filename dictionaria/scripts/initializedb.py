@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
 from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
-from clld.scripts.util import Data, initializedb
+from clld.cliutil import Data
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.db.util import collkey, with_collkey_ddl
@@ -371,7 +371,3 @@ def prime_cache(args):
       ) AS s
       WHERE word.pk = s.wpk
     """)
-
-
-if __name__ == '__main__':
-    initializedb(create=main, prime_cache=prime_cache, bootstrap=True)

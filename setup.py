@@ -20,9 +20,9 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clld>=4.7',
+        'clld>=7.0.0',
         'clldmpg>=3.3.1',
-        'clld-glottologfamily-plugin>=2.0.0',
+        'clld-glottologfamily-plugin>=4.0',
         'transliterate',
         'pyconcepticon>=1.1.0',
         'beautifulsoup4==4.6.0',
