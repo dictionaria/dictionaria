@@ -200,7 +200,7 @@ def main(args):
 
 
 def joined(iterable):
-    return ' / '.join(sorted(nfilter(set(iterable))))
+    return ' ; '.join(sorted(nfilter(set(iterable))))
 
 
 class CustomFieldDenormalizer:
