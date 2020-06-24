@@ -18,9 +18,11 @@
                 % if links and _d.key in links:
                     <small>${links[_d.key]|n}</small>
                 % endif
-                % if _d.key in obj.sourcedict:
+                ## FIXME there must be a better way, too (<_<)'
+                ## Also, does this even work on columns with custom titles?
+                % if _d.key.replace(' ', '_') in obj.sourcedict:
                     <ul class="unstyled">
-                        % for src in obj.sourcedict[_d.key]:
+                        % for src in obj.sourcedict[_d.key.replace(' ', '_')]:
                             [${h.link(req, src)}]
                         % endfor
                     </ul>
