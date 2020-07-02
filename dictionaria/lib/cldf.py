@@ -163,7 +163,7 @@ class Dictionary(BaseDictionary):
             submission,
             exclude=['alt_translation1', 'alt_translation2'] + fks['EntryTable'][:])
 
-        for sense in self.cldf['SenseTable']:
+        for sense_index, sense in enumerate(self.cldf['SenseTable']):
             fullentries[sense[colmap['entryReference']]].extend(list(sense.items()))
             sense2word[sense[colmap['id']]] = sense[colmap['entryReference']]
             try:
@@ -178,6 +178,7 @@ class Dictionary(BaseDictionary):
                 id=id_(sense[colmap['id']]),
                 name='; '.join(nfilter(dsc)),
                 semantic_domain=sense.pop('Semantic_Domain', None),
+                ord=sense_index,
                 word=w)
             if 'alt_translation1' in sense and metalanguages.get('gxx'):
                 kw['alt_translation1'] = sense['alt_translation1']
