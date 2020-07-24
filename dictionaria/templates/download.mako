@@ -13,8 +13,8 @@
 <table class="table table-nonfluid table-condensed">
     <thead>
     <tr>
-        <th>Dictionary</th>
-        <th>Authors</th>
+        <th>dictionary</th>
+        <th>author</th>
         <th>DOI</th>
     </tr>
     </thead>
