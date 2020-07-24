@@ -1,4 +1,9 @@
 from clld.db.models.common import Unit, Language
+from dictionaria.models import Dictionary
+
+
+def download(request):
+    return {'dictionaries': request.db.query(Dictionary).order_by(Dictionary.number)}
 
 
 def home(request):
