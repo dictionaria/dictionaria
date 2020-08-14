@@ -261,27 +261,28 @@ class Words(datatables.Units):
                 'description',
                 sTitle='Meaning Description',
                 model_col=common.Unit.description)]
+
         if self.second_tab:
             attribs = ('second_tab1', 'second_tab2', 'second_tab3')
             for name, attrib in zip(self.vars, attribs):
                 columns.append(self._choose_custom_column(name, attrib))
             return columns
-
-        columns.append(Col(self,
-            'examples',
-            input_size='mini',
-            model_col=Word.example_count))
-        if self.contribution.semantic_domains:
-            columns.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
-        if self.contribution.count_audio:
-            columns.append(MediaCol(self, 'audio', 'audio', sTitle=''))
-        if self.contribution.count_image:
-            columns.append(ThumbnailCol(self, 'image', sTitle=''))
-            #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
-        attribs = ('custom_field1', 'custom_field2')
-        for name, attrib in zip(self.vars, attribs):
-            columns.append(self._choose_custom_column(name, attrib))
-        return columns
+        else:
+            attribs = ('custom_field1', 'custom_field2')
+            for name, attrib in zip(self.vars, attribs):
+                columns.append(self._choose_custom_column(name, attrib))
+            if self.contribution.semantic_domains:
+                columns.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
+            columns.append(Col(self,
+                'examples',
+                input_size='mini',
+                model_col=Word.example_count))
+            if self.contribution.count_audio:
+                columns.append(MediaCol(self, 'audio', 'audio', sTitle=''))
+            if self.contribution.count_image:
+                columns.append(ThumbnailCol(self, 'image', sTitle=''))
+                #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
+            return columns
 
     def get_options(self):
         opts = DataTable.get_options(self)
