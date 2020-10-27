@@ -72,7 +72,7 @@ class Submission(object):
                 src = bibtex2source(rec, models.DictionarySource)
                 src.dictionary = dictionary
                 src.id = '%s-%s' % (self.id, src.id)
-                data.add(models.DictionarySource, rec.id, _obj=bibtex2source(rec))
+                data.add(models.DictionarySource, rec.id, _obj=src)
 
     def load_examples(self, dictionary, data, lang):
         abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
