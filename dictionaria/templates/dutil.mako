@@ -186,7 +186,7 @@
     % endfor
     ${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 
-    <% rels = list(ctx.relations) %>
+    <% rels = list(ctx.iterrelations) %>
     % if rels:
         <h4>Related entries</h4>
         <ul>

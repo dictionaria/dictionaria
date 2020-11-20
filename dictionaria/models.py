@@ -128,7 +128,7 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
             yield desc, [a.target for a in assocs]
 
     @property
-    def relations(self):
+    def iterrelations(self):
         to_assocs = sorted(self.target_assocs, key=lambda a: a.ord)
         links_to = [
             (ta.description, ta.target)
