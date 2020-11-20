@@ -115,26 +115,27 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
 
     @property
     def iterrelations(self):
-        to_assocs = sorted(self.target_assocs, key=lambda a: a.ord)
+        # note: add 0/1 to tuples to sort references before back-references
         links_to = [
-            (ta.description, ta.target)
-            for ta in to_assocs]
-        target_ids = {
-            target.id
-            for _, target in links_to}
+            (ta.description, 0, ta.ord, ta.target)
+            for ta in self.target_assocs]
+        target_ids = {t[3].id for t in links_to}
 
-        from_assocs = sorted(self.source_assocs, key=lambda a: a.ord)
         links_from = [
-            (RELATIONS.get(sa.description, sa.description), sa.source)
-            for sa in from_assocs
+            (
+                RELATIONS.get(sa.description, sa.description),
+                1,
+                sa.ord,
+                sa.source
+            )
+            for sa in self.source_assocs
             if sa.source.id not in target_ids]
 
-        for desc, pairs in groupby(
+        links = sorted(
             chain(links_to, links_from),
-            lambda pair: pair[0]
-        ):
-            yield desc, [link for _, link in pairs]
-
+            key=lambda t: t[:3])
+        for desc, tuples in groupby(links, lambda t: t[0]):
+            yield desc, [t[3] for t in tuples]
 
     @property
     def description_list(self):
