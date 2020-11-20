@@ -186,7 +186,7 @@
     % endfor
     ${'</ul>' if len(ctx.meanings) <= 1 else '</ol>'|n}
 
-    <% rels = list(chain(ctx.links_to)) or list(chain(ctx.linked_from)) %>
+    <% rels = list(ctx.relations) %>
     % if rels:
         <h4>Related entries</h4>
         <ul>

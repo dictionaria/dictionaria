@@ -1,4 +1,4 @@
-from itertools import groupby
+from itertools import chain, groupby
 from collections import defaultdict
 
 from zope.interface import implementer
@@ -126,6 +126,29 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
                 sorted(self.target_assocs, key=lambda a: a.ord),
                 lambda s: s.description):
             yield desc, [a.target for a in assocs]
+
+    @property
+    def relations(self):
+        to_assocs = sorted(self.target_assocs, key=lambda a: a.ord)
+        links_to = [
+            (ta.description, ta.target)
+            for ta in to_assocs]
+        target_ids = {
+            target.id
+            for _, target in links_to}
+
+        from_assocs = sorted(self.source_assocs, key=lambda a: a.ord)
+        links_from = [
+            (RELATIONS.get(sa.description, sa.description), sa.source)
+            for sa in from_assocs
+            if sa.source.id not in target_ids]
+
+        for desc, pairs in groupby(
+            chain(links_to, links_from),
+            lambda pair: pair[0]
+        ):
+            yield desc, [link for _, link in pairs]
+
 
     @property
     def description_list(self):
