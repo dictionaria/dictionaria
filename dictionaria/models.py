@@ -114,20 +114,6 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
         return HTML.span(*args, **{'class': 'lemma'})
 
     @property
-    def linked_from(self):
-        for desc, assocs in groupby(
-                sorted(self.source_assocs, key=lambda a: a.ord),
-                lambda s: s.description):
-            yield RELATIONS.get(desc, desc), [a.source for a in assocs]
-
-    @property
-    def links_to(self):
-        for desc, assocs in groupby(
-                sorted(self.target_assocs, key=lambda a: a.ord),
-                lambda s: s.description):
-            yield desc, [a.target for a in assocs]
-
-    @property
     def iterrelations(self):
         to_assocs = sorted(self.target_assocs, key=lambda a: a.ord)
         links_to = [
