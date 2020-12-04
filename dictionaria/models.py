@@ -1,4 +1,4 @@
-from itertools import groupby
+from itertools import chain, groupby
 from collections import defaultdict
 
 from zope.interface import implementer
@@ -114,18 +114,28 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
         return HTML.span(*args, **{'class': 'lemma'})
 
     @property
-    def linked_from(self):
-        for desc, assocs in groupby(
-                sorted(self.source_assocs, key=lambda a: a.ord),
-                lambda s: s.description):
-            yield RELATIONS.get(desc, desc), [a.source for a in assocs]
+    def iterrelations(self):
+        # note: add 0/1 to tuples to sort references before back-references
+        links_to = [
+            (ta.description, 0, ta.ord, ta.target)
+            for ta in self.target_assocs]
+        target_ids = {t[3].id for t in links_to}
 
-    @property
-    def links_to(self):
-        for desc, assocs in groupby(
-                sorted(self.target_assocs, key=lambda a: a.ord),
-                lambda s: s.description):
-            yield desc, [a.target for a in assocs]
+        links_from = [
+            (
+                RELATIONS.get(sa.description, sa.description),
+                1,
+                sa.ord,
+                sa.source
+            )
+            for sa in self.source_assocs
+            if sa.source.id not in target_ids]
+
+        links = sorted(
+            chain(links_to, links_from),
+            key=lambda t: t[:3])
+        for desc, tuples in groupby(links, lambda t: t[0]):
+            yield desc, [t[3] for t in tuples]
 
     @property
     def description_list(self):
