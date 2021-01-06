@@ -39,12 +39,12 @@ class Submission(object):
 
     @property
     def dictionary(self):
-        d = self.dir.joinpath('processed')
-        if d.joinpath('cldf-md.json').exists():
-            impl = cldf.Dictionary
+        if (self.dir / 'cldfbench' / 'cldf').exists():
+            return cldf.Dictionary(self.dir / 'cldfbench' / 'cldf')
+        elif (self.dir / 'processed' / 'cldf-md.json').exists():
+            return cldf.Dictionary(self.dir / 'processed')
         else:
             raise ValueError('unknown dictionary format')
-        return impl(d)
 
     def add_file(self, type_, checksum, file_cls, obj, attrs=None):
         if checksum in self.cdstar:

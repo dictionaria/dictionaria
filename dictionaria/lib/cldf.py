@@ -1,7 +1,7 @@
 from collections import defaultdict, OrderedDict
 import re
 
-from pycldf import Dictionary as CldfDictionary, Sources
+from pycldf import iter_datasets, Sources
 from clldutils.misc import lazyproperty, nfilter
 from clld.db.models import common
 from clld.db.fts import tsvector
@@ -52,7 +52,10 @@ def get_labels(type_, table, colmap, submission, exclude=None):
 class Dictionary(BaseDictionary):
     @lazyproperty
     def cldf(self):
-        return CldfDictionary.from_metadata(self.dir / 'cldf-md.json')
+        try:
+            return next(iter_datasets(self.dir))
+        except StopIteration:
+            raise ValueError('no cldf metadata found in {}'.format(self.dir))
 
     def add_refs(self, data, table, row, obj, labels):
         if table == 'EntryTable':
