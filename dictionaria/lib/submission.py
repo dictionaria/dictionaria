@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from clldutils.jsonlib import load
-from clldutils.misc import nfilter
+from clldutils.misc import lazyproperty, nfilter
 from clld.db.meta import DBSession
 from clld.db.models import common
 from clld.lib import bibtex
@@ -20,6 +20,7 @@ REPOS = Path(dictionaria.__file__).parent.joinpath('..', '..', 'dictionaria-inte
 class Submission(object):
     def __init__(self, path):
         self.dir = path
+        self.data_dir = None
         self.id = path.name
 
         self.cdstar = load(REPOS.joinpath('cdstar.json'))
@@ -37,11 +38,12 @@ class Submission(object):
         bib = self.dir.joinpath('sources.bib')
         self.bib = bibtex.Database.from_file(bib) if bib.exists() else None
 
-    @property
+    @lazyproperty
     def dictionary(self):
-        if (self.dir / 'cldfbench' / 'cldf').exists():
-            return cldf.Dictionary(self.dir / 'cldfbench' / 'cldf')
+        if self.data_dir and (self.data_dir / 'cldf').is_dir():
+            return cldf.Dictionary(self.data_dir / 'cldf')
         elif (self.dir / 'processed' / 'cldf-md.json').exists():
+            print('no cldfbench found, falling back to data in internal repo')
             return cldf.Dictionary(self.dir / 'processed')
         else:
             raise ValueError('unknown dictionary format')

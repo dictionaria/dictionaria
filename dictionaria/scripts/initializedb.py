@@ -22,10 +22,51 @@ from markdown import markdown
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning, Example
 from dictionaria.lib.submission import REPOS, Submission
+from dictionaria.lib.cldf_zenodo import download_from_doi
 from dictionaria.util import join, toc
 
 
 with_collkey_ddl()
+
+
+def download_data(sid, contrib_md, cache_dir):
+    if contrib_md.get('doi'):
+        doi = contrib_md['doi']
+        path = cache_dir / '{}-{}'.format(sid, slug(doi))
+        if not path.exists():
+            print(' * downloading dataset from Zenodo; doi:', doi)
+            download_from_doi(doi, path)
+            print('   done.')
+        return path
+
+    elif contrib_md.get('repo'):
+        repo = contrib_md.get('repo')
+        checkout = contrib_md.get('checkout')
+        if checkout:
+            # specific commit/tag/branch
+            path = cache_dir / '{}-{}'.format(sid, slug(checkout))
+            if not path.exists():
+                print(' * cloning', repo, 'into', path, '...')
+                git.Git().clone(repo, path)
+                print('   done.')
+                print(' * checking out commit', checkout, '...')
+                git.Git(str(path)).checkout(checkout)
+                print('   done.')
+        else:
+            # latest commit on the default branch
+            path = cache_dir / sid
+            if not path.exists():
+                print(' * cloning', repo, 'into', path, '...')
+                git.Git().clone(repo, path)
+                print('   done.')
+            else:
+                print(' * pulling latest commit')
+                git.Git(str(path)).pull()
+                print('   done.')
+        return path
+
+    else:
+        return cache_dir / sid
 
 
 def main(args):
@@ -94,13 +135,13 @@ def main(args):
     comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
     submissions = []
 
-    for submission in REPOS.joinpath(
+    for submission_path in REPOS.joinpath(
             'submissions-internal' if internal else 'submissions').glob('*'):
-        if not submission.is_dir():
+        if not submission_path.is_dir():
             continue
 
         try:
-            submission = Submission(submission)
+            submission = Submission(submission_path)
         except ValueError:
             continue
 
@@ -117,6 +158,9 @@ def main(args):
         if dict_id and dict_id != id_ and dict_id != 'all':
             print('not selected', submission.id)
             continue
+
+        submission.data_dir = download_data(id_, md, REPOS / 'datasets')
+
         lmd = md['language']
         props = md.get('properties', {})
         props.setdefault('custom_fields', [])
