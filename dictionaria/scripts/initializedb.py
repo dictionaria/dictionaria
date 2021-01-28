@@ -37,6 +37,11 @@ def download_data(sid, contrib_md, cache_dir):
             print(' * downloading dataset from Zenodo; doi:', doi)
             download_from_doi(doi, path)
             print('   done.')
+        if not (path / 'cldf').exists():
+            for subpath in path.glob('*'):
+                if (subpath / 'cldf').exists():
+                    path = subpath
+                    break
         return path
 
     elif contrib_md.get('repo'):
