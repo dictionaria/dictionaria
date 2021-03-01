@@ -17,34 +17,30 @@ import dictionaria
 REPOS = Path(dictionaria.__file__).parent.joinpath('..', '..', 'dictionaria-intern')
 
 
-class Submission(object):
-    def __init__(self, path):
+class Submission:
+    def __init__(self, sid, path):
+        self.id = sid
         self.dir = path
-        self.data_dir = None
-        self.id = path.name
 
-        self.cdstar = load(REPOS.joinpath('cdstar.json'))
         print(self.dir)
         assert self.dir.exists()
-        desc = self.dir.joinpath('intro.md')
+
+        cdstar_json = self.dir / 'etc' / 'cdstar.json'
+        self.cdstar = load(cdstar_json) if cdstar_json.exists() else {}
+        desc = self.dir / 'raw' / 'intro.md'
         if desc.exists():
             with desc.open(encoding='utf8') as fp:
                 self.description = fp.read()
         else:
             self.description = None
-        md = self.dir.joinpath('md.json')
+        md = self.dir / 'etc' / 'md.json'
         self.md = load(md) if md.exists() else None
         self.props = self.md.get('properties', {}) if self.md else {}
-        bib = self.dir.joinpath('sources.bib')
-        self.bib = bibtex.Database.from_file(bib) if bib.exists() else None
 
     @lazyproperty
     def dictionary(self):
-        if self.data_dir and (self.data_dir / 'cldf').is_dir():
-            return cldf.Dictionary(self.data_dir / 'cldf')
-        elif (self.dir / 'processed' / 'cldf-md.json').exists():
-            print('no cldfbench found, falling back to data in internal repo')
-            return cldf.Dictionary(self.dir / 'processed')
+        if (self.dir / 'cldf').is_dir():
+            return cldf.Dictionary(self.dir / 'cldf')
         else:
             raise ValueError('unknown dictionary format')
 
@@ -68,9 +64,10 @@ class Submission(object):
         return
 
     def load_sources(self, dictionary, data):
-        if self.bib:
+        if self.dictionary.cldf.sources:
             print('loading sources ...')
-            for rec in self.bib.records:
+            for rec in self.dictionary.cldf.sources:
+                rec = bibtex.Record(rec.genre, rec.id, **rec)
                 src = bibtex2source(rec, models.DictionarySource)
                 src.dictionary = dictionary
                 src.id = '%s-%s' % (self.id, src.id)
@@ -140,29 +137,3 @@ class Submission(object):
                             object_pk=obj.pk,
                             key=label.replace('_', ' '),
                             value=value))
-
-        elif self.dir.joinpath('processed', 'examples.sfm').exists():
-            for i, ex in enumerate(
-                    Examples.from_file(self.dir.joinpath('processed', 'examples.sfm'))):
-                obj = data.add(
-                    models.Example,
-                    ex.id,
-                    id='%s-%s' % (self.id, ex.id.replace('.', '_')),
-                    name=ex.text,
-                    number='{0}'.format(i + 1),
-                    source=ex.corpus_ref,
-                    language=lang,
-                    serialized='{0}'.format(ex),
-                    dictionary=dictionary,
-                    analyzed=ex.morphemes,
-                    gloss=abbr_p.sub(lambda m: m.group('abbr').upper(), ex.gloss) if ex.gloss else ex.gloss,
-                    description=ex.translation,
-                    alt_translation1=ex.alt_translation,
-                    alt_translation_language1=self.props.get('metalanguages', {}).get('gxx'),
-                    alt_translation2=ex.alt_translation2,
-                    alt_translation_language2=self.props.get('metalanguages', {}).get('gxy'))
-                DBSession.flush()
-
-                if ex.soundfile:
-                    self.add_file('audio', ex.soundfile, common.Sentence_files, obj)
-

@@ -1,5 +1,6 @@
 from datetime import date
 from itertools import groupby, chain
+import json
 from collections import OrderedDict, defaultdict
 import re
 
@@ -17,6 +18,7 @@ from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
 from bs4 import BeautifulSoup
+import git
 from markdown import markdown
 
 import dictionaria
@@ -75,7 +77,7 @@ def download_data(sid, contrib_md, cache_dir):
 
 
 def main(args):
-    internal = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() == 'i'
+    published = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() != 'i'
     dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
     concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
 
@@ -138,33 +140,33 @@ def main(args):
     print('... done')
 
     comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
-    submissions = []
 
-    for submission_path in REPOS.joinpath(
-            'submissions-internal' if internal else 'submissions').glob('*'):
-        if not submission_path.is_dir():
+    with open(REPOS / 'contributions.json', encoding='utf-8') as f:
+        contrib_json = json.load(f)
+
+    submissions = []
+    for sid, sid_info in contrib_json.items():
+        if sid_info['published'] != published:
+            continue
+        if dict_id and dict_id != sid and dict_id != 'all':
+            print('not selected', sid)
             continue
 
+        if not sid_info['date_published']:
+            print('no date', submission.id)
+            continue
+
+        data_dir = download_data(sid, sid_info, REPOS / 'datasets')
+
         try:
-            submission = Submission(submission_path)
+            submission = Submission(sid, data_dir)
         except ValueError:
             continue
 
         md = submission.md
         if md is None:
-            print('no md', submission.id)
+            print('etc/md.json not found', submission.id)
             continue
-
-        if not md['date_published']:
-            print('no date', submission.id)
-            continue
-
-        id_ = submission.id
-        if dict_id and dict_id != id_ and dict_id != 'all':
-            print('not selected', submission.id)
-            continue
-
-        submission.data_dir = download_data(id_, md, REPOS / 'datasets')
 
         lmd = md['language']
         props = md.get('properties', {})
@@ -187,8 +189,8 @@ def main(args):
             md['date_published'] = md['date_published'] + '-01-01'
         dictionary = data.add(
             Dictionary,
-            id_,
-            id=id_,
+            sid,
+            id=sid,
             number=md.get('number'),
             name=props.get('title', lmd['name'] + ' dictionary'),
             description=submission.description,
