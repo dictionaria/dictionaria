@@ -145,18 +145,18 @@ def main(args):
         contrib_json = json.load(f)
 
     submissions = []
-    for sid, sid_info in contrib_json.items():
-        if sid_info['published'] != published:
+    for sid, sinfo in contrib_json.items():
+        if sinfo['published'] != published:
             continue
         if dict_id and dict_id != sid and dict_id != 'all':
             print('not selected', sid)
             continue
 
-        if not sid_info['date_published']:
+        if not sinfo['date_published']:
             print('no date', submission.id)
             continue
 
-        data_dir = download_data(sid, sid_info, REPOS / 'datasets')
+        data_dir = download_data(sid, sinfo, REPOS / 'datasets')
 
         try:
             submission = Submission(sid, data_dir)
@@ -184,19 +184,19 @@ def main(args):
             language = data.add(
                 Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
 
-        md['date_published'] = md['date_published'] or date.today().isoformat()
-        if '-' not in md['date_published']:
-            md['date_published'] = md['date_published'] + '-01-01'
+        date_published = sinfo.get('date_published') or date.today().isoformat()
+        if '-' not in date_published:
+            date_published = date_published + '-01-01'
         dictionary = data.add(
             Dictionary,
             sid,
             id=sid,
-            number=md.get('number'),
+            number=sinfo.get('number'),
             name=props.get('title', lmd['name'] + ' dictionary'),
             description=submission.description,
             language=language,
-            published=date(*map(int, md['date_published'].split('-'))),
-            doi=md.get('doi'),
+            published=date(*map(int, date_published.split('-'))),
+            doi=sinfo.get('doi'),
             jsondata=props)
 
         for i, spec in enumerate(md['authors']):
