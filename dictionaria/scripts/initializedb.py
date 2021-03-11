@@ -47,29 +47,40 @@ def download_data(sid, contrib_md, cache_dir):
         return path
 
     elif contrib_md.get('repo'):
-        repo = contrib_md.get('repo')
+        origin = contrib_md.get('repo')
         checkout = contrib_md.get('checkout')
+        path = cache_dir / sid
+
+        if not path.exists():
+            print(' * cloning', origin, 'into', path)
+            git.Git().clone(origin, path)
+        if not path.exists():
+            raise ValueError('Could not clone {}'.format(origin))
+
+        try:
+            repo = git.Repo(path)
+        except git.exc.InvalidGitRepositoryError as e:
+            print('WARNING: not a git repo:', str(e))
+            return path
+
+        for remote in repo.remotes:
+            remote.fetch()
+
         if checkout:
-            # specific commit/tag/branch
-            path = cache_dir / '{}-{}'.format(sid, slug(checkout))
-            if not path.exists():
-                print(' * cloning', repo, 'into', path, '...')
-                git.Git().clone(repo, path)
-                print('   done.')
-                print(' * checking out commit', checkout, '...')
-                git.Git(str(path)).checkout(checkout)
-                print('   done.')
-        else:
-            # latest commit on the default branch
-            path = cache_dir / sid
-            if not path.exists():
-                print(' * cloning', repo, 'into', path, '...')
-                git.Git().clone(repo, path)
-                print('   done.')
+            print(' *', repo, 'checking out', checkout)
+            for branch in repo.branches:
+                if branch.name == checkout:
+                    print(' *', repo, 'checking out branch', checkout)
+                    branch.checkout()
+                    repo.git.merge()
+                    break
             else:
-                print(' * pulling latest commit')
-                git.Git(str(path)).pull()
-                print('   done.')
+                print(' *', repo, 'checking out', checkout)
+                repo.git.checkout(checkout)
+        else:
+            print(' *', repo, 'merging latest changes')
+            repo.git.merge()
+
         return path
 
     else:
