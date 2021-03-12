@@ -8,6 +8,7 @@ import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
+import cldfcatalog
 from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
 from clld.cliutil import Data
@@ -92,6 +93,10 @@ def main(args):
     dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
     concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
 
+    catalog_ini = cldfcatalog.Config.from_file()
+    concepticon_path = catalog_ini.get_clone('concepticon')
+    glottolog_path = catalog_ini.get_clone('glottolog')
+
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
 
@@ -130,8 +135,7 @@ def main(args):
     print('loading concepts ...')
 
     glosses = set()
-    concepticon = Concepticon(
-        REPOS.joinpath('..', '..', 'concepticon', 'concepticon-data'))
+    concepticon = Concepticon(concepticon_path)
     if concepts:
         for conceptset in concepticon.conceptsets.values():
             if conceptset.gloss in glosses:
@@ -258,7 +262,7 @@ def main(args):
     load_families(
         Data(),
         [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)],
-        glottolog_repos='../../glottolog/glottolog')
+        glottolog_repos=glottolog_path)
 
 
 def joined(iterable):
