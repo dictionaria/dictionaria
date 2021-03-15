@@ -1,5 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals
 from collections import OrderedDict, defaultdict
 import re
 
@@ -50,7 +48,7 @@ def add_links2(sid, ids, desc, type_):
     if not ids:
         return desc
     p = re.compile(
-        '((?<=\W)|^)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
+        r'((?<=\W)|^)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
         flags=re.MULTILINE)
     return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
 
@@ -109,7 +107,7 @@ class Link(UnicodeMixin):
                     req.route_url(self.type, id=m.group('id')), labels[m.group('id')])
             return m.string
 
-        return re.sub('\*\*{0}:(?P<id>[^*]+)\*\*'.format(self.type), _repl, s)
+        return re.sub(r'\*\*{0}:(?P<id>[^*]+)\*\*'.format(self.type), _repl, s)
 
 
 def add_links(req, s):
