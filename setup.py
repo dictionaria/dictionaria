@@ -23,6 +23,7 @@ setup(
         'clld>=7.4',
         'clldmpg>=3.3.1',
         'clld-glottologfamily-plugin>=4.0',
+        'gitpython',
         'transliterate',
         'pyconcepticon>=1.1.0',
         'beautifulsoup4==4.6.0',

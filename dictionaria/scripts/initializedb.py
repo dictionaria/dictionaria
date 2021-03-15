@@ -1,5 +1,6 @@
 from datetime import date
 from itertools import groupby, chain
+import json
 from collections import OrderedDict, defaultdict
 import re
 
@@ -7,6 +8,7 @@ import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload_all, joinedload
 from sqlalchemy import Index
+import cldfcatalog
 from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
 from clld.cliutil import Data
@@ -17,21 +19,83 @@ from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
 from bs4 import BeautifulSoup
+import git
 from markdown import markdown
 
 import dictionaria
 from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Meaning_files, Meaning, Example
 from dictionaria.lib.submission import REPOS, Submission
+from dictionaria.lib.cldf_zenodo import download_from_doi
 from dictionaria.util import join, toc
 
 
 with_collkey_ddl()
 
 
+def download_data(sid, contrib_md, cache_dir):
+    if contrib_md.get('doi'):
+        doi = contrib_md['doi']
+        path = cache_dir / '{}-{}'.format(sid, slug(doi))
+        if not path.exists():
+            print(' * downloading dataset from Zenodo; doi:', doi)
+            download_from_doi(doi, path)
+            print('   done.')
+        if not (path / 'cldf').exists():
+            for subpath in path.glob('*'):
+                if (subpath / 'cldf').exists():
+                    path = subpath
+                    break
+        return path
+
+    elif contrib_md.get('repo'):
+        origin = contrib_md.get('repo')
+        checkout = contrib_md.get('checkout')
+        path = cache_dir / sid
+
+        if not path.exists():
+            print(' * cloning', origin, 'into', path)
+            git.Git().clone(origin, path)
+        if not path.exists():
+            raise ValueError('Could not clone {}'.format(origin))
+
+        try:
+            repo = git.Repo(path)
+        except git.exc.InvalidGitRepositoryError as e:
+            print('WARNING: not a git repo:', str(e))
+            return path
+
+        for remote in repo.remotes:
+            remote.fetch()
+
+        if checkout:
+            print(' *', repo, 'checking out', checkout)
+            for branch in repo.branches:
+                if branch.name == checkout:
+                    print(' *', repo, 'checking out branch', checkout)
+                    branch.checkout()
+                    repo.git.merge()
+                    break
+            else:
+                print(' *', repo, 'checking out', checkout)
+                repo.git.checkout(checkout)
+        else:
+            print(' *', repo, 'merging latest changes')
+            repo.git.merge()
+
+        return path
+
+    else:
+        return cache_dir / sid
+
+
 def main(args):
-    internal = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() == 'i'
+    published = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() != 'i'
     dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
     concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
+
+    catalog_ini = cldfcatalog.Config.from_file()
+    concepticon_path = catalog_ini.get_clone('concepticon')
+    glottolog_path = catalog_ini.get_clone('glottolog')
 
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
@@ -71,8 +135,7 @@ def main(args):
     print('loading concepts ...')
 
     glosses = set()
-    concepticon = Concepticon(
-        REPOS.joinpath('..', '..', 'concepticon', 'concepticon-data'))
+    concepticon = Concepticon(concepticon_path)
     if concepts:
         for conceptset in concepticon.conceptsets.values():
             if conceptset.gloss in glosses:
@@ -92,31 +155,34 @@ def main(args):
     print('... done')
 
     comparison_meanings = {k: v.pk for k, v in comparison_meanings.items()}
-    submissions = []
 
-    for submission in REPOS.joinpath(
-            'submissions-internal' if internal else 'submissions').glob('*'):
-        if not submission.is_dir():
+    with open(REPOS / 'contributions.json', encoding='utf-8') as f:
+        contrib_json = json.load(f)
+
+    submissions = []
+    for sid, sinfo in contrib_json.items():
+        if sinfo['published'] != published:
+            continue
+        if dict_id and dict_id != sid and dict_id != 'all':
+            print('not selected', sid)
             continue
 
+        if not sinfo['date_published']:
+            print('no date', submission.id)
+            continue
+
+        data_dir = download_data(sid, sinfo, REPOS / 'datasets')
+
         try:
-            submission = Submission(submission)
+            submission = Submission(sid, data_dir)
         except ValueError:
             continue
 
         md = submission.md
         if md is None:
-            print('no md', submission.id)
+            print('etc/md.json not found', submission.id)
             continue
 
-        if not md['date_published']:
-            print('no date', submission.id)
-            continue
-
-        id_ = submission.id
-        if dict_id and dict_id != id_ and dict_id != 'all':
-            print('not selected', submission.id)
-            continue
         lmd = md['language']
         props = md.get('properties', {})
         props.setdefault('custom_fields', [])
@@ -133,19 +199,19 @@ def main(args):
             language = data.add(
                 Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
 
-        md['date_published'] = md['date_published'] or date.today().isoformat()
-        if '-' not in md['date_published']:
-            md['date_published'] = md['date_published'] + '-01-01'
+        date_published = sinfo.get('date_published') or date.today().isoformat()
+        if '-' not in date_published:
+            date_published = date_published + '-01-01'
         dictionary = data.add(
             Dictionary,
-            id_,
-            id=id_,
-            number=md.get('number'),
+            sid,
+            id=sid,
+            number=sinfo.get('number'),
             name=props.get('title', lmd['name'] + ' dictionary'),
             description=submission.description,
             language=language,
-            published=date(*map(int, md['date_published'].split('-'))),
-            doi=md.get('doi'),
+            published=date(*map(int, date_published.split('-'))),
+            doi=sinfo.get('doi'),
             jsondata=props)
 
         for i, spec in enumerate(md['authors']):
@@ -196,7 +262,7 @@ def main(args):
     load_families(
         Data(),
         [v for v in DBSession.query(Variety) if re.match('[a-z]{4}[0-9]{4}', v.id)],
-        glottolog_repos='../../glottolog/glottolog')
+        glottolog_repos=glottolog_path)
 
 
 def joined(iterable):
