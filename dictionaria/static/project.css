@@ -6,6 +6,16 @@ div.sentence-wrapper, figure.img {
 div.alt_translation {
     margin-left: 5px;
 }
+div.warning {
+    color: #333;
+    background-color: Linen;
+    border: 2px solid SandyBrown;
+    border-radius: 1ex;
+    /*border-style: solid;*/
+    /*border-color: SandyBrown;*/
+    padding: 1ex;
+    margin-bottom: 1ex;
+}
 figure.img {
     text-align: center;
     float: none;

@@ -179,8 +179,6 @@ class Words(datatables.Units):
         datatables.Units.__init__(self, req, model, **kw)
         self.second_tab = kw.pop('second_tab', req.params.get('second_tab', False))
         if self.second_tab:
-            if not self.contribution:
-                raise ValueError
             self.eid = 'second_tab'
         self.vars = OrderedDict()
         if self.contribution:
@@ -195,7 +193,7 @@ class Words(datatables.Units):
             'Help', class_="btn btn-warning", href=self.req.route_url('help'), target="_blank")
 
     def base_query(self, query):
-        if self.second_tab:
+        if self.second_tab and self.contribution:
             query = query.filter(Word.dictionary_pk == self.contribution.pk) \
                 .options(joinedload(common.Unit.data))
             for name, var in self.vars.items():
