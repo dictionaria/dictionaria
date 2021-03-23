@@ -50,7 +50,7 @@ def download_data(sid, contrib_md, cache_dir):
     elif contrib_md.get('repo'):
         origin = contrib_md.get('repo')
         checkout = contrib_md.get('checkout')
-        path = cache_dir / sid
+        path = (cache_dir / sid).resolve()
 
         if not path.exists():
             print(' * cloning', origin, 'into', path)
@@ -68,18 +68,17 @@ def download_data(sid, contrib_md, cache_dir):
             remote.fetch()
 
         if checkout:
-            print(' *', repo, 'checking out', checkout)
             for branch in repo.branches:
                 if branch.name == checkout:
-                    print(' *', repo, 'checking out branch', checkout)
+                    print(' *', path, 'checking out branch', checkout)
                     branch.checkout()
                     repo.git.merge()
                     break
             else:
-                print(' *', repo, 'checking out', checkout)
+                print(' *', path, 'checking out', checkout)
                 repo.git.checkout(checkout)
         else:
-            print(' *', repo, 'merging latest changes')
+            print(' *', path, 'merging latest changes')
             repo.git.merge()
 
         return path

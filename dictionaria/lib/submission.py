@@ -22,7 +22,6 @@ class Submission:
         self.id = sid
         self.dir = path
 
-        print(self.dir)
         assert self.dir.exists()
 
         cdstar_json = self.dir / 'etc' / 'cdstar.json'
