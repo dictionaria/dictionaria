@@ -1,5 +1,6 @@
 from itertools import chain, groupby
 from collections import defaultdict
+import re
 
 from zope.interface import implementer
 from sqlalchemy import (
@@ -44,6 +45,7 @@ class Dictionary(CustomModelMixin, common.Contribution):
     count_image = Column(Integer)
     semantic_domains = Column(Unicode)
     toc = Column(Unicode)
+    git_repo = Column(Unicode)
     doi = Column(Unicode)
 
     def metalanguage_label(self, lang):
@@ -52,8 +54,17 @@ class Dictionary(CustomModelMixin, common.Contribution):
         return HTML.span(lang, class_=style)
 
     def doi_link(self):
-        if self.doi:
-            return badge(self)
+        return badge(self) if self.doi else ''
+
+    def git_link(self):
+        if self.git_repo:
+            github_match = re.fullmatch(
+                r'.*github\.com[/:]([^/]*)/([^/]*)/?', self.git_repo)
+            if github_match:
+                label = 'Github: %s/%s' % github_match.groups()
+            else:
+                label = self.git_repo
+            return external_link(self.git_repo, label=label)
         else:
             return ''
 

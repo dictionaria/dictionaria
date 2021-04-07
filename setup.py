@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'clld>=7.4',
+        'clld>=7.4.2',
         'clldmpg>=3.3.1',
         'clld-glottologfamily-plugin>=4.0',
         'gitpython',

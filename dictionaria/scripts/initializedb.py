@@ -6,7 +6,7 @@ import re
 
 import transaction
 from nameparser import HumanName
-from sqlalchemy.orm import joinedload_all, joinedload
+from sqlalchemy.orm import joinedload
 from sqlalchemy import Index
 import cldfcatalog
 from clldutils.misc import slug, nfilter, lazyproperty
@@ -211,6 +211,7 @@ def main(args):
             language=language,
             published=date(*map(int, date_published.split('-'))),
             doi=sinfo.get('doi'),
+            git_repo=sinfo.get('repo'),
             jsondata=props)
 
         for i, spec in enumerate(md['authors']):
@@ -370,7 +371,7 @@ def prime_cache(args):
             d.description, d.toc = toc(soup)
 
     for meaning in DBSession.query(ComparisonMeaning).options(
-        joinedload_all(common.Parameter.valuesets, common.ValueSet.values)
+        joinedload(common.Parameter.valuesets).joinedload(common.ValueSet.values)
     ):
         meaning.representation = sum([len(vs.values) for vs in meaning.valuesets])
         if meaning.representation == 0:
