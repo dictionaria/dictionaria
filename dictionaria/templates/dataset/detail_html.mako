@@ -41,7 +41,7 @@
 
 <p>
     <em>Dictionaria</em> is published by the
-    ${h.external_link('https://www.shh.mpg.de/', label='Max Planck Institute for the Science of Human History MPI-SHH (Jena)')},
+    ${h.external_link('https://www.eva.mpg.de/', label='Max Planck Institute for Evolutionary Anthropology (Leipzig)')},
     and received start-up funding from the
     ${h.external_link('http://www.dfg.de/', label='Deutsche Forschungsgemeinschaft (DFG)')}.
 </p>
