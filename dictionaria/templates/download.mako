@@ -1,5 +1,6 @@
 <%inherit file="home_comp.mako"/>
 <%namespace name="util" file="util.mako"/>
+<%! from clld.web.util import doi %>
 
 <h3>Downloads</h3>
 
@@ -20,15 +21,11 @@
     </thead>
     <tbody>
         % for d in dictionaries:
-            <tr>
-                <td>${d}</td>
-                <td>${d.formatted_contributors()}</td>
-                <td>
-                    <a href="https://doi.org/${d.doi}">
-                        <img src="https://zenodo.org/badge/DOI/${d.doi}.svg" alt="DOI">
-                    </a>
-                </td>
-            </tr>
+        <tr>
+            <td>${d}</td>
+            <td>${d.formatted_contributors()}</td>
+            <td>${doi.badge(d) if d.doi else 'N/A'}</td>
+        </tr>
         % endfor
     </tbody>
 </table>
