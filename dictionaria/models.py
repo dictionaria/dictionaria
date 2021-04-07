@@ -58,15 +58,13 @@ class Dictionary(CustomModelMixin, common.Contribution):
 
     def git_link(self):
         if self.git_repo:
-            # strip off ssh stuff
-            http_link = re.sub('^git@([^:]*):', r'https://\1/', self.git_repo)
             github_match = re.fullmatch(
-                r'.*github\.com/([^/]*)/([^/]*)/?', http_link)
+                r'.*github\.com/([^/]*)/([^/]*)/?', self.git_repo)
             if github_match:
                 label = 'Github: %s/%s' % github_match.groups()
             else:
-                label = http_link
-            return external_link(http_link, label=label)
+                label = self.git_repo
+            return external_link(self.git_repo, label=label)
         else:
             return ''
 

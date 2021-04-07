@@ -201,6 +201,11 @@ def main(args):
         date_published = sinfo.get('date_published') or date.today().isoformat()
         if '-' not in date_published:
             date_published = date_published + '-01-01'
+
+        # strip off ssh stuff off git link
+        git_https = re.sub(
+            '^git@([^:]*):', r'https://\1/', sinfo.get('repo') or '')
+
         dictionary = data.add(
             Dictionary,
             sid,
@@ -211,7 +216,7 @@ def main(args):
             language=language,
             published=date(*map(int, date_published.split('-'))),
             doi=sinfo.get('doi'),
-            git_repo=sinfo.get('repo'),
+            git_repo=git_https,
             jsondata=props)
 
         for i, spec in enumerate(md['authors']):
