@@ -78,6 +78,16 @@ def download_data(sid, contrib_md, cache_dir):
                 print(' *', path, 'checking out', checkout)
                 repo.git.checkout(checkout)
         else:
+            # checkout main/master
+            try:
+                branch = repo.branches.main
+                branch.checkout()
+            except AttributeError:
+                try:
+                    branch = repo.branches.master
+                    branch.checkout()
+                except AttributeError:
+                    print('WARNING: default branch is neither main nor master')
             print(' *', path, 'merging latest changes')
             repo.git.merge()
 
