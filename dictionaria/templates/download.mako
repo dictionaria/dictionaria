@@ -5,13 +5,13 @@
 <h3>Downloads</h3>
 
 <p>
-    You can download Dictionaria's dictionaries – formatted as
-    <a href="https://cldf.clld.org">CLDF</a> datasets –
+    You can download Dictionaria's dictionaries in
+    ${h.external_link('https://cldf.clld.org', label='CLDF format')}
     from
-    <a href="https://zenodo.org/communities/dictionaria">Zenodo</a>
+    ${h.external_link('https://zenodo.org/communities/dictionaria', label='Zenodo')}
     following the DOI links below.
     In addition, the dictionaries are managed in
-    <a href="https://git-scm.com/">git</a> repositories,
+    ${h.external_link('https://git-scm.com/', label='git')} repositories,
     which also contain the Python code that generated the CLDF data.
 </p>
 <table class="table table-nonfluid table-condensed">
