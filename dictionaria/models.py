@@ -19,7 +19,7 @@ from clld.db.meta import Base, CustomModelMixin
 from clld.db.models import common
 from clld.web.util.htmllib import HTML
 from clld.web.util.helpers import external_link
-from clld.web.util.doi import badge
+from clld.web.util.doi import url as doi_url
 from clld_glottologfamily_plugin.models import HasFamilyMixin
 
 from dictionaria.util import split
@@ -54,7 +54,12 @@ class Dictionary(CustomModelMixin, common.Contribution):
         return HTML.span(lang, class_=style)
 
     def doi_link(self):
-        return badge(self) if self.doi else ''
+        if self.doi:
+            return external_link(
+                doi_url(self),
+                label='DOI: {}'.format(self.doi))
+        else:
+            return ''
 
     def git_link(self):
         if self.git_repo:

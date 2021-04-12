@@ -28,7 +28,7 @@
         <tr>
             <td>${d}</td>
             <td>${d.formatted_contributors()}</td>
-            <td>${doi.badge(d) if d.doi else ''}</td>
+            <td>${h.external_link(doi.url(d), label='DOI: {}'.format(d.doi)) if d.doi else ''}</td>
             <td>${d.git_link() if d.git_repo else ''}</td>
         </tr>
         % endfor
