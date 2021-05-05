@@ -91,7 +91,10 @@ class Submission:
             fks = cldf.get_foreign_keys(self.dictionary.cldf, examples)
             exlabels = cldf.get_labels(
                 'example', examples, colmap, self,
-                exclude=['Sense_IDs', 'Media_IDs', 'Language_ID'])
+                exclude=[
+                    'Sense_IDs',
+                    colmap.get('mediaReference', 'Media_IDs'),
+                    colmap.get('languageReference', 'Language_ID')])
 
             for i, ex in enumerate(self.dictionary.cldf['ExampleTable']):
                 obj = data.add(
@@ -123,7 +126,9 @@ class Submission:
                     if col in colmap:
                         del ex[colmap[col]]
                 DBSession.flush()
-                for md5 in sorted(set(ex.pop('Media_IDs', []))):
+                media_ids = sorted(set(
+                    ex.pop(colmap.get('mediaReference', 'Media_IDs'), [])))
+                for md5 in media_ids:
                     self.add_file(None, md5, common.Sentence_files, obj)
 
                 for index, (key, label) in enumerate(exlabels.items()):

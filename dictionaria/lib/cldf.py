@@ -11,6 +11,34 @@ from dictionaria.lib.ingest import BaseDictionary
 from dictionaria import models
 
 
+def read_media_table(cldf):
+    media = {}
+
+    if cldf.get('MediaTable'):
+        tablename = 'MediaTable'
+    elif cldf.get('media.csv'):
+        tablename = 'media.csv'
+    else:
+        return media
+
+    property_map = {
+        cldf[tablename, prop].name: fallback
+        for prop, fallback in (
+            ('id', 'ID'),
+            ('name', 'Filename'),
+            ('description', 'Description'),
+            ('languageReference', 'Language_ID'),
+            ('mediaType', 'mimetype'),
+            ('downloadUrl', 'URL'))
+        if cldf.get((tablename, prop))}
+
+    for row in cldf[tablename]:
+        media_item = {property_map.get(k) or k: v for k, v in row.items()}
+        media[media_item['ID']] = media_item
+
+    return media
+
+
 def get_foreign_keys(ds, from_table):
     """
     :param ds: A CLDF Dataset object.
@@ -32,7 +60,7 @@ def get_foreign_keys(ds, from_table):
 def get_labels(type_, table, colmap, submission, exclude=None):
     labels = OrderedDict(submission.props.get('labels', []))
     exclude = exclude or []
-    exclude.extend(['Media_IDs', 'ZCom1'])
+    exclude.extend([colmap.get('mediaReference', 'Media_IDs'), 'ZCom1'])
     res = OrderedDict()
     for col in table.tableSchema.columns:
         if col.name not in exclude and col.name not in colmap.values():
@@ -84,15 +112,14 @@ class Dictionary(BaseDictionary):
 
         print('######\n a CLDF dict! \n####')
 
-        try:
-            media = {d['ID']: d for d in self.cldf['media.csv']}
-        except KeyError:
-            media = {}
+        media = read_media_table(self.cldf)
 
         metalanguages = submission.props.get('metalanguages', {})
         entries = self.cldf['EntryTable']
         colmap = {k: self.cldf['EntryTable', k].name
-                  for k in ['id', 'headword', 'partOfSpeech', 'languageReference', 'source']
+                  for k in [
+                      'id', 'headword', 'partOfSpeech', 'languageReference',
+                      'mediaReference', 'source']
                   if self.cldf.get(('EntryTable', k))}
         fks = get_foreign_keys(self.cldf, entries)
         elabels = get_labels('entry', entries, colmap, submission, exclude=fks['EntryTable'][:])
@@ -111,7 +138,10 @@ class Dictionary(BaseDictionary):
                 language=lang)
             DBSession.flush()
 
-            files = [(md5, media[md5]) for md5 in set(lemma.get('Media_IDs', [])) if md5 in media]
+            media_ids = set(
+                lemma.get(colmap.get('mediaReference', 'Media_IDs'))
+                or [])
+            files = [(md5, media[md5]) for md5 in media_ids if md5 in media]
             for md5, spec in sorted(
                 files,
                 key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
@@ -155,7 +185,9 @@ class Dictionary(BaseDictionary):
 
         sense2word = {}
         colmap = {k: self.cldf['SenseTable', k].name
-                  for k in ['id', 'entryReference', 'description', 'source']
+                  for k in [
+                      'id', 'entryReference', 'description', 'mediaReference',
+                      'source']
                   if self.cldf.get(('SenseTable', k))}
         fks = get_foreign_keys(self.cldf, self.cldf['SenseTable'])
 
@@ -232,7 +264,10 @@ class Dictionary(BaseDictionary):
                     id='{0}-{1}'.format(m.id, i), name=w.name, valueset=vs, word=w))
 
             DBSession.flush()
-            files = [(md5, media[md5]) for md5 in set(sense.get('Media_IDs', [])) if md5 in media]
+            media_ids = set(
+                sense.get(colmap.get('mediaReference', 'Media_IDs'))
+                or [])
+            files = [(md5, media[md5]) for md5 in media_ids if md5 in media]
             for md5, spec in sorted(
                 files,
                 key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
