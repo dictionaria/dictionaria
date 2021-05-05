@@ -31,6 +31,7 @@ from dictionaria.util import concepticon_link, split, add_unit_links
 
 class GlottocodeCol(Col):
     def format(self, item):
+        item = self.get_obj(item)
         return external_link(
             'http://glottolog.org/resource/languoid/id/' + item.id,
             label=item.id,
@@ -402,6 +403,10 @@ class Dictionaries(datatables.Contributions):
             ContributorsCol(
                 self,
                 name='author'),
+            GlottocodeCol(
+                self,
+                'glottocode',
+                get_object=lambda i: i.language),
             Col(self,
                 'entries',
                 sClass='right',
