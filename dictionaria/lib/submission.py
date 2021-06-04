@@ -74,7 +74,7 @@ class Submission:
 
     def load_examples(self, dictionary, data, lang):
         abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
-        if hasattr(self.dictionary, 'cldf'):
+        if hasattr(self.dictionary, 'cldf') and self.dictionary.cldf.get('ExampleTable'):
             examples = self.dictionary.cldf['ExampleTable']
             example_props = (
                 'id',

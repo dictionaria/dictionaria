@@ -48,7 +48,9 @@ def get_foreign_keys(ds, from_table):
     """
     res = defaultdict(list)
     for component in ['EntryTable', 'SenseTable', 'ExampleTable']:
-        ref = ds[component]
+        ref = ds.get(component)
+        if not ref:
+            continue
         for fk in from_table.tableSchema.foreignKeys:
             if fk.reference.resource == ref.url and \
                     fk.reference.columnReference == ref.tableSchema.primaryKey and \
@@ -292,8 +294,9 @@ class Dictionary(BaseDictionary):
                                 source_pk=m.pk, target_pk=data['Word'][eid].pk, description=label))
 
         colmap = {k: self.cldf['ExampleTable', k].name
-                  for k in ['id', 'primaryText', 'translatedText']}
-        for ex in self.cldf['ExampleTable']:
+                  for k in ['id', 'primaryText', 'translatedText']
+                  if self.cldf.get(('ExampleTable', k))}
+        for ex in self.cldf.get('ExampleTable', ()):
             #
             # FIXME: Detect the column with sense IDs by looking at the foreign keys!
             #
