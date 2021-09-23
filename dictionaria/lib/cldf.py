@@ -238,7 +238,7 @@ class Dictionary(BaseDictionary):
                         ord=index,
                         jsondata=dict(with_links=with_links)))
 
-            concepticon_field = sense.get('Concepticon_ID') or ''
+            concepticon_field = sense.get('Comparison_Meaning') or ''
             concepticon_ids = [
                 elem.strip()
                 for elem in concepticon_field.split(';')
