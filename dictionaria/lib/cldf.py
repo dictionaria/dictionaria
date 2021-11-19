@@ -238,16 +238,20 @@ class Dictionary(BaseDictionary):
                         ord=index,
                         jsondata=dict(with_links=with_links)))
 
-            concepticon_field = sense.get('Comparison_Meaning') or ''
-            concepticon_ids = [
+            concepticon_id_field = sense.get('Concepticon_ID') or ''
+            concepticon_gloss_field = sense.get('Comparison_Meaning') or ''
+
+            concepticon_ids = {
                 elem.strip()
-                for elem in concepticon_field.split(';')
-                if elem.strip()]
-            for i, concepticon_id in enumerate(concepticon_ids):
-                match = re.fullmatch(r'([^]]*)\s*\[(\d+)\]', concepticon_id)
-                if not match:
-                    continue
-                _, cid = match.groups()
+                for elem in concepticon_id_field.split(';')
+                if elem.strip()}
+            for gloss in concepticon_gloss_field.split(';'):
+                gloss = gloss.strip()
+                match = re.fullmatch(r'(?:[^[]*)\[(\d+)\]', gloss)
+                if match:
+                    concepticon_ids.add(match.group(1))
+
+            for i, cid in enumerate(sorted(concepticon_ids)):
                 if cid not in comparison_meanings:
                     continue
                 concept = comparison_meanings[cid]
