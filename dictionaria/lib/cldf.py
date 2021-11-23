@@ -186,11 +186,12 @@ class Dictionary(BaseDictionary):
                             source_pk=word.pk, target_pk=data['Word'][lid].pk, description=label))
 
         sense2word = {}
-        colmap = {k: self.cldf['SenseTable', k].name
-                  for k in [
-                      'id', 'entryReference', 'description', 'mediaReference',
-                      'source']
-                  if self.cldf.get(('SenseTable', k))}
+        colmap = {
+            k: self.cldf['SenseTable', k].name
+            for k in [
+                'id', 'entryReference', 'description', 'mediaReference',
+                'concepticonReference', 'source']
+            if self.cldf.get(('SenseTable', k))}
         fks = get_foreign_keys(self.cldf, self.cldf['SenseTable'])
 
         slabels = get_labels(
@@ -238,7 +239,9 @@ class Dictionary(BaseDictionary):
                         ord=index,
                         jsondata=dict(with_links=with_links)))
 
-            concepticon_id_field = sense.get('Concepticon_ID') or ''
+            concepticon_id_field = (
+                sense.get(colmap.get('concepticonReference', 'Concepticon_ID'))
+                or '')
             concepticon_gloss_field = sense.get('Comparison_Meaning') or ''
 
             concepticon_ids = {
