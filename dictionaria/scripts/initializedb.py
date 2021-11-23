@@ -100,7 +100,6 @@ def download_data(sid, contrib_md, cache_dir):
 def main(args):
     published = input('[i]nternal or [e]xternal data (default: e): ').strip().lower() != 'i'
     dict_id = input("dictionary id or 'all' for all dictionaries (default: all): ").strip()
-    concepts = input('comparison meanings? [y]es/[n]no (default: y): ').strip().lower() != 'n'
 
     catalog_ini = cldfcatalog.Config.from_file()
     concepticon_path = catalog_ini.get_clone('concepticon')
@@ -145,19 +144,18 @@ def main(args):
 
     glosses = set()
     concepticon = Concepticon(concepticon_path)
-    if concepts:
-        for conceptset in concepticon.conceptsets.values():
-            if conceptset.gloss in glosses:
-                continue
-            glosses.add(conceptset.gloss)
-            cm = data.add(
-                ComparisonMeaning,
-                conceptset.id,
-                id=conceptset.id,
-                name=conceptset.gloss.lower(),
-                description=conceptset.definition,
-                concepticon_url='http://concepticon.clld.org/parameters/%s' % conceptset.id)
-            comparison_meanings[cm.id] = cm
+    for conceptset in concepticon.conceptsets.values():
+        if conceptset.gloss in glosses:
+            continue
+        glosses.add(conceptset.gloss)
+        cm = data.add(
+            ComparisonMeaning,
+            conceptset.id,
+            id=conceptset.id,
+            name=conceptset.gloss.lower(),
+            description=conceptset.definition,
+            concepticon_url='http://concepticon.clld.org/parameters/%s' % conceptset.id)
+        comparison_meanings[cm.id] = cm
 
     DBSession.flush()
 
