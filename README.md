@@ -21,7 +21,15 @@ On some systems the `sudo make install` command shows the following error:
     ...
     make: *** [/usr/lib/postgresql/12/lib/pgxs/src/makefiles/pgxs.mk:233: install] Error 1
 
-The extension appears to be working anyways. ¯\\_(ツ)_/¯
+To fix this adjust the path variables ICU_CFLAGS, ICU_LDFLAGS,
+PG_INCLUDE_DIR, PG_PKG_LIB_DIR in the `Makefile` according to your OS
+and settings.  E.g. on Ubuntu change ICU_CFLAGS and ICU_LDFLAGS to the
+following:
+
+```make
+ICU_CFLAGS = `pkg-config --clfags icu-uc`
+ICU_LDFLAGS = `pkg-config --libs icu-uc`
+```
 
 ### Prerequisite 2: Glottolog and Concepticon
 
