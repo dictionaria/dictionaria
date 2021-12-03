@@ -1,7 +1,7 @@
 from collections import OrderedDict, defaultdict
 import re
+import textwrap
 
-from clldutils.text import truncate_with_ellipsis
 from clldutils.misc import UnicodeMixin
 from clld.db.models import common
 from clld.db.meta import DBSession
@@ -73,7 +73,7 @@ def unit_detail_html(request=None, context=None, **kw):
 
 
 def truncate(s):
-    return truncate_with_ellipsis(s, width=70)
+    return textwrap.shorten(s, width=70)
 
 
 def split(s):
