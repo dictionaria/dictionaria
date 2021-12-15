@@ -14,7 +14,6 @@ from clld.util import LGR_ABBRS
 from clld.cliutil import Data
 from clld.db.meta import DBSession
 from clld.db.models import common
-from clld.db.util import collkey, with_collkey_ddl
 from clld.db import fts
 from clld_glottologfamily_plugin.util import load_families
 from pyconcepticon.api import Concepticon
@@ -27,9 +26,6 @@ from dictionaria.models import ComparisonMeaning, Dictionary, Word, Variety, Mea
 from dictionaria.lib.submission import REPOS, Submission
 from dictionaria.lib.cldf_zenodo import download_from_doi
 from dictionaria.util import join, toc
-
-
-with_collkey_ddl()
 
 
 def download_data(sid, contrib_md, cache_dir):
@@ -108,8 +104,6 @@ def main(args):
     fts.index('fts_index', Word.fts, DBSession.bind)
     DBSession.execute("CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;")
 
-    if DBSession.bind.dialect.name == 'postgresql':
-        Index('ducet', collkey(common.Unit.name)).create(DBSession.bind)
     data = Data()
 
     dataset = common.Dataset(

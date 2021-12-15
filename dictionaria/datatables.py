@@ -14,7 +14,7 @@ from clld.web.datatables.source import Sources, TypeCol
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
-from clld.db.util import icontains, get_distinct_values, collkey
+from clld.db.util import icontains, get_distinct_values
 from clld.db import fts
 from clld.web.util.helpers import link, external_link
 from clld.web.util.htmllib import HTML
@@ -95,7 +95,7 @@ class WordCol(LinkCol):
         return dict(title=item.name, label=item.label)
 
     def order(self):
-        return collkey(Word.name), Word.number
+        return Word.name, Word.number
 
     def search(self, qs):
         return or_(
