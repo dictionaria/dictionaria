@@ -21,7 +21,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'clldmpg>=4.2',
-        'clld>=9.2.2',
+        'clld>=10.0.0',
         'clld-glottologfamily-plugin>=4.0',
         'gitpython',
         'transliterate',
