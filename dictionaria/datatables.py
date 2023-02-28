@@ -181,13 +181,13 @@ class Words(datatables.Units):
         self.second_tab = kw.pop('second_tab', req.params.get('second_tab', False))
         if self.second_tab:
             self.eid = 'second_tab'
-        self.vars = OrderedDict()
+        self.vars = []
         if self.contribution:
             for name in self.contribution.jsondata.get(
                     'second_tab' if self.second_tab else 'custom_fields', []):
                 if name in self.contribution.jsondata.get('metalanguages', {}).values():
                     name = 'lang-{0}'.format(name)
-                self.vars[name] = aliased(common.Unit_data, name=name)
+                self.vars.append(name)
 
     def toolbar(self):
         return HTML.a(
@@ -197,8 +197,6 @@ class Words(datatables.Units):
         if self.second_tab and self.contribution:
             query = query.filter(Word.dictionary_pk == self.contribution.pk) \
                 .options(joinedload(common.Unit.data))
-            for name, var in self.vars.items():
-                query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
             return query.distinct()
 
         query = query.join(Dictionary)\
@@ -212,8 +210,6 @@ class Words(datatables.Units):
                 joinedload(common.Unit._files),
             )
         if self.contribution:
-            for name, var in self.vars.items():
-                query = query.outerjoin(var, and_(var.key == name, var.object_pk == Word.pk))
             query = query.filter(Word.dictionary_pk == self.contribution.pk)
 
         return query.distinct()
