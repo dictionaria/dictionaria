@@ -120,9 +120,15 @@ class CustomCol(Col):
 
     def search(self, qs):
         db_column = getattr(Word, self.name)
+        # collapse accented and unaccented characters
+        column_norm = func.unaccent(db_column)
+        query_norm = func.unaccent(qs)
+        # allow searching for palochka using the number 1
+        column_norm = func.replace(column_norm, 'I', '1')
+        query_norm = func.replace(query_norm, 'I', '1')
         return or_(
             icontains(db_column, qs),
-            func.unaccent(db_column).contains(func.unaccent(qs)))
+            column_norm.contains(query_norm))
 
     def order(self):
         return func.unaccent(getattr(Word, self.name))
