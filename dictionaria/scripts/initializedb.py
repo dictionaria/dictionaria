@@ -169,7 +169,7 @@ def main(args):
             continue
 
         if not sinfo['date_published']:
-            print('no date', submission.id)
+            print('no date', sid)
             continue
 
         data_dir = download_data(sid, sinfo, REPOS / 'datasets')
