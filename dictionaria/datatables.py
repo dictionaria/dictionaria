@@ -407,7 +407,8 @@ class Dictionaries(datatables.Contributions):
                 input_size='mini'),
             NoWrapLinkCol(
                 self,
-                'dictionary'),
+                'dictionary',
+                model_col=Dictionary.name),
             ContributorsCol(
                 self,
                 name='author'),
