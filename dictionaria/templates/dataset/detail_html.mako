@@ -7,10 +7,11 @@
             <li>Martin Haspelmath</li>
             <li>Barbara Stiebels</li>
         </ul>
-        <h3>Managing Editor</h3>
-        <p>
-            Iren Hartmann
-        </p>
+        <h3>Managing Editors</h3>
+        <ul class="unstyled">
+          <li>Iren Hartmann</li>
+          <li>Johannes Englisch</li>
+        </ul>
     </div>
 </%def>
 
