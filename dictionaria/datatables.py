@@ -73,7 +73,10 @@ class MeaningsCol(Col):
         return common.Parameter.name
 
     def search(self, qs):
-        return icontains(common.Parameter.name, qs)
+        if getattr(self, 'choices', None):
+            return common.Parameter.name == qs
+        else:
+            return icontains(common.Parameter.name, qs)
 
 
 class WowLanguageCol(LinkCol):
@@ -124,8 +127,8 @@ class CustomCol(Col):
         column_norm = func.unaccent(db_column)
         query_norm = func.unaccent(qs)
         # allow searching for palochka using the number 1
-        column_norm = func.replace(column_norm, 'I', '1')
-        query_norm = func.replace(query_norm, 'I', '1')
+        column_norm = func.replace(column_norm, 'Ӏ', '1')
+        query_norm = func.replace(query_norm, 'Ӏ', '1')
         return or_(
             icontains(db_column, qs),
             column_norm.contains(query_norm))
@@ -148,7 +151,10 @@ class SemanticDomainCol(Col):
         Col.__init__(self, dt, name, **kw)
 
     def search(self, qs):
-        return icontains(Word.semantic_domain, qs)
+        if getattr(self, 'choices', None):
+            return Word.semantic_domain == qs
+        else:
+            return icontains(Word.semantic_domain, qs)
 
     def format(self, item):
         return HTML.ul(
