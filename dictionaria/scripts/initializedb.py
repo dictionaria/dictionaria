@@ -191,8 +191,13 @@ def main(args):
         for v, s in zip(props.get('metalanguages', {}).values(),
                         ['success', 'info', 'warning', 'important']):
             props['metalanguage_styles'][v] = s
-        props['custom_fields'] = ['lang-' + f if f in props['metalanguage_styles'] else f
-                                  for f in props['custom_fields']]
+        props['custom_fields'] = [
+            f'lang-{field}' if field in props['metalanguage_styles'] else field
+            for field in props['custom_fields']]
+        if 'second_tab' in props:
+            props['second_tab'] = [
+                f'lang-{field}' if field in props['metalanguage_styles'] else field
+                for field in props['second_tab']]
         props.setdefault('choices', {})
 
         language = data['Variety'].get(lmd['glottocode'])
@@ -331,10 +336,6 @@ def denormalize_dictionary(contrib):
             word.semantic_domain = joined(m.semantic_domain for m in word.meanings)
             word.number = i + 1 if len(words) > 1 else 0
 
-            custom_field_adder = CustomFieldDenormalizer(word)
-            custom_field_adder.set_custom_fields(custom_fields)
-            custom_field_adder.set_second_tab(second_tab)
-
             for suffix in ['1', '2']:
                 alt_t, alt_l = [], []
                 for m in word.meanings:
@@ -344,6 +345,10 @@ def denormalize_dictionary(contrib):
                 if alt_t and len(set(alt_l)) == 1:
                     DBSession.add(common.Unit_data(
                         object_pk=word.pk, key='lang-' + alt_l.pop(), value=join(alt_t)))
+
+            custom_field_adder = CustomFieldDenormalizer(word)
+            custom_field_adder.set_custom_fields(custom_fields)
+            custom_field_adder.set_second_tab(second_tab)
     DBSession.flush()
 
 

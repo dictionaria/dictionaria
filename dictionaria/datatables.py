@@ -107,16 +107,26 @@ class WordCol(LinkCol):
 
 
 class AltTransCol(Col):
+    def __init__(self, dt, name, attrib, *args, **kwargs):
+        self._attrib = attrib
+        super().__init__(dt, name, *args, **kwargs)
+
     def search(self, qs):
-        return icontains(self.dt.vars[self.name].value, qs)
+        column = getattr(Word, self._attrib)
+        column_norm = func.unaccent(column)
+        query_norm = func.unaccent(qs)
+        return or_(
+            icontains(column, qs),
+            column_norm.contains(query_norm))
 
     def format(self, item):
-        value = item.datadict().get(self.name, '')
+        value = getattr(item, self._attrib, '')
         value = add_unit_links(self.dt.req, item.dictionary, value)
         return HTML.p(value)
 
     def order(self):
-        return self.dt.vars[self.name].value
+        column = getattr(Word, self._attrib)
+        return func.unaccent(column)
 
 
 class CustomCol(Col):
@@ -207,24 +217,20 @@ class Words(datatables.Units):
 
     def base_query(self, query):
         if self.second_tab and self.contribution:
-            query = query.filter(Word.dictionary_pk == self.contribution.pk) \
-                .options(joinedload(common.Unit.data))
-            return query.distinct()
-
-        query = query.join(Dictionary)\
-            .outerjoin(common.Unit_data, and_(
-                Word.pk == common.Unit_data.object_pk, common.Unit_data.key == 'ph'))\
-            .outerjoin(Counterpart, Word.pk == Counterpart.word_pk)\
-            .outerjoin(common.ValueSet)\
-            .outerjoin(common.Parameter)\
-            .options(
-                joinedload(common.Unit.data),
-                joinedload(common.Unit._files),
-            )
-        if self.contribution:
             query = query.filter(Word.dictionary_pk == self.contribution.pk)
-
-        return query.distinct()
+            return query.distinct()
+        else:
+            query = query\
+                .join(Dictionary)\
+                .outerjoin(common.Unit_data, and_(
+                    Word.pk == common.Unit_data.object_pk, common.Unit_data.key == 'ph'))\
+                .outerjoin(Counterpart, Word.pk == Counterpart.word_pk)\
+                .outerjoin(common.ValueSet)\
+                .outerjoin(common.Parameter)\
+                .options(joinedload(common.Unit._files))
+            if self.contribution:
+                query = query.filter(Word.dictionary_pk == self.contribution.pk)
+            return query.distinct()
 
     def _choose_custom_column(self, name, attrib):
         if name == 'Comparison Meanings':
@@ -233,7 +239,8 @@ class Words(datatables.Units):
         elif name == 'Scientific Name':
             return ScientificNameCol(self, attrib, sTitle=name)
         elif name.startswith('lang-'):
-            col = AltTransCol(self, name, sTitle=name.replace('lang-', ''))
+            col = AltTransCol(
+                self, name, attrib, sTitle=name.replace('lang-', ''))
             if self.contribution.jsondata['choices'].get(name):
                 col.choices = self.contribution.jsondata['choices'][name]
             return col
