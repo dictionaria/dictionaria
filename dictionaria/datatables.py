@@ -120,7 +120,7 @@ class AltTransCol(Col):
             column_norm.contains(query_norm))
 
     def format(self, item):
-        value = getattr(item, self._attrib, '')
+        value = getattr(item, self._attrib, '') or ''
         value = add_unit_links(self.dt.req, item.dictionary, value)
         return HTML.p(value)
 
