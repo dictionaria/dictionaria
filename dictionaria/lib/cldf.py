@@ -1,7 +1,7 @@
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import re
 
-from pycldf import iter_datasets, Sources
+from pycldf import iter_datasets
 from clldutils.misc import lazyproperty, nfilter
 from clld.db.models import common
 from clld.db.fts import tsvector
@@ -60,22 +60,22 @@ def get_foreign_keys(ds, from_table):
 
 
 def get_labels(type_, table, colmap, submission, exclude=None):
-    labels = OrderedDict(submission.props.get('labels', []))
+    labels = dict(submission.props.get('labels', []))
     exclude = exclude or []
     exclude.extend([colmap.get('mediaReference', 'Media_IDs'), 'ZCom1'])
-    res = OrderedDict()
+    res = {}
     for col in table.tableSchema.columns:
         if col.name not in exclude and col.name not in colmap.values():
             res[col.name] = (col.titles.getfirst() if col.titles else col.name, False)
-    map_name = '{0}_map'.format(type_)
+    map_name = f'{type_}_map'
     if submission.props.get(map_name):
         for key, label in labels.items():
             if key in submission.props[map_name]:
                 res[submission.props[map_name][key]] = (
                     label, key in submission.props.get('process_links_in_labels', []))
-    order_name = '{0}_custom_order'.format(type_)
+    order_name = f'{type_}_custom_order'
     if submission.props.get(order_name):
-        res = OrderedDict([(k, res[k]) for k in submission.props[order_name] if k in res])
+        res = {k: res[k] for k in submission.props[order_name] if k in res}
     return res
 
 
@@ -88,7 +88,7 @@ class Dictionary(BaseDictionary):
                 for ds in iter_datasets(self.dir)
                 if ds.module == 'Dictionary')
         except StopIteration:
-            raise ValueError('no cldf metadata found in {}'.format(self.dir))
+            raise ValueError(f'no cldf metadata found in {self.dir}')
 
     def add_refs(self, data, table, row, obj, labels):
         if table == 'EntryTable':
@@ -113,7 +113,7 @@ class Dictionary(BaseDictionary):
              comparison_meanings,
              labels):
         def id_(oid):
-            return '%s-%s' % (submission.id, oid)
+            return f'{submission.id}-{oid}'
 
         print('######\n a CLDF dict! \n####')
 
@@ -146,11 +146,10 @@ class Dictionary(BaseDictionary):
             media_ids = set(
                 lemma.get(colmap.get('mediaReference', 'Media_IDs'))
                 or [])
-            files = [(md5, media[md5]) for md5 in media_ids if md5 in media]
-            for md5, spec in sorted(
-                files,
-                key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
-            ):
+            files = sorted(
+                ((md5, media[md5]) for md5 in media_ids if md5 in media),
+                key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID'])
+            for md5, spec in files:
                 submission.add_file(None, md5, common.Unit_files, word, spec)
 
             self.add_refs(data, 'EntryTable', lemma, word, elabels)
@@ -183,7 +182,7 @@ class Dictionary(BaseDictionary):
                 label = label.replace('_', ' ')
                 for lid in lemma[col.name] or []:
                     if lid not in data['Word']:
-                        print('missing entry ID: {0}'.format(lid))
+                        print('missing entry ID:', lid)
                     else:
                         DBSession.add(models.SeeAlso(
                             source_pk=word.pk, target_pk=data['Word'][lid].pk, description=label))
@@ -210,7 +209,7 @@ class Dictionary(BaseDictionary):
             try:
                 w = data['Word'][sense[colmap['entryReference']]]
             except KeyError:
-                print('missing entry: {0}'.format(sense[colmap['entryReference']]))
+                print('missing entry:', sense[colmap['entryReference']])
                 continue
             dsc = sense[colmap['description']]
             if not isinstance(dsc, list):
@@ -227,16 +226,16 @@ class Dictionary(BaseDictionary):
             if 'alt_translation2' in sense and metalanguages.get('gxy'):
                 kw['alt_translation2'] = sense['alt_translation2']
                 kw['alt_translation_language2'] = metalanguages.get('gxy')
-            m = data.add(models.Meaning, sense[colmap['id']], **kw)
+            meaning = data.add(models.Meaning, sense[colmap['id']], **kw)
             DBSession.flush()
 
-            self.add_refs(data, 'SenseTable', sense, m, slabels)
+            self.add_refs(data, 'SenseTable', sense, meaning, slabels)
 
             for index, (key, label) in enumerate(slabels.items()):
                 label, with_links = label
                 if sense.get(key):
                     DBSession.add(models.Meaning_data(
-                        object_pk=m.pk,
+                        object_pk=meaning.pk,
                         key=label.replace('_', ' '),
                         value=sense[key],
                         ord=index,
@@ -262,7 +261,7 @@ class Dictionary(BaseDictionary):
                     continue
                 concept = comparison_meanings[cid]
 
-                vsid = '%s-%s' % (lang.id, concept)
+                vsid = f'{lang.id}-{concept}'
                 vs = data['ValueSet'].get(vsid)
                 if not vs:
                     vs = data.add(
@@ -273,18 +272,17 @@ class Dictionary(BaseDictionary):
                         parameter_pk=concept)
 
                 DBSession.add(models.Counterpart(
-                    id='{0}-{1}'.format(m.id, i), name=w.name, valueset=vs, word=w))
+                    id=f'{meaning.id}-{i}', name=w.name, valueset=vs, word=w))
 
             DBSession.flush()
             media_ids = set(
                 sense.get(colmap.get('mediaReference', 'Media_IDs'))
                 or [])
-            files = [(md5, media[md5]) for md5 in media_ids if md5 in media]
-            for md5, spec in sorted(
-                files,
-                key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID']
-            ):
-                submission.add_file(None, md5, models.Meaning_files, m, spec)
+            files = sorted(
+                ((md5, media[md5]) for md5 in media_ids if md5 in media),
+                key=lambda i: i[1].get(submission.props.get('media_order', 'Description')) or i[1]['ID'])
+            for md5, spec in files:
+                submission.add_file(None, md5, models.Meaning_files, meaning, spec)
 
             for col in fks['EntryTable']:
                 col = self.cldf['SenseTable', col]
@@ -298,10 +296,10 @@ class Dictionary(BaseDictionary):
                         entry_ids = [entry_ids]
                     for eid in entry_ids:
                         if eid not in data['Word']:
-                            print('missing entry ID: {0}'.format(eid))
+                            print('missing entry ID:', eid)
                         else:
                             DBSession.add(models.Nym(
-                                source_pk=m.pk, target_pk=data['Word'][eid].pk, description=label))
+                                source_pk=meaning.pk, target_pk=data['Word'][eid].pk, description=label))
 
         colmap = {k: self.cldf['ExampleTable', k].name
                   for k in ['id', 'primaryText', 'translatedText']
@@ -322,7 +320,7 @@ class Dictionary(BaseDictionary):
                         meaning=data['Meaning'][mid],
                         sentence=data['Example'][ex[colmap['id']]])
                 else:
-                    print('missing sense: {0}'.format(mid))
+                    print('missing sense:', mid)
 
         for wid, d in fullentries.items():
             if wid in data['Word']:

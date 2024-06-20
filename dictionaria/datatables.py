@@ -1,7 +1,5 @@
-from collections import OrderedDict
-
 from sqlalchemy import and_, or_, func
-from sqlalchemy.orm import joinedload, aliased
+from sqlalchemy.orm import joinedload
 
 from clld.web import datatables
 from clld.web.datatables.base import (
@@ -10,7 +8,7 @@ from clld.web.datatables.base import (
 from clld.web.datatables.contributor import NameCol, ContributionsCol, AddressCol
 from clld.web.datatables.language import Languages
 from clld.web.datatables.sentence import Sentences, TsvCol
-from clld.web.datatables.source import Sources, TypeCol
+from clld.web.datatables.source import Sources
 from clld.web.datatables import unitvalue
 from clld.db.meta import DBSession
 from clld.db.models import common
@@ -88,8 +86,8 @@ class DictionaryCol(Col):
     def format(self, item):
         return HTML.div(
             link(self.dt.req, item.dictionary),
-            #' by ',
-            #linked_contributors(self.dt.req, item.valueset.contribution)
+            # ' by ',
+            # linked_contributors(self.dt.req, item.valueset.contribution)
         )
 
 
@@ -259,9 +257,12 @@ class Words(datatables.Units):
                 MeaningsCol(self, 'meaning', bSortable=False, sTitle='Comparison Meaning'),
                 DictionaryCol(self, 'dictionary')]
 
-        pos_choices = sorted((c for c, in DBSession.query(Word.pos)
-                     .filter(Word.dictionary_pk == self.contribution.pk)
-                     .distinct() if c))
+        pos_choices = sorted(
+            choice
+            for choice, in DBSession.query(Word.pos)
+                .filter(Word.dictionary_pk == self.contribution.pk)
+                .distinct()
+            if choice)
         columns = [
             FtsCol(self, 'fts', sTitle='Full Entry', model_col=Word.fts),
             WordCol(self, 'word', sTitle='Headword', model_col=common.Unit.name),
@@ -271,7 +272,8 @@ class Words(datatables.Units):
                 model_col=Word.pos,
                 choices=pos_choices,
                 format=lambda i: HTML.span(i.pos or '', class_='vocabulary')),
-            MeaningDescriptionCol2(self,
+            MeaningDescriptionCol2(
+                self,
                 'description',
                 sTitle='Meaning Description',
                 model_col=common.Unit.description)]
@@ -287,7 +289,8 @@ class Words(datatables.Units):
                 columns.append(self._choose_custom_column(name, attrib))
             if self.contribution.semantic_domains:
                 columns.append(SemanticDomainCol(self, 'semantic_domain', split(self.contribution.semantic_domains)))
-            columns.append(Col(self,
+            columns.append(Col(
+                self,
                 'examples',
                 input_size='mini',
                 model_col=Word.example_count))
@@ -295,7 +298,7 @@ class Words(datatables.Units):
                 columns.append(MediaCol(self, 'audio', 'audio', sTitle=''))
             if self.contribution.count_image:
                 columns.append(ThumbnailCol(self, 'image', sTitle=''))
-                #columns.append(MediaCol(self, 'image', 'image', sTitle=''))
+                # columns.append(MediaCol(self, 'image', 'image', sTitle=''))
             return columns
 
     def get_options(self):
@@ -312,14 +315,14 @@ class Words(datatables.Units):
         return opts
 
 
-#----------------------
+# ----------------------
 
-#class IdsCodeCol2(IdsCodeCol):
-#    def get_attrs(self, item):
-#        return dict(label=item.ids_code)
+# class IdsCodeCol2(IdsCodeCol):
+#     def get_attrs(self, item):
+#         return dict(label=item.ids_code)
 #
-#    def get_obj(self, item):
-#        return item
+#     def get_obj(self, item):
+#         return item
 
 
 class MeaningDescriptionCol(LinkCol):
@@ -348,10 +351,10 @@ class ConcepticonLinkCol(Col):
 class Meanings(datatables.Parameters):
     def col_defs(self):
         return [
-            #IdsCodeCol2(self, 'code'),
-            #LinkCol(self, 'name'),
+            # IdsCodeCol2(self, 'code'),
+            # LinkCol(self, 'name'),
             MeaningDescriptionCol(self, 'name', sTitle='Comparison Meaning'),
-            #Col(self, 'description'),
+            # Col(self, 'description'),
             RepresentationCol(
                 self, 'representation', sClass='right'),
             ConcepticonLinkCol(self, 'concepticon', sTitle=''),

@@ -1,5 +1,4 @@
 from hashlib import md5
-from collections import OrderedDict
 from pathlib import Path
 
 from clldutils.sfm import SFM, Entry
@@ -13,6 +12,7 @@ from dictionaria import models
 
 def split(s, sep=';'):
     return split_text(s, separators=sep, brackets={}, strip=True)
+
 
 _concepticon = None
 
@@ -38,9 +38,9 @@ class ComparisonMeaning(UnicodeMixin):
 
     def __unicode__(self):
         if self.id:
-            return '[%s](http://concepticon.clld.org/parameters/%s)' % (
-                self.label, self.id)
-        return ''
+            return f'[{self.label}](http://concepticon.clld.org/parameters/{self.id})'
+        else:
+            return ''
 
 
 class MeaningDescription(object):
@@ -64,22 +64,22 @@ class MeaningDescription(object):
 
     @property
     def comparison_meanings(self):
-        return '; '.join('%s' % cm for cm in self._comparison_meanings)
+        return '; '.join(str(cm) for cm in self._comparison_meanings)
 
 
 class Example(Entry):
-    markers = OrderedDict([
-        ('ref', 'id'),
-        ('lemma', None),
-        ('rf', 'corpus_ref'),
-        ('tx', 'text'),
-        ('mb', 'morphemes'),
-        ('gl', 'gloss'),
-        ('ft', 'translation'),
-        ('ot', 'alt_translation'),
-        ('ota', 'alt_translation2'),
-        ('sf', 'soundfile'),
-    ])
+    markers = {
+        'ref': 'id',
+        'lemma': None,
+        'rf': 'corpus_ref',
+        'tx': 'text',
+        'mb': 'morphemes',
+        'gl': 'gloss',
+        'ft': 'translation',
+        'ot': 'alt_translation',
+        'ota': 'alt_translation2',
+        'sf': 'soundfile',
+    }
     name_to_marker = {v: k for k, v in markers.items()}
 
     @staticmethod
@@ -156,7 +156,7 @@ class Example(Entry):
                 value = self.normalize(value) or ''
             else:
                 value = ' '.join(value.split())
-            lines.append('%s %s' % (key, value))
+            lines.append(f'{key} {value}')
         return '\n'.join('\\' + l for l in lines)
 
 

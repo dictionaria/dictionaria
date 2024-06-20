@@ -1,13 +1,12 @@
 from datetime import date
 from itertools import groupby, chain
 import json
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 import re
 
 import transaction
 from nameparser import HumanName
 from sqlalchemy.orm import joinedload
-from sqlalchemy import Index
 import cldfcatalog
 from clldutils.misc import slug, nfilter, lazyproperty
 from clld.util import LGR_ABBRS
@@ -148,7 +147,7 @@ def main(args):
             id=conceptset.id,
             name=conceptset.gloss.lower(),
             description=conceptset.definition,
-            concepticon_url='http://concepticon.clld.org/parameters/%s' % conceptset.id)
+            concepticon_url=f'http://concepticon.clld.org/parameters/{conceptset.id}')
         comparison_meanings[cm.id] = cm
 
     DBSession.flush()
@@ -233,7 +232,7 @@ def main(args):
             else:
                 cname, address = spec['name'], spec.get('affiliation')
             name = HumanName(cname)
-            cid = slug('%s%s' % (name.last, name.first))
+            cid = slug(f'{name.last}{name.first}')
             contrib = data['Contributor'].get(cid)
             if not contrib:
                 contrib = data.add(
@@ -255,7 +254,7 @@ def main(args):
 
     for did, lid, submission in submissions:
         transaction.begin()
-        print('loading %s ...' % submission.id)
+        print('loading', submission.id, '...')
         dictdata = Data()
         lang = Variety.get(lid)
         submission.load_sources(Dictionary.get(did), dictdata)
@@ -266,7 +265,7 @@ def main(args):
             Dictionary.get(did),
             lang,
             comparison_meanings,
-            OrderedDict(submission.md.get('properties', {}).get('labels', [])))
+            dict(submission.md.get('properties', {}).get('labels', [])))
         transaction.commit()
         print('... done')
 
@@ -391,7 +390,7 @@ def prime_cache(args):
 
     DBSession.flush()
     for d in DBSession.query(Dictionary):
-        print('Denormalizing dictionary {} ...'.format(d.id))
+        print('Denormalizing dictionary', d.id, '...')
         denormalize_dictionary(d)
         print('... done')
 

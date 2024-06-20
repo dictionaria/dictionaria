@@ -9,7 +9,6 @@ from clld.lib import bibtex
 from clld.cliutil import bibtex2source
 
 from dictionaria.lib import cldf
-from dictionaria.lib.ingest import Examples
 from dictionaria import models
 import dictionaria
 
@@ -50,7 +49,7 @@ class Submission:
             if attrs:
                 jsondata.update(attrs)
             f = file_cls(
-                id='%s-%s' % (obj.id, checksum),
+                id=f'{obj.id}-{checksum}',
                 name=self.cdstar[checksum]['original'],
                 object_pk=obj.pk,
                 mime_type=self.cdstar[checksum]['mimetype'],
@@ -59,7 +58,7 @@ class Submission:
             DBSession.flush()
             DBSession.refresh(f)
             return
-        print('{0} file missing: {1}'.format(type_, checksum))
+        print(type_, 'file missing:', checksum)
         return
 
     def load_sources(self, dictionary, data):
@@ -69,11 +68,11 @@ class Submission:
                 rec = bibtex.Record(rec.genre, rec.id, **rec)
                 src = bibtex2source(rec, models.DictionarySource)
                 src.dictionary = dictionary
-                src.id = '%s-%s' % (self.id, src.id)
+                src.id = '{self.id}-{src.id}'
                 data.add(models.DictionarySource, rec.id, _obj=src)
 
     def load_examples(self, dictionary, data, lang):
-        abbr_p = re.compile('\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
+        abbr_p = re.compile(r'\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
         if hasattr(self.dictionary, 'cldf') and self.dictionary.cldf.get('ExampleTable'):
             examples = self.dictionary.cldf['ExampleTable']
             example_props = (
@@ -88,7 +87,6 @@ class Submission:
             colmap = {k: self.dictionary.cldf['ExampleTable', k].name
                       for k in example_props
                       if self.dictionary.cldf.get(('ExampleTable', k))}
-            fks = cldf.get_foreign_keys(self.dictionary.cldf, examples)
             exlabels = cldf.get_labels(
                 'example', examples, colmap, self,
                 exclude=[
@@ -96,18 +94,18 @@ class Submission:
                     colmap.get('mediaReference', 'Media_IDs'),
                     colmap.get('languageReference', 'Language_ID')])
 
-            for i, ex in enumerate(self.dictionary.cldf['ExampleTable']):
+            for ord, ex in enumerate(self.dictionary.cldf['ExampleTable'], 1):
                 obj = data.add(
                     models.Example,
                     ex[colmap['id']],
-                    id='%s-%s' % (self.id, ex.pop(colmap['id']).replace('.', '_')),
+                    id='{}-{}'.format(self.id, ex.pop(colmap['id']).replace('.', '_')),
                     name=ex.pop(colmap['primaryText']),
-                    number='{0}'.format(i + 1),
+                    number=str(ord),
                     source=ex.pop('Corpus_Reference', None),
                     comment=ex.pop(colmap['comment'], None) if 'comment' in colmap else None,
                     original_script=ex.pop('original_script', None),
                     language=lang,
-                    serialized='{0}'.format(ex),
+                    serialized=str(ex),
                     dictionary=dictionary,
                     analyzed='\t'.join(
                         nfilter(ex.pop(colmap['analyzedWord'], []) or []))
@@ -135,7 +133,7 @@ class Submission:
                     label, with_links = label
                     value = ex.get(key)
                     if value:
-                        if type(value) == list:
+                        if isinstance(value, list):
                             value = '\t'.join(e or '' for e in value)
                         DBSession.add(common.Sentence_data(
                             object_pk=obj.pk,

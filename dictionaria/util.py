@@ -1,11 +1,10 @@
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 import re
 import textwrap
 
 from clldutils.misc import UnicodeMixin
 from clld.db.models import common
 from clld.db.meta import DBSession
-from bs4 import BeautifulSoup
 from clldmpg import cdstar
 from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML, escape
@@ -18,7 +17,7 @@ MARKDOWN_LINK_PATTERN = re.compile(r'\[(?P<label>[^\]]+)\]\((?P<uid>[^)]+)\)')
 
 def last_first(contrib):
     if contrib.id == 'baezgabriela':
-        return '{0}, {1}'.format(
+        return '{}, {}'.format(
             ' '.join(contrib.name.split()[1:]),
             contrib.name.split()[0])
     return contrib.last_first()
@@ -31,7 +30,7 @@ def add_unit_links(req, contrib, text):
             res.append(escape(text[pos:m.start()]))
         res.append(HTML.a(
             m.group('label'),
-            href=req.route_url('unit', id='{0}-{1}'.format(contrib.id, m.group('uid')))))
+            href=req.route_url('unit', id='{}-{}'.format(contrib.id, m.group('uid')))))
         pos = m.end()
     if pos < len(text):
         res.append(escape(text[pos:]))
@@ -50,7 +49,7 @@ def add_links2(sid, ids, desc, type_):
     p = re.compile(
         r'((?<=\W)|^)(?P<id>{0})(?=\W|$)'.format('|'.join(re.escape(id_) for id_ in ids if id_)),
         flags=re.MULTILINE)
-    return p.sub(lambda m: '{0}'.format(Link(sid + '-' + m.group('id'), type_)), desc)
+    return p.sub(lambda m: str(Link(sid + '-' + m.group('id'), type_)), desc)
 
 
 def unit_detail_html(request=None, context=None, **kw):
@@ -94,7 +93,7 @@ class Link(UnicodeMixin):
         self.type = type
 
     def __unicode__(self):
-        return '**{0.type}:{0.id}**'.format(self)
+        return f'**{self.type}:{self.id}**'
 
     def sub(self, s, req, labels=None):
         if not labels:
@@ -103,8 +102,9 @@ class Link(UnicodeMixin):
 
         def _repl(m):
             if m.group('id') in labels:
-                return '<a href="{0}">{1}</a>'.format(
-                    req.route_url(self.type, id=m.group('id')), labels[m.group('id')])
+                return '<a href="{}">{}</a>'.format(
+                    req.route_url(self.type, id=m.group('id')),
+                    labels[m.group('id')])
             return m.string
 
         return re.sub(r'\*\*{0}:(?P<id>[^*]+)\*\*'.format(self.type), _repl, s)
@@ -118,7 +118,7 @@ def add_links(req, s):
 
 def toc(soup):
     def link(id_, label):
-        return HTML.a(label, href='#{0}'.format(id_))
+        return HTML.a(label, href=f'#{id_}')
 
     def toplink(html):
         a = html.new_tag(
@@ -133,7 +133,7 @@ def toc(soup):
         a = html.new_tag(
             'a',
             **{
-                'href': '#{0}'.format(id_),
+                'href': f'#{id_}',
                 'title': 'Permalink to this headline',
                 'class': "headerlink"})
         a.string = '¶'
@@ -143,7 +143,7 @@ def toc(soup):
     for d in soup.descendants:
         if d.name in ['h1', 'h2', 'h3', 'h4', 'h5']:
             count += 1
-            id_ = 'section{0}'.format(count)
+            id_ = f'section{count}'
             toc_.append((id_, int(d.name[1:]), d.get_text()))
             d.insert(0, soup.new_tag('a', id=id_))
             d.append(toplink(soup))
@@ -151,7 +151,7 @@ def toc(soup):
 
     if toc_:
         top_level = min(t[1] for t in toc_)
-        nt = OrderedDict()
+        nt = {}
         curr = []
         for id_, level, label in toc_:
             if level == top_level:
@@ -162,4 +162,4 @@ def toc(soup):
                          for t, ns in nt.items()])
     else:
         toc_ = ''
-    return '{0}'.format(soup), toc_
+    return str(soup), toc_
