@@ -83,7 +83,10 @@ class Dictionary(BaseDictionary):
     @lazyproperty
     def cldf(self):
         try:
-            return next(iter_datasets(self.dir))
+            return next(
+                ds
+                for ds in iter_datasets(self.dir)
+                if ds.module == 'Dictionary')
         except StopIteration:
             raise ValueError('no cldf metadata found in {}'.format(self.dir))
 
