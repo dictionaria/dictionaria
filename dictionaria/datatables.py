@@ -104,6 +104,22 @@ class WordCol(LinkCol):
             func.unaccent(Word.name).contains(func.unaccent(qs)))
 
 
+# Welcome to Unicode Hell o/
+PALOCHKA = 'Ӏ'
+SMALL_PALOCHKA = 'ӏ'
+LATIN_I = 'I'
+CYRILLIC_I = 'І'
+
+
+def collapse_accents(sql_column):
+    """Collapse accented and unaccented characters."""
+    sql_column = func.unaccent(sql_column)
+    # allow searching for palochka using the number 1
+    for palochka in (PALOCHKA, SMALL_PALOCHKA, LATIN_I, CYRILLIC_I):
+        sql_column = func.replace(sql_column, palochka, '1')
+    return sql_column
+
+
 class AltTransCol(Col):
     def __init__(self, dt, name, attrib, *args, **kwargs):
         self._attrib = attrib
@@ -111,8 +127,8 @@ class AltTransCol(Col):
 
     def search(self, qs):
         column = getattr(Word, self._attrib)
-        column_norm = func.unaccent(column)
-        query_norm = func.unaccent(qs)
+        column_norm = collapse_accents(column)
+        query_norm = collapse_accents(qs)
         return or_(
             icontains(column, qs),
             column_norm.contains(query_norm))
@@ -132,11 +148,8 @@ class CustomCol(Col):
     def search(self, qs):
         db_column = getattr(Word, self.name)
         # collapse accented and unaccented characters
-        column_norm = func.unaccent(db_column)
-        query_norm = func.unaccent(qs)
-        # allow searching for palochka using the number 1
-        column_norm = func.replace(column_norm, 'Ӏ', '1')
-        query_norm = func.replace(query_norm, 'Ӏ', '1')
+        column_norm = collapse_accents(db_column)
+        query_norm = collapse_accents(qs)
         return or_(
             icontains(db_column, qs),
             column_norm.contains(query_norm))
