@@ -202,7 +202,11 @@ def main(args):
         language = data['Variety'].get(lmd['glottocode'])
         if not language:
             language = data.add(
-                Variety, lmd['glottocode'], id=lmd['glottocode'], name=lmd['name'])
+                Variety,
+                lmd['glottocode'],
+                id=lmd['glottocode'],
+                name=lmd['name'],
+                glottolog_id=lmd['glottocode'])
 
         date_published = sinfo.get('date_published') or date.today().isoformat()
         if '-' not in date_published:

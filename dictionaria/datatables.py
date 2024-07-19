@@ -36,6 +36,16 @@ class GlottocodeCol(Col):
             title='Language information at Glottolog')
 
 
+# GlottocodeCol doesn't work in the contributions table
+class GlottologIdCol(Col):
+    def format(self, item):
+        item = self.get_obj(item)
+        return external_link(
+            'http://glottolog.org/resource/languoid/id/' + item.glottolog_id,
+            label=item.id,
+            title='Language information at Glottolog')
+
+
 class Varieties(Languages):
     def base_query(self, query):
         return query.outerjoin(Family)
@@ -416,6 +426,9 @@ class NoWrapLinkCol(LinkCol):
 
 
 class Dictionaries(datatables.Contributions):
+    def base_query(self, query):
+        return query.join(Variety)
+
     def get_options(self):
         opts = super(Dictionaries, self).get_options()
         opts['aaSorting'] = [[0, 'asc']]
@@ -435,13 +448,16 @@ class Dictionaries(datatables.Contributions):
             ContributorsCol(
                 self,
                 name='author'),
-            GlottocodeCol(
+            GlottologIdCol(
                 self,
-                'glottocode',
-                get_object=lambda i: i.language),
+                'glottolog_id',
+                sTitle='Glottocode',
+                get_object=lambda i: i.language,
+                model_col=Variety.glottolog_id),
             Col(self,
                 'entries',
                 sClass='right',
+                bSearchable=False,
                 input_size='mini',
                 model_col=Dictionary.count_words),
             YearCol(

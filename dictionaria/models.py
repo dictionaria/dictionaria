@@ -29,6 +29,8 @@ from dictionaria.util import split
 class Variety(CustomModelMixin, common.Language, HasFamilyMixin):
     pk = Column(Integer, ForeignKey('language.pk'), primary_key=True)
 
+    glottolog_id = Column(Unicode)
+
 
 @implementer(interfaces.IContribution)
 class Dictionary(CustomModelMixin, common.Contribution):
