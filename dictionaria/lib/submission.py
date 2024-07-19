@@ -68,7 +68,7 @@ class Submission:
                 rec = bibtex.Record(rec.genre, rec.id, **rec)
                 src = bibtex2source(rec, models.DictionarySource)
                 src.dictionary = dictionary
-                src.id = '{self.id}-{src.id}'
+                src.id = f'{self.id}-{src.id}'
                 data.add(models.DictionarySource, rec.id, _obj=src)
 
     def load_examples(self, dictionary, data, lang):
