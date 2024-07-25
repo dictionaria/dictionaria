@@ -48,6 +48,7 @@ class GlottologIdCol(Col):
 
 
 class SeriesCol(Col):
+    # FIXME: currently unused – remove?
     def format(self, item):
         item = self.get_obj(item)
         if item.series:
@@ -494,8 +495,6 @@ class Dictionaries(datatables.Contributions):
                 bSortable=False,
                 sTitle='DOI',
                 format=lambda i: i.doi_link()),
-            SeriesCol(
-                self, 'series', model_col=Dictionary.series, choices=series),
             CitationCol(self, 'cite', sTitle='Cite'),
         ]
 

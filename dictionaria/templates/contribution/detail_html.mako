@@ -1,10 +1,15 @@
 <%inherit file="../${context.get('request').registry.settings.get('clld.app_template', 'app.mako')}"/>
 <%namespace name="util" file="../util.mako"/>
+<%! from clldutils.misc import slug %>
 <%! active_menu_item = "contributions" %>
 
 ${util.codes(ctx.language)}
 
-<h2>${ctx.name} ${h.cite_button(request, ctx)}</h2>
+<h2>${ctx.name} ${h.cite_button(request, ctx)}
+% if ctx.series:
+ ${f'<span class="series-{slug(ctx.series)}"><nobr>{ctx.series}</nobr></span>'|n}
+% endif
+</h2>
 
 <p>by ${h.linked_contributors(request, ctx)}</p>
 
