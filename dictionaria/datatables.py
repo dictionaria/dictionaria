@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, func
+from sqlalchemy import and_, or_, func, null
 from sqlalchemy.orm import joinedload
 
 from clld.web import datatables
@@ -56,6 +56,12 @@ class SeriesCol(Col):
                 item.series)
         else:
             return ''
+
+    def search(self, qs):
+        if qs == '--none--':
+            return self.model_col == null()
+        else:
+            return self.model_col == qs
 
 
 class Varieties(Languages):
@@ -449,14 +455,15 @@ class Dictionaries(datatables.Contributions):
     def col_defs(self):
         from clld.web.datatables.contribution import ContributorsCol, CitationCol
         series = sorted(
-            s for s, in DBSession.query(Dictionary.series).distinct())
+            s
+            for s, in DBSession.query(Dictionary.series).distinct()
+            if s)
+        series.append('--none--')
         return [
             Col(self,
                 'number',
                 model_col=Dictionary.number,
                 input_size='mini'),
-            SeriesCol(
-                self, 'series', model_col=Dictionary.series, choices=series),
             NoWrapLinkCol(
                 self,
                 'dictionary',
@@ -487,6 +494,8 @@ class Dictionaries(datatables.Contributions):
                 bSortable=False,
                 sTitle='DOI',
                 format=lambda i: i.doi_link()),
+            SeriesCol(
+                self, 'series', model_col=Dictionary.series, choices=series),
             CitationCol(self, 'cite', sTitle='Cite'),
         ]
 
