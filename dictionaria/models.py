@@ -39,6 +39,7 @@ class Dictionary(CustomModelMixin, common.Contribution):
     pk = Column(Integer, ForeignKey('contribution.pk'), primary_key=True)
     language_pk = Column(Integer, ForeignKey('language.pk'))
     language = relationship('Language', backref='dictionaries')
+    series = Column(Unicode)
     number = Column(Integer)
     published = Column(Date)
     count_words = Column(Integer)

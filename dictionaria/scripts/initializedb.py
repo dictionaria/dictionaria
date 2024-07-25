@@ -220,6 +220,7 @@ def main(args):
             Dictionary,
             sid,
             id=sid,
+            series=sinfo.get('series'),
             number=sinfo.get('number'),
             name=props.get('title', lmd['name'] + ' dictionary'),
             description=submission.description,

@@ -19,6 +19,7 @@ from clld.web.util.htmllib import HTML
 from clld_glottologfamily_plugin.models import Family
 from clld_glottologfamily_plugin.datatables import MacroareaCol, FamilyCol
 from clldmpg.cdstar import MediaCol, maintype, bitstream_url
+from clldutils.misc import slug
 
 from dictionaria.models import (
     Word, Counterpart, Dictionary, ComparisonMeaning, Variety, Example,
@@ -44,6 +45,17 @@ class GlottologIdCol(Col):
             'http://glottolog.org/resource/languoid/id/' + item.glottolog_id,
             label=item.id,
             title='Language information at Glottolog')
+
+
+class SeriesCol(Col):
+    def format(self, item):
+        item = self.get_obj(item)
+        if item.series:
+            return '<span class="series-{}"><nobr>{}</nobr></span>'.format(
+                slug(item.series),
+                item.series)
+        else:
+            return ''
 
 
 class Varieties(Languages):
@@ -436,11 +448,15 @@ class Dictionaries(datatables.Contributions):
 
     def col_defs(self):
         from clld.web.datatables.contribution import ContributorsCol, CitationCol
+        series = sorted(
+            s for s, in DBSession.query(Dictionary.series).distinct())
         return [
             Col(self,
                 'number',
                 model_col=Dictionary.number,
                 input_size='mini'),
+            SeriesCol(
+                self, 'series', model_col=Dictionary.series, choices=series),
             NoWrapLinkCol(
                 self,
                 'dictionary',

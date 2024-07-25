@@ -56,3 +56,23 @@ ol.nested li:before { content: counters(item, ".") " "; counter-increment: item 
 div.toc li {font-weight: bold}
 figure {float: right; margin-left: 20px; max-width: 310px;}
 figcaption {  font-style: italic; text-align: center; }
+span.series-peerreviewed
+{
+    color: #000;
+    background-color: #ffd700;
+    padding: .5ex;
+    border-color: #806c00;
+    border-style: solid;
+    border-width: .1ex;
+    border-radius: 1ex;
+}
+span.series-other
+{
+    color: #000;
+    background-color: #ccc;
+    padding: .5ex;
+    border-color: #888;
+    border-style: solid;
+    border-width: .1ex;
+    border-radius: 1ex;
+}
