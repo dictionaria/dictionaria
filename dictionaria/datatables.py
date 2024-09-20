@@ -138,13 +138,16 @@ PALOCHKA = 'Ӏ'
 SMALL_PALOCHKA = 'ӏ'
 LATIN_I = 'I'
 CYRILLIC_I = 'І'
+EXCLAMATION_MARK = '!'
+
+PALOCHKI = [PALOCHKA, SMALL_PALOCHKA, LATIN_I, CYRILLIC_I, EXCLAMATION_MARK]
 
 
 def collapse_accents(sql_column):
     """Collapse accented and unaccented characters."""
     sql_column = func.unaccent(sql_column)
-    # allow searching for palochka using the number 1
-    for palochka in (PALOCHKA, SMALL_PALOCHKA, LATIN_I, CYRILLIC_I):
+    # search for palochka using commonly-used homoglyphs or ascii replacements
+    for palochka in PALOCHKI:
         sql_column = func.replace(sql_column, palochka, '1')
     return sql_column
 
