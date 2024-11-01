@@ -28,13 +28,14 @@ setup(
         'pyconcepticon>=1.1.0',
         'beautifulsoup4==4.6.0',
         'html5lib',
-        'sqlalchemy',
+        'sqlalchemy<2.0',
         'waitress',
     ],
     extras_require={
         'dev': [
             'flake8',
-            'tox'
+            'tox',
+            'cldfzenodo',
         ],
         'test': [
             'psycopg2',
