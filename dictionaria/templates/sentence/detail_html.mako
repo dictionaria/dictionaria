@@ -18,7 +18,7 @@
         <li>
             <span class="lemma">${wa.meaning.word.name}</span>
             &nbsp;
-            <span class="translation">${h.link(request, wa.meaning.word, label=u.drop_unit_links(wa.meaning.name))}</span>
+            <span class="translation">${h.link(request, wa.meaning.word, label=u.drop_word_links(wa.meaning.name))}</span>
         </li>
     % endfor
 </ul>

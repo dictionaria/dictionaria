@@ -1,17 +1,22 @@
+"""Adapters for retrieving meta data for resources in different formats."""
+
 from itertools import chain
 
 from zope.interface import implementer
 
 from clld import interfaces
-from clld.web.adapters.md import MetadataFromRec as Base
 from clld.lib import bibtex
+from clld.web.adapters.md import MetadataFromRec as Base
 
 from dictionaria.util import last_first
 
 
 class MetadataFromRec(Base):
+    """Resource metadata -- base case.  Defaults to bibtex."""
+
     def rec(self, ctx, req):
-        """
+        """Create bibtex record of a dictionary.
+
         @article{dictionaria-daakaka,
             author    = {von Prince, Kilu},
             journal = {Dictionaria},
@@ -26,23 +31,22 @@ class MetadataFromRec(Base):
 
         return bibtex.Record(
             'article',
-            '{0}-{1}'.format(req.dataset.id, ctx.id),
+            f'{req.dataset.id}-{ctx.id}',
             author=[
                 last_first(c) for c in
                 chain(ctx.primary_contributors, ctx.secondary_contributors)],
             title=getattr(ctx, 'citation_name', str(ctx)),
             url=req.resource_url(ctx),
             journal=req.dataset.name,
-            number='{0}'.format(ctx.number),
-            pages='1-{0}'.format(len(ctx.words)),
+            number=str(ctx.number),
+            pages=f'1-{len(ctx.words)}',
             address=req.dataset.publisher_place,
             publisher=req.dataset.publisher_name,
-            year='{0}'.format(ctx.published.year))
+            year=str(ctx.published.year))
 
 
 @implementer(interfaces.IRepresentation, interfaces.IMetadata)
 class BibTex(MetadataFromRec):
-
     """Resource metadata as BibTex record."""
 
     name = 'BibTeX'
@@ -52,12 +56,12 @@ class BibTex(MetadataFromRec):
     mimetype = 'text/x-bibtex'
 
     def render(self, ctx, req):
+        """Render metadata to bibtex."""
         return str(self.rec(ctx, req))
 
 
 @implementer(interfaces.IRepresentation, interfaces.IMetadata)
 class ReferenceManager(MetadataFromRec):
-
     """Resource metadata in RIS format."""
 
     name = 'RIS'
@@ -67,4 +71,5 @@ class ReferenceManager(MetadataFromRec):
     mimetype = "application/x-research-info-systems"
 
     def render(self, ctx, req):
+        """Render metadata to RIS."""
         return self.rec(ctx, req).format('ris')

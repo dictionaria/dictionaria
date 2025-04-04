@@ -19,14 +19,14 @@
         % if file.mime_type.startswith('image'):
             <div class="img-with-caption well">
                 ${u.cdstar.linked_image(file)}
-                % if file.jsondata.get('Description'):
-                <p>${file.jsondata.get('Description')}</p>
+                % if file.jsondata.get('description'):
+                <p>${file.jsondata.get('description')}</p>
                 % endif
             </div>
         % endif
     % endfor
 </%def>
 
-<h2>${ctx.label} <span class="meanings-in-title">${u.add_unit_links(req, ctx.dictionary, u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings)))|n}</span></h2>
+<h2>${ctx.label} <span class="meanings-in-title">${u.add_word_links(req, ctx.dictionary, u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings)))|n}</span></h2>
 
 ${dutil.word_details()}

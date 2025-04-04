@@ -11,7 +11,7 @@
                 % if _d.key == 'Scientific Name':
                 <em>
                 % endif
-                ${u.add_unit_links(req, ctx.dictionary, _d.value)|n}
+                ${u.add_word_links(req, ctx.dictionary, _d.value)|n}
                 % if _d.key == 'Scientific Name':
                 </em>
                 % endif
@@ -65,7 +65,7 @@
         % if obj.comment:
             <dt>Comment:</dt>
             <dd>
-                ${u.add_unit_links(req, obj.dictionary, obj.comment)|n}
+                ${u.add_word_links(req, obj.dictionary, obj.comment)|n}
             </dd>
         % endif
         % if obj.type:
@@ -136,7 +136,7 @@
         <li>
             <ul class="unstyled">
                 <li>
-                    <strong>${u.add_unit_links(req, ctx.dictionary, m.name)|n}</strong>
+                    <strong>${u.add_word_links(req, ctx.dictionary, m.name)|n}</strong>
                     % if 'Description' in m.sourcedict and m.sourcedict['Description']:
                         [${'; '.join(h.link(req, src) for src in m.sourcedict['Description']) | n}]
                     % endif
@@ -146,12 +146,12 @@
                 </li>
                 % if m.alt_translation1:
                     <li>
-                        <span class="alt-translation alt-translation1">${u.add_unit_links(req, ctx.dictionary, m.alt_translation1)|n} [${m.alt_translation_language1}]</span>
+                        <span class="alt-translation alt-translation1">${u.add_word_links(req, ctx.dictionary, m.alt_translation1)|n} [${m.alt_translation_language1}]</span>
                     </li>
                 % endif
                 % if m.alt_translation2:
                     <li>
-                        <span class="alt-translation alt-translation2">${u.add_unit_links(req, ctx.dictionary, m.alt_translation2)|n} [${m.alt_translation_language2}]</span>
+                        <span class="alt-translation alt-translation2">${u.add_word_links(req, ctx.dictionary, m.alt_translation2)|n} [${m.alt_translation_language2}]</span>
                     </li>
                 % endif
                 % if m.semantic_domain_list:
@@ -199,7 +199,7 @@
                         % for w in words:
                             <li>
                                 <span style="margin-right: 10px">${h.link(request, w, title=w.name, label=w.label)|n}</span>
-                                <strong>${u.add_unit_links(req, ctx.dictionary, '; '.join(w.description_list))|n}</strong>
+                                <strong>${u.add_word_links(req, ctx.dictionary, '; '.join(w.description_list))|n}</strong>
                             </li>
                         % endfor
                     </ul>

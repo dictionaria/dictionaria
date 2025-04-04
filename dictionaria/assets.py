@@ -1,9 +1,10 @@
+"""Tell the webapp where to find additional assets."""
+
 from pathlib import Path
 
 from clld.web.assets import environment
 
 import dictionaria
-
 
 environment.append_path(
     Path(dictionaria.__file__).parent.joinpath('static').as_posix(),
