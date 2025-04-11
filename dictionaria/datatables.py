@@ -458,10 +458,71 @@ class Words(datatables.Units):
 
 # EXAMPLES --------------------------------------------------------------------
 
+class ExCustomCol(Col):
+    """Default column for custom fields in the table."""
+
+    def search(self, qs):
+        """Ignore accents and palochka when searching."""
+        db_column = getattr(Example, self.name)
+        # collapse accented and unaccented characters
+        column_norm = collapse_accents(db_column)
+        query_norm = collapse_accents(qs)
+        return or_(
+            icontains(db_column, qs),
+            column_norm.contains(query_norm))
+
+    def order(self):
+        """Ignore accents when sorting."""
+        return func.unaccent(getattr(Example, self.name))
+
+
+class ExAltTransCol(Col):
+    """Column for non-English translations of an example."""
+
+    def __init__(self, dt, name, attrib, *args, **kwargs):
+        """Construct the alternative tranlsation column.
+
+        Note down the attribute where the translation will be found.
+        """
+        self._attrib = attrib
+        super().__init__(dt, name, *args, **kwargs)
+
+    def search(self, qs):
+        """Ignore accents and palochka when searching."""
+        column = getattr(Example, self._attrib)
+        column_norm = collapse_accents(column)
+        query_norm = collapse_accents(qs)
+        return or_(
+            icontains(column, qs),
+            column_norm.contains(query_norm))
+
+    def format(self, item):
+        """Add links to words from inline markdown links."""
+        value = getattr(item, self._attrib, '') or ''
+        return HTML.p(f'‘{value}’')
+
+    def order(self):
+        """Ignore accents when sorting."""
+        column = getattr(Example, self._attrib)
+        return func.unaccent(column)
+
+
 class Examples(Sentences):
     """Data table for examples."""
 
     __constraints__ = [Dictionary]
+
+    def __init__(self, req, model, **kw):
+        """Override the constructor to add some info needed for the tabs."""
+        super().__init__(req, model, **kw)
+        self.vars = []
+        if self.dictionary:
+            varnames = self.dictionary.jsondata.get(
+                'custom_example_fields', [])
+            for name in varnames:
+                if name in self.dictionary.jsondata.get('metalanguages', {}).values():
+                    name = f'lang-{name}'
+                self.vars.append(name)
 
     def toolbar(self):
         """Add a help button to the tool bar about the advanced search."""
@@ -485,28 +546,56 @@ class Examples(Sentences):
 
         return query
 
+    def _choose_custom_column(self, name, attrib):
+        if name.startswith('lang-'):
+            col = ExAltTransCol(
+                self, name, attrib, sTitle=name.replace('lang-', ''))
+            if self.dictionary.jsondata['choices'].get(name):
+                col.choices = self.dictionary.jsondata['choices'][name]
+            return col
+        else:
+            col = ExCustomCol(self, attrib, sTitle=name)
+            if self.dictionary.jsondata['choices'].get(name):
+                col.choices = self.dictionary.jsondata['choices'][name]
+            return col
+
     def col_defs(self):
         """Define columns for the example table."""
-        res = [
-            LinkCol(self, 'name', sTitle='Primary Text', sClass="object-language"),
-            TsvCol(self, 'analyzed', sTitle='Analyzed Text'),
-            TsvCol(self, 'gloss', sClass="gloss"),
-            Col(self,
-                'description',
-                sTitle=self.req.translate('Translation'),
-                sClass="translation"),
-        ]
-        if self.dictionary and self.dictionary.count_example_audio:
-            res.append(MediaCol(self, 'exaudio', 'audio', sTitle=''))
-        res.append(DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT'))
-        if not self.dictionary:
-            res.insert(-1, LinkCol(
+        primary = LinkCol(
+            self, 'name', sTitle='Primary Text', sClass='object-language')
+        analyzed = TsvCol(self, 'analyzed', sTitle='Analyzed Text')
+        gloss = TsvCol(self, 'gloss', sClass='gloss')
+        translation = Col(
+            self,
+            'description',
+            sTitle=self.req.translate('Translation'),
+            sClass='translation')
+        igt = DetailsRowLinkCol(self, 'd', button_text='show', sTitle='IGT')
+
+        if self.dictionary:
+            media = MediaCol(self, 'exaudio', 'audio', sTitle='')
+
+            columns = [primary]
+            if not self.vars:
+                columns.append(analyzed)
+                columns.append(gloss)
+            columns.append(translation)
+            if self.vars:
+                attribs = ('custom_field1', 'custom_field2')
+                for name, attrib in zip(self.vars, attribs):
+                    columns.append(self._choose_custom_column(name, attrib))
+            if self.dictionary.count_example_audio:
+                columns.append(media)
+            columns.append(igt)
+            return columns
+        else:
+            dictionary = LinkCol(
                 self,
                 'dictionary',
                 model_col=Dictionary.name,
                 get_obj=lambda i: i.dictionary,
-                choices=get_distinct_values(Dictionary.name)))
-        return res
+                choices=get_distinct_values(Dictionary.name))
+            return [dictionary, primary, analyzed, gloss, translation, igt]
 
     def get_options(self):
         """Reset default order in example table."""

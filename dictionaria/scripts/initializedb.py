@@ -445,7 +445,10 @@ def prime_cache(_args):
 
         word_pks = [w.pk for w in d.words]
         choices = {}
-        for col in d.jsondata.get('custom_fields', []):
+        custom_cols = chain(
+            d.jsondata.get('custom_fields', ()),
+            d.jsondata.get('second_tab', ()))
+        for col in custom_cols:
             data_values = DBSession.query(common.Unit_data.value)\
                 .filter(common.Unit_data.object_pk.in_(word_pks))\
                 .filter(common.Unit_data.key == col)\

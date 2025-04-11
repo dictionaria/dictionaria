@@ -299,6 +299,8 @@ class Example(CustomModelMixin, common.Sentence):
     alt_translation_language1 = Column(Unicode)
     alt_translation2 = Column(Unicode)
     alt_translation_language2 = Column(Unicode)
+    custom_field1 = Column(Unicode)
+    custom_field2 = Column(Unicode)
     dictionary_pk = Column(Integer, ForeignKey('dictionary.pk'))
     dictionary = relationship(Dictionary, backref='examples')
 

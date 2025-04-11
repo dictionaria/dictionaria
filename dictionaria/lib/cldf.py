@@ -376,13 +376,49 @@ def entry_id_exists(entries, eid):
         return False
 
 
-def make_example(cldf_example, language, dictionary, metalanguages, number):
+def collect_example_custom_fields(cldf_example, field_names, metalanguages):
+    """Return custom fields for a cldf example."""
+    if not field_names:
+        return {}
+
+    # NOTE(johannes): No 'lang-' prefix here, apparently
+    altlang1 = metalanguages.get('gxx')
+    altlang2 = metalanguages.get('gxy')
+
+    def example_field_value(cldf_example, field):
+        if field == altlang1:
+            return cldf_example.std.get('alt_translation1', '')
+        elif field == altlang2:
+            return cldf_example.std.get('alt_translation2', '')
+        else:
+            return cldf_example.free.get(field, '')
+
+    return {
+        field: val
+        for field in field_names
+        if (val := example_field_value(cldf_example, field))}
+
+
+def make_example(
+    cldf_example, language, dictionary, metalanguages, number, custom_fields,
+):
     """Create ORM object for an example record."""
     abbrev_pattern = re.compile(r'\$(?P<abbr>[a-z1-3][a-z]*(\.[a-z]+)?)')
     altlang1 = metalanguages.get('gxx')
     altlang2 = metalanguages.get('gxy')
     alttrans1 = cldf_example.std.get('alt_translation1')
     alttrans2 = cldf_example.std.get('alt_translation2')
+
+    tab_data = collect_example_custom_fields(
+        cldf_example, custom_fields, metalanguages)
+
+    def get_tab_value(index):
+        if index < len(custom_fields):
+            field = custom_fields[index]
+            return tab_data.get(field)
+        else:
+            return None
+
     return models.Example(
         id='{}-{}'.format(dictionary.id, cldf_example.std['id'].replace('.', '_')),
         name=cldf_example.std['primaryText'],
@@ -401,17 +437,22 @@ def make_example(cldf_example, language, dictionary, metalanguages, number):
         alt_translation_language1=altlang1 if alttrans1 else None,
         alt_translation_language2=altlang2 if alttrans2 else None,
         alt_translation1=alttrans1 if altlang1 else None,
-        alt_translation2=alttrans2 if altlang2 else None)
+        alt_translation2=alttrans2 if altlang2 else None,
+        custom_field1=get_tab_value(0),
+        custom_field2=get_tab_value(1))
 
 
-def make_examples(cldf_examples, language, dictionary, metalanguages):
+def make_examples(
+    cldf_examples, language, dictionary, metalanguages, custom_fields,
+):
     """Return ORM examples for example records.
 
     Examples are mapped to their original ids for future reference.
     """
     return {
         cldf_example.std['id']: make_example(
-            cldf_example, language, dictionary, metalanguages, number)
+            cldf_example, language, dictionary, metalanguages, number,
+            custom_fields)
         for number, cldf_example in enumerate(cldf_examples, 1)}
 
 
@@ -906,7 +947,8 @@ class Submission:
 
         examples = make_examples(
             cldf_examples, language, dictionary,
-            self.props.get('metalanguages') or {})
+            self.props.get('metalanguages') or {},
+            self.props.get('custom_example_fields') or {})
         DBSession.add_all(examples.values())
 
         DBSession.flush()
