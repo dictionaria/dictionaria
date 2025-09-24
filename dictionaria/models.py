@@ -130,7 +130,6 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
             args.append(HTML.sup(str(self.number)))
         return HTML.span(*args, **{'class': 'lemma'})
 
-    @property
     def iterrelations(self):
         """Return related entries.
 
@@ -188,6 +187,8 @@ RELATIONS = {
     'Main Entry': 'Subentry',
     'Synonym': '(Part of) Synonym (for)',
     'Antonym': '(Part of) Antonym (for)',
+    'Hypernym': 'Is Hypernym of',
+    'Hyponym': 'Is Hyponym of',
     'Contains': 'Is Part of',
 }
 
