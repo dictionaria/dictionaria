@@ -143,7 +143,7 @@ class Word(CustomModelMixin, common.Unit, SourcesForDataMixin):
 
         links_from = [
             (
-                RELATIONS.get(sa.description, sa.description),
+                BACKREFS.get(sa.description, sa.description),
                 1,
                 sa.ord,
                 sa.source,
@@ -184,6 +184,12 @@ class WordReference(Base, common.HasSourceMixin):
 
 
 RELATIONS = {
+    'Main Entry': 'Subentry',
+    'Synonym': '(Part of) Synonym (for)',
+    'Antonym': '(Part of) Antonym (for)',
+    'Contains': 'Is Part of',
+}
+BACKREFS = {
     'Main Entry': 'Subentry',
     'Synonym': '(Part of) Synonym (for)',
     'Antonym': '(Part of) Antonym (for)',
@@ -244,6 +250,7 @@ class Meaning(Base, common.HasFilesMixin, common.HasDataMixin, common.IdNameDesc
         for desc, assocs in groupby(
                 sorted(self.nyms, key=lambda a: a.description),
                 lambda s: s.description):
+            # XXX(johannes): Why are we formatting sense cross-refs like backrefs?
             yield RELATIONS.get(desc, desc), [a.target for a in assocs]
 
 
