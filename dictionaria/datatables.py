@@ -1,6 +1,6 @@
 """Datatables shown on Dictionaria."""
 
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import joinedload
 
 from clld.db import fts
@@ -130,7 +130,20 @@ class WordCol(LinkCol):
 
     def order(self):
         """Take homonym number into account when searching."""
-        return Word.name, Word.number
+        # sort special chars after letters (including the combining diacritics
+        # that don't combine with anything...)
+        tilde = chr(0x0303)
+        grave = chr(0x0300)
+        regex = f'^[{tilde}{grave}‘’↓\']'
+        letters_first = case(
+            (func.regexp_match(Word.name, regex) != None, 1),  # noqa: E711
+            else_=0)
+        # sort case-insensitively and ignoring diacritics
+        normalised_word = func.regexp_replace(
+            func.lower(func.unaccent(Word.name)),
+            r'^[()=\-~*]*',
+            '')
+        return letters_first, normalised_word, Word.number
 
     def search(self, qs):
         """Allow search with or without accents."""
