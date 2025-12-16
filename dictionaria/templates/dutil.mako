@@ -132,6 +132,17 @@
             </tr>
         % endfor
         ${data_tr(ctx, links=links)}
+        <% word_sources = ctx.sourcedict.get('Headword') %>
+        % if word_sources:
+            <tr>
+                <td><small>${_('Source')}</small></td>
+                <td><small>
+                % for i, ref in enumerate(word_sources):
+                    ${h.link(request, ref)}${'; ' if i < len(word_sources) - 1 else ''}
+                % endfor
+                </small></td>
+            </tr>
+        % endif
     </table>
 
     ${'<ul class="unstyled">' if len(ctx.meanings) <= 1 else '<ol>'|n}
@@ -215,17 +226,4 @@
             % endfor
         </ul>
     % endif
-</%def>
-
-<%def name="column_references(ctx)">
-  % if ctx.references:
-  <dl>
-    <dt>${_('Sources')}</dt>
-    <dd>
-    % for i, ref in enumerate(ctx.references):
-      ${h.link(request, ref.source)|n}${f' ({ref.description})' if ref.description and ref.description not in {'Headword', 'Primary_Text'} else ''}${'; ' if i > 0 else ''}
-    % endfor
-    </dd>
-  </dl>
-  % endif
 </%def>

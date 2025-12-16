@@ -30,5 +30,3 @@
 <h2>${ctx.label} <span class="meanings-in-title">${u.add_word_links(req, ctx.dictionary, u.truncate(' / '.join(u.split(m.name)[0] for m in ctx.meanings)))|n}</span></h2>
 
 ${dutil.word_details()}
-
-${dutil.column_references(ctx)}
