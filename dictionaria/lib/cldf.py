@@ -160,6 +160,7 @@ def read_cldf_examples(cldf, labels, custom_order):
         'Sense_IDs',
         'original_script',
         'Corpus_Reference',
+        'source',
     }
     return [
         make_cldf_record(example, standard_fields, custom_order)
@@ -645,6 +646,19 @@ def iter_example_data(cldf_examples, examples, field_order):
             examples[ex.std['id']], ex.free, field_order))
 
 
+def iter_example_refs(cldf_examples, examples, sources):
+    """Return ORM objects associating dictionary examples with the bibliography."""
+    for cldf_example in cldf_examples:
+        for ref in cldf_example.std.get('source') or ():
+            source_id, context = Sources.parse(ref)
+            if source_id not in sources:
+                continue
+            yield common.SentenceReference(
+                sentence_pk=examples[cldf_example.std['id']].pk,
+                source_pk=sources[source_id].pk,
+                description=context)
+
+
 def make_meaning(cldf_sense, entry, dictionary, metalanguages, number):
     """Create ORM object for a meaning description."""
     description = cldf_sense.std.get('description')
@@ -972,6 +986,8 @@ class Submission:
             cldf_examples, examples, self.cdstar))
         DBSession.add_all(iter_example_data(
             cldf_examples, examples, self.props.get('example_custom_order') or ()))
+        DBSession.add_all(iter_example_refs(
+            cldf_examples, examples, sources))
 
         meanings = make_meanings(
             cldf_senses, entries, dictionary,

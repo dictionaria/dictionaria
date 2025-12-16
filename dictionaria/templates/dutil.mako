@@ -58,9 +58,6 @@
             ${u.cdstar.audio(obj.audio)}
         </div>
     % endif
-    % if (obj.references or obj.source) and fmt == 'long':
-        Source: ${h.linked_references(request, obj)|n} <span class="muted">${obj.source}</span>
-    % endif
     <dl>
         % if obj.comment:
             <dt>Comment:</dt>
@@ -72,8 +69,19 @@
             <dt>${_('Type')}:</dt>
             <dd>${obj.type}</dd>
         % endif
+        % if (obj.references or obj.source) and fmt == 'long':
+          <dt>Source:</dt>
+          <dd>
+            % for i, ref in enumerate(ctx.references):
+              ${h.link(request, ref.source)|n}${f' ({ref.description})' if ref.description and ref.description not in {'Headword', 'Primary_Text'} else ''}${'; ' if i > 0 else ''}
+            % endfor
+            % if obj.source:
+            <span class="muted">${obj.source}</span>
+            % endif
+          </dd>
+        % endif
         % for k, v in obj.datadict().items():
-            % if k not in ('Gloss POS', 'Lexical Entries'):
+            % if k not in ('source', 'Gloss POS', 'Lexical Entries'):
             ${format_sentence_data(k, v)}
             % endif
         % endfor
@@ -207,4 +215,17 @@
             % endfor
         </ul>
     % endif
+</%def>
+
+<%def name="column_references(ctx)">
+  % if ctx.references:
+  <dl>
+    <dt>${_('Sources')}</dt>
+    <dd>
+    % for i, ref in enumerate(ctx.references):
+      ${h.link(request, ref.source)|n}${f' ({ref.description})' if ref.description and ref.description not in {'Headword', 'Primary_Text'} else ''}${'; ' if i > 0 else ''}
+    % endfor
+    </dd>
+  </dl>
+  % endif
 </%def>
