@@ -34,6 +34,9 @@ div.sentence, div.sentence-number {
 table caption {
     caption-side: bottom;
     text-align: left;
+    font-style: italic;
+    margin-left: 1ex;
+    margin-top: 1ex;
 }
 /* Data tables are just a tiny bit too wide for the tab-content div,
    which makes it scroll horizontally in Firefox. */
