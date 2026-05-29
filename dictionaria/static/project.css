@@ -57,7 +57,7 @@ ol.nested { counter-reset: item }
 ol.nested li { display: block }
 ol.nested li:before { content: counters(item, ".") " "; counter-increment: item }
 div.toc li {font-weight: bold}
-figure {float: right; margin-left: 20px; max-width: 310px;}
+figure { display: block; text-align: center; }
 figcaption {  font-style: italic; text-align: center; }
 h2 .series-peerreviewed
 {
