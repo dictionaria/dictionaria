@@ -10,7 +10,6 @@ from clld.web.util import concepticon
 from clld.web.util.helpers import link
 from clld.web.util.htmllib import HTML, escape
 from clldmpg import cdstar
-from clldutils.misc import UnicodeMixin
 
 assert cdstar
 assert link
