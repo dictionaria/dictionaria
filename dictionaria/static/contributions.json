@@ -1,0 +1,198 @@
+{
+    "daakaka": {
+        "number": 1,
+        "date_published": "2017-03-30",
+        "repo": "https://github.com/dictionaria/daakaka",
+        "doi": "10.5281/zenodo.5526292",
+        "published": true
+    },
+    "hdi": {
+        "number": 2,
+        "date_published": "2017-12-30",
+        "repo": "https://github.com/dictionaria/hdi",
+        "doi": "10.5281/zenodo.5526333",
+        "published": true
+    },
+    "palula": {
+        "number": 3,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/palula",
+        "doi": "10.5281/zenodo.5526477",
+        "published": true
+    },
+    "teop": {
+        "number": 4,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/teop",
+        "doi": "10.5281/zenodo.5526528",
+        "published": true
+    },
+    "sanzhi": {
+        "number": 5,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/sanzhi",
+        "doi": "10.5281/zenodo.5526509",
+        "published": true
+    },
+    "sidaama": {
+        "number": 6,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/sidaama",
+        "doi": "10.5281/zenodo.5526518",
+        "published": true
+    },
+    "guarayu": {
+        "number": 7,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/guarayu",
+        "doi": "10.5281/zenodo.5526318",
+        "published": true
+    },
+    "nen": {
+        "number": 8,
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/nen",
+        "doi": "10.5281/zenodo.5526459",
+        "published": true
+    },
+    "diidxaza": {
+        "number": 9,
+        "authors": [
+            "Gabriela P\u00e9rez B\u00e1ez",
+            "Terrence Kaufman"
+        ],
+        "date_published": "2019",
+        "repo": "https://github.com/dictionaria/diidxaza",
+        "doi": "10.5281/zenodo.14024635",
+        "published": true
+    },
+    "tseltal": {
+        "number": 10,
+        "date_published": "2020",
+        "repo": "https://github.com/dictionaria/tseltal",
+        "doi": "10.5281/zenodo.5526550",
+        "published": true
+    },
+    "wersing": {
+        "number": 11,
+        "authors": [
+            "Antoinette Schapper"
+        ],
+        "date_published": "2020",
+        "repo": "https://github.com/dictionaria/wersing",
+        "doi": "10.5281/zenodo.5526568",
+        "published": true
+    },
+    "medialengua": {
+        "number": 12,
+        "authors": [
+            {
+                "name": "Jesse Stewart",
+                "affiliation": "University of Saskatchewan",
+                "primary": true
+            },
+            {
+                "name": "Gabriela Prado Ayala",
+                "primary": false
+            },
+            {
+                "name": "Lucia Gonza Inlago",
+                "primary": false
+            }
+        ],
+        "date_published": "2020",
+        "repo": "https://github.com/dictionaria/medialengua",
+        "doi": "10.5281/zenodo.5526447",
+        "published": true
+    },
+    "kalamang": {
+        "number": 13,
+        "authors": [
+            {
+                "name": "Eline Visser",
+                "affiliation": "Lund University"
+            }
+        ],
+        "date_published": "2020",
+        "repo": "https://github.com/dictionaria/kalamang",
+        "doi": "10.5281/zenodo.5526419",
+        "published": true
+    },
+    "iquito": {
+        "number": 14,
+        "authors": [
+            {
+                "name": "Lev Michael",
+                "affiliation": "University of California, Berkeley"
+            },
+            {
+                "name": "Christine Beier",
+                "affiliation": "University of California, Berkeley"
+            }
+        ],
+        "date_published": "2021",
+        "repo": "https://github.com/dictionaria/iquito",
+        "doi": "10.5281/zenodo.5526353",
+        "published": true
+    },
+    "teanu": {
+        "number": 15,
+        "authors": [
+            "Alexandre Fran\u00e7ois"
+        ],
+        "date_published": "2021",
+        "repo": "https://github.com/dictionaria/teanu",
+        "doi": "10.5281/zenodo.5653063",
+        "published": true
+    },
+    "wanukaka": {
+        "number": 16,
+        "authors": [
+            "Leif Asplund",
+            "Tomas Tagu Dodu",
+            "Allahverdi Verdizade"
+        ],
+        "date_published": "2025",
+        "repo": "https://github.com/dictionaria/wanukaka",
+        "doi": "10.5281/zenodo.17986360",
+        "published": true
+    },
+    "chintang": {
+        "number": 17,
+        "authors": [
+            {
+                "name": "Rolf Hotz",
+                "affiliation": "University of Sydney"
+            },
+            "Robert Schikowski",
+            "Ichchha Purna Rai",
+            "Anita Rai",
+            "Chandra Kumari Rai",
+            "Dayaram Rai",
+            "Durga Bahadur Rai",
+            "Durga Kumari Rai",
+            "Ganesh Rai",
+            "Janak Kumari Rai",
+            "Lash Kumari (Renuka) Rai",
+            "Manoj Rai",
+            "Rabindra Kumar Rai",
+            "Rikhi Maya Rai",
+            "Shanti Maya Rai",
+            "Goma Banjade",
+            "Toya Nath Bhatta",
+            "Dagmar Jung",
+            "Netra Prasad Paudyal",
+            "Judi Pettigrew",
+            "Sebastian Sauppe",
+            "Taras Zakharko",
+            "Martin Gaenszle",
+            "Novel Kishor Rai",
+            "Elene Lieven",
+            "Sabine Stoll",
+            "Balthasar Bickel"
+        ],
+        "date_published": "2026",
+        "repo": "https://github.com/dictionaria/chintang",
+        "published": true
+    }
+}
