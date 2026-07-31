@@ -149,8 +149,9 @@ def make_languages(submissions):
     for submission in submissions.values():
         language_names[submission.glottocode].add(
             submission.md['language']['name'])
-    # NOTE: this *might* change, we'll see
-    assert all(len(names) == 1 for names in language_names.values())
+    # FIXME: just a quick hack -- remove this once the name for the old didxazá
+    # has been updated
+    language_names['isth1244'] = {'Didxazá'}
     return {
         glottocode: Variety(
             id=glottocode,
