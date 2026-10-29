@@ -202,6 +202,7 @@ def make_contributors(submissions):
         for ed in DICTIONARIA_EDITORS}
     dictionary_authors = defaultdict(list)
     for submission in submissions.values():
+        cids = set()
         for author in submission.md['authors']:
             if isinstance(author, str):
                 name = author
@@ -215,6 +216,9 @@ def make_contributors(submissions):
                 raise TypeError('author must be string or dict')
             human_name = HumanName(name)
             id_ = slug(f'{human_name.last}{human_name.first}')
+            if id_ in cids:  # This may leave us with ambiguous IDs.
+                id_ += 'a'
+            cids.add(id_)
             if id_ not in contributors:
                 contributors[id_] = common.Contributor(
                     id=id_,
@@ -240,6 +244,14 @@ def iter_editors(contributors, dataset):
 
 def iter_dictionary_authors(dictionary_authors, contributors, dictionaries):
     """Return specialised author objects for dictionary authors."""
+    seen = set()
+    for submission_id, authors in dictionary_authors.items():
+        for number, author in enumerate(authors, 1):
+            cc = (submission_id, author['id'])
+            if cc in seen:
+                raise ValueError(dictionary_authors, cc)
+            seen.add(cc)
+
     return (
         common.ContributionContributor(
             contribution_pk=dictionaries[submission_id].pk,
@@ -307,6 +319,8 @@ def main(args):
         sid: sinfo
         for sid, sinfo in submission_info.items()
         if sinfo['published'] == published and is_selected(sid)}
+
+    INTERNAL_REPO.joinpath('datasets').mkdir(exist_ok=True)
 
     data_dirs = (
         (sid, download_data(sid, sinfo, INTERNAL_REPO / 'datasets'))
